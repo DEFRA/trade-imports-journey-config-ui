@@ -30,8 +30,9 @@
     "setup:husky": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module"
   },
   "imports": {
-    "#/*": "./src/*",
-    "#/test-helpers/*": "./test-helpers/*"
+    "#server/*": "./src/server/*",
+    "#config/*": "./src/config/*",
+    "#test-helpers/*": "./test-helpers/*"
   },
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",
