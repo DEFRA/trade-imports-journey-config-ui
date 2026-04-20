@@ -13,6 +13,7 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { evaluateObligations } from './evaluate-obligations.js'
 import { traceEvaluateObligations } from './trace-evaluate-obligations.js'
+import { resolvers } from '../../journeys/eu-live-animals/resolvers.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const INPUT_DIR = join(__dirname, '../../journeys/eu-live-animals')
@@ -51,7 +52,7 @@ const findObligation = (result, id) =>
   result.obligations.find((o) => o.id === id)
 
 const evaluate = (notification) =>
-  evaluateObligations(notification, obligations, refdata)
+  evaluateObligations(notification, obligations, refdata, resolvers)
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -194,7 +195,7 @@ describe('Status Equivalence with Canonical Evaluator', () => {
   it('returns identical statuses for empty notification', () => {
     const notification = EMPTY_NOTIFICATION
     const canonical = evaluate(notification)
-    const traced = traceEvaluateObligations(notification, obligations, refdata)
+    const traced = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     // For every obligation, statuses must match
     traced.obligations.forEach((tracedObligation) => {
@@ -220,7 +221,7 @@ describe('Status Equivalence with Canonical Evaluator', () => {
       }
     }
     const canonical = evaluate(notification)
-    const traced = traceEvaluateObligations(notification, obligations, refdata)
+    const traced = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     traced.obligations.forEach((tracedObligation) => {
       const canonicalObligation = findObligation(canonical, tracedObligation.id)
@@ -231,7 +232,7 @@ describe('Status Equivalence with Canonical Evaluator', () => {
   it('returns identical statuses for fully satisfied notification', () => {
     const notification = FULL_CATTLE_NOTIFICATION
     const canonical = evaluate(notification)
-    const traced = traceEvaluateObligations(notification, obligations, refdata)
+    const traced = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     traced.obligations.forEach((tracedObligation) => {
       const canonicalObligation = findObligation(canonical, tracedObligation.id)
@@ -246,7 +247,7 @@ describe('Status Equivalence with Canonical Evaluator', () => {
 describe('Trace Metadata Presence', () => {
   it('returns trace object for each obligation', () => {
     const notification = withCommodity(CATTLE)
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     result.obligations.forEach((obligation) => {
       expect(obligation.trace).toBeDefined()
@@ -256,7 +257,7 @@ describe('Trace Metadata Presence', () => {
 
   it('trace.steps is non-empty for all obligations', () => {
     const notification = withCommodity(CATTLE)
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     result.obligations.forEach((obligation) => {
       expect(obligation.trace.steps.length).toBeGreaterThan(0)
@@ -270,7 +271,7 @@ describe('Trace Metadata Presence', () => {
 describe('Terminal Step Consistency', () => {
   it('terminal step type matches status for satisfied obligations', () => {
     const notification = FULL_CATTLE_NOTIFICATION
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     const satisfiedObligations = result.obligations.filter(
       (o) => o.status === 'satisfied'
@@ -295,7 +296,7 @@ describe('Terminal Step Consistency', () => {
 
   it('satisfaction-check steps include pathDetails with per-path status', () => {
     const notification = FULL_CATTLE_NOTIFICATION
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     const satCheckSteps = result.obligations
       .flatMap((o) => o.trace.steps)
@@ -335,7 +336,7 @@ describe('Terminal Step Consistency', () => {
         }
       }
     }
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     // Filter out action-only obligations (empty schemaPaths) as they have missing=0
     const unsatisfiedObligations = result.obligations.filter(
@@ -352,7 +353,7 @@ describe('Terminal Step Consistency', () => {
 
   it('terminal step type matches status for deferred obligations', () => {
     const notification = EMPTY_NOTIFICATION // No commodity selected
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     const deferredObligations = result.obligations.filter(
       (o) => o.status === 'deferred'
@@ -382,7 +383,7 @@ describe('Terminal Step Consistency', () => {
         }
       }
     }
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     const inactiveObligations = result.obligations.filter(
       (o) => o.status === 'inactive'
@@ -417,7 +418,7 @@ describe('Summary Correctness', () => {
         }
       }
     }
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     const actualCounts = {
       satisfied: result.obligations.filter((o) => o.status === 'satisfied')
@@ -438,7 +439,7 @@ describe('Summary Correctness', () => {
 
   it('submittable is true when all obligations satisfied or inactive', () => {
     const notification = FULL_CATTLE_NOTIFICATION
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     // Verify test precondition
     expect(result.summary.unsatisfied).toBe(0)
@@ -463,7 +464,7 @@ describe('Summary Correctness', () => {
         }
       }
     }
-    const result = traceEvaluateObligations(notification, obligations, refdata)
+    const result = traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
     // Verify test precondition (at least one blocker exists)
     const hasBlockers =

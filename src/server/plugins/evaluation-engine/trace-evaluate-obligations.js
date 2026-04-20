@@ -13,8 +13,6 @@
 
 import {
   evaluateObligations,
-  facts,
-  tests,
   resolvePath,
   isEmpty
 } from './evaluate-obligations.js'
@@ -90,7 +88,7 @@ const buildApplyTestStep = (test, result) => ({
  *
  * Returns a traced obligation result with status and trace metadata.
  */
-const traceObligation = (obligation, notification, refdata) => {
+const traceObligation = (obligation, notification, refdata, resolvers) => {
   const { id, condition, schemaPaths } = obligation
   const steps = []
   const trace = {
@@ -104,7 +102,7 @@ const traceObligation = (obligation, notification, refdata) => {
     const { fact, test } = condition
 
     // Extract the fact
-    const factExtractor = facts[fact]
+    const factExtractor = resolvers.facts[fact]
     if (!factExtractor) {
       throw new Error(
         `Obligation "${id}" references unknown fact: "${fact}". Register it in the facts object.`
@@ -121,7 +119,7 @@ const traceObligation = (obligation, notification, refdata) => {
     }
 
     // Apply the test
-    const testFn = tests[test]
+    const testFn = resolvers.tests[test]
     if (!testFn) {
       throw new Error(
         `Obligation "${id}" references unknown test: "${test}". Register it in the tests object.`
@@ -143,7 +141,7 @@ const traceObligation = (obligation, notification, refdata) => {
     steps: satisfactionSteps,
     status,
     missingPaths
-  } = buildSatisfactionSteps(schemaPaths, notification)
+  } = buildSatisfactionSteps(schemaPaths, notification, resolvers)
 
   steps.push(...satisfactionSteps)
 
@@ -154,13 +152,12 @@ const traceObligation = (obligation, notification, refdata) => {
  * Build satisfaction steps for an obligation.
  * Returns steps array, status, and missing paths without mutating input.
  */
-const buildSatisfactionSteps = (schemaPaths, notification) => {
+const buildSatisfactionSteps = (schemaPaths, notification, resolvers) => {
   const steps = []
 
   // Action-only obligation (e.g. legal-declaration with empty schemaPaths)
   if (!schemaPaths || schemaPaths.length === 0) {
-    // Check submission date as conventional satisfaction marker
-    const submissionDate = notification?.partOne?.submissionDate
+    const submissionDate = resolvePath(notification, resolvers.submissionDatePath)
     const isSatisfied = !isEmpty(submissionDate)
     steps.push(buildActionCheckStep(isSatisfied))
     return {
@@ -250,7 +247,8 @@ const calculateSummary = (obligations) => {
 export const traceEvaluateObligations = (
   notification,
   obligations,
-  refdata
+  refdata,
+  resolvers
 ) => {
   // Validate inputs
   if (!notification || typeof notification !== 'object') {
@@ -268,9 +266,14 @@ export const traceEvaluateObligations = (
       'traceEvaluateObligations: refdata must be a non-null object'
     )
   }
+  if (!resolvers || typeof resolvers !== 'object') {
+    throw new Error(
+      'traceEvaluateObligations: resolvers must be a non-null object'
+    )
+  }
 
   // Step 1: Get canonical results for equivalence assertion
-  const canonical = evaluateObligations(notification, obligations, refdata)
+  const canonical = evaluateObligations(notification, obligations, refdata, resolvers)
 
   // Build Map for O(1) lookup instead of O(n) find
   const canonicalMap = new Map(
@@ -279,7 +282,7 @@ export const traceEvaluateObligations = (
 
   // Step 2: Trace each obligation
   const traced = obligations.map((obligation) => {
-    const tracedResult = traceObligation(obligation, notification, refdata)
+    const tracedResult = traceObligation(obligation, notification, refdata, resolvers)
     const canonicalResult = canonicalMap.get(obligation.id)
     assertEquivalence(canonicalResult, tracedResult)
     return tracedResult

@@ -29,6 +29,15 @@ const validateJourney = (key, journey) => {
       `Journey "${key}": journeyMap.sections is missing or not an array`
     )
   }
+  if (!journey.resolvers?.facts || typeof journey.resolvers.facts !== 'object') {
+    throw new Error(`Journey "${key}": resolvers.facts is missing`)
+  }
+  if (!journey.resolvers?.tests || typeof journey.resolvers.tests !== 'object') {
+    throw new Error(`Journey "${key}": resolvers.tests is missing`)
+  }
+  if (typeof journey.resolvers?.submissionDatePath !== 'string') {
+    throw new Error(`Journey "${key}": resolvers.submissionDatePath is missing`)
+  }
 }
 
 /**
@@ -75,7 +84,8 @@ export const evaluationEngine = {
           return traceEvaluateObligations(
             notification,
             journey.obligations,
-            journey.refdata
+            journey.refdata,
+            journey.resolvers
           )
         },
 

@@ -1,26 +1,13 @@
 /**
  * Obligation evaluation runtime.
  *
- * Pure function: (notification, obligations, refdata) -> obligationState
+ * Pure function:
+ *   (notification, obligations, refdata, resolvers) -> obligationState
  *
- * Evaluates each obligation against the current notification state,
- * resolving conditional obligations via the fact/test contract and refdata,
- * and checking satisfaction by verifying schema paths have non-empty values.
+ * Generic loop — knows nothing about any particular notification schema.
+ * All schema-specific work is delegated to the journey's `resolvers`
+ * (facts, tests, submissionDatePath).
  */
-
-// ---------------------------------------------------------------------------
-// Fact extractors — the condition contract's "read" side
-// ---------------------------------------------------------------------------
-
-const facts = {
-  purposeGroup: (notification) =>
-  notification?.partOne?.purpose?.purposeGroup ?? null,
-
-  commodity: (notification) => {
-    const c = notification?.partOne?.commodities?.commodityComplement?.[0]
-    return c?.commodityID ? c : null
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Path resolution helpers
@@ -84,118 +71,13 @@ const resolvePath = (obj, path) => {
 const isEmpty = (value) => {
   if (value === undefined || value === null) return true
   if (typeof value === 'string') return value === ''
-  if (typeof value === 'boolean') return false // false is a valid value
+  if (typeof value === 'boolean') return false
   if (typeof value === 'number') return false
   if (Array.isArray(value)) return value.length === 0
   if (typeof value === 'object') {
     return Object.keys(value).length === 0
   }
   return false
-}
-
-// ---------------------------------------------------------------------------
-// Refdata key resolution (internal — never referenced by obligations)
-// ---------------------------------------------------------------------------
-
-const buildRefdataKey = (commodity) => {
-  const code = commodity.commodityID
-  const species = commodity.speciesName ?? ''
-  return `${code}|${species}`
-}
-
-const lookupRefdata = (table, commodity) => {
-  const exactKey = buildRefdataKey(commodity)
-  if (table[exactKey]) return table[exactKey]
-  const fallbackKey = `${commodity.commodityID}|`
-  return table[fallbackKey] ?? null
-}
-
-// ---------------------------------------------------------------------------
-// Test implementations — the condition contract's "evaluate" side
-// ---------------------------------------------------------------------------
-
-const TRANSIT_PURPOSES = [
-  'For Transhipment to',
-  'For Transit to 3rd Country'
-]
-
-const IDENTIFIER_NONE = 'NONE'
-
-const tests = {
-  isTransit: (purposeGroup, _refdata) => ({
-    active: TRANSIT_PURPOSES.includes(purposeGroup),
-    reason: TRANSIT_PURPOSES.includes(purposeGroup)
-      ? `purposeGroup "${purposeGroup}" is a transit purpose`
-      : `purposeGroup "${purposeGroup}" is not a transit purpose`
-  }),
-
-  requiresIdentification: (commodity, refdata) => {
-    const content = lookupRefdata(refdata.content, commodity)
-    if (!content) return { active: false, reason: 'no refdata content for commodity' }
-    const idRef = content.identifiers
-    const idSet = refdata.definitions?.identifier_sets?.[idRef]
-    if (!idSet) return { active: false, reason: `identifier set ${idRef} not found` }
-    const isNone = idSet.length === 1 && idSet[0] === IDENTIFIER_NONE
-    return {
-      active: !isNone,
-      reason: isNone
-        ? `identifier set ${idRef} is NONE`
-        : `identifier set ${idRef} requires identification`
-    }
-  },
-
-  requiresCertification: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
-    const flag = routing.has_certified_as === true
-    return {
-      active: flag,
-      reason: flag ? 'commodity requires certification' : 'commodity does not require certification'
-    }
-  },
-
-  requiresWeaningStatus: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
-    const flag = routing.has_unweaned === true
-    return {
-      active: flag,
-      reason: flag ? 'commodity requires weaning status' : 'commodity does not require weaning status'
-    }
-  },
-
-  requiresPermanentAddress: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
-    return {
-      active: routing.permanent_address === true,
-      reason: routing.permanent_address
-        ? 'commodity requires permanent address'
-        : 'commodity does not require permanent address'
-    }
-  },
-
-  requiresCphNumber: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
-    return {
-      active: routing.cph_number === true,
-      reason: routing.cph_number
-        ? 'commodity requires CPH number'
-        : 'commodity does not require CPH number'
-    }
-  },
-
-  requiresTransporter: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
-    return {
-      active: routing.transporter_address === true,
-      reason: routing.transporter_address
-        ? 'commodity requires transporter identification'
-        : 'commodity does not require transporter identification'
-    }
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -207,10 +89,11 @@ const tests = {
  *
  * @param {object} notification - The notification object (fact store)
  * @param {Array} obligations - Array of obligation definitions
- * @param {object} refdata - Reference data (routing, content, definitions)
+ * @param {object} refdata - Reference data (journey-specific shape)
+ * @param {object} resolvers - { facts, tests, submissionDatePath }
  * @returns {{ obligations: Array<{ id, status, missingPaths?, reason? }> }}
  */
-const evaluateObligations = (notification, obligations, refdata) => {
+const evaluateObligations = (notification, obligations, refdata, resolvers) => {
   const evaluated = obligations.map((obligation) => {
     const { id, condition, schemaPaths } = obligation
 
@@ -219,7 +102,7 @@ const evaluateObligations = (notification, obligations, refdata) => {
       const { fact, test } = condition
 
       // Extract the fact
-      const factExtractor = facts[fact]
+      const factExtractor = resolvers.facts[fact]
       if (!factExtractor) {
         throw new Error(`Obligation "${id}" references unknown fact: "${fact}". Register it in the facts object.`)
       }
@@ -231,7 +114,7 @@ const evaluateObligations = (notification, obligations, refdata) => {
       }
 
       // Apply the test
-      const testFn = tests[test]
+      const testFn = resolvers.tests[test]
       if (!testFn) {
         throw new Error(`Obligation "${id}" references unknown test: "${test}". Register it in the tests object.`)
       }
@@ -244,7 +127,7 @@ const evaluateObligations = (notification, obligations, refdata) => {
     }
 
     // --- Unconditional, or condition passed: check satisfaction ---
-    return evaluateSatisfaction(id, schemaPaths, notification)
+    return evaluateSatisfaction(id, schemaPaths, notification, resolvers)
   })
 
   return { obligations: evaluated }
@@ -253,11 +136,10 @@ const evaluateObligations = (notification, obligations, refdata) => {
 /**
  * Check whether an obligation's schema paths are all populated.
  */
-const evaluateSatisfaction = (id, schemaPaths, notification) => {
+const evaluateSatisfaction = (id, schemaPaths, notification, resolvers) => {
   // Action-only obligation (e.g. legal-declaration with empty schemaPaths)
   if (!schemaPaths || schemaPaths.length === 0) {
-    // Check submission date as conventional satisfaction marker
-    const submissionDate = notification?.partOne?.submissionDate
+    const submissionDate = resolvePath(notification, resolvers.submissionDatePath)
     if (!isEmpty(submissionDate)) {
       return { id, status: 'satisfied', missingPaths: [] }
     }
@@ -276,14 +158,4 @@ const evaluateSatisfaction = (id, schemaPaths, notification) => {
   }
 }
 
-export {
-  evaluateObligations,
-  facts,
-  tests,
-  buildRefdataKey,
-  lookupRefdata,
-  resolvePath,
-  isEmpty,
-  TRANSIT_PURPOSES,
-  IDENTIFIER_NONE
-}
+export { evaluateObligations, resolvePath, isEmpty }

@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import { traceEvaluateObligations } from '../../plugins/evaluation-engine/trace-evaluate-obligations.js'
-import { obligations, refdata } from '../../journeys/eu-live-animals/index.js'
+import { obligations, refdata, resolvers } from '../../journeys/eu-live-animals/index.js'
 import {
   importSemen,
   importOwls,
@@ -37,7 +37,7 @@ import {
  * Helper: evaluate a scenario and return the summary.
  */
 const evaluate = (notification) =>
-  traceEvaluateObligations(notification, obligations, refdata)
+  traceEvaluateObligations(notification, obligations, refdata, resolvers)
 
 // ---------------------------------------------------------------------------
 // Core contract: every scenario is submittable

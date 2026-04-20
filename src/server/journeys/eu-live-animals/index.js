@@ -12,3 +12,4 @@ export const obligations = obligationsData.obligations
 export const refdata = loadJSON('refdata.json')
 export const journeyMap = loadJSON('journey.json')
 export { scenarioMap as scenarios } from './scenarios.js'
+export { resolvers } from './resolvers.js'

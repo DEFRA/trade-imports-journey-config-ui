@@ -15,14 +15,15 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   evaluateObligations,
+  resolvePath,
+  isEmpty
+} from './evaluate-obligations.js'
+import {
+  resolvers,
   facts,
   tests,
-  buildRefdataKey,
-  lookupRefdata,
-  resolvePath,
-  isEmpty,
   TRANSIT_PURPOSES
-} from './evaluate-obligations.js'
+} from '../../journeys/eu-live-animals/resolvers.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const INPUT_DIR = join(__dirname, '../../journeys/eu-live-animals')
@@ -49,7 +50,7 @@ const findObligation = (result, id) =>
   result.obligations.find((o) => o.id === id)
 
 const evaluate = (notification) =>
-  evaluateObligations(notification, obligations, refdata)
+  evaluateObligations(notification, obligations, refdata, resolvers)
 
 // ---------------------------------------------------------------------------
 // Commodity archetype keys (used across categories)
@@ -1711,7 +1712,7 @@ describe('Category 8: Configuration error detection', () => {
         }
       ]
       expect(() =>
-        evaluateObligations({}, badObligation, {})
+        evaluateObligations({}, badObligation, {}, resolvers)
       ).toThrow(/unknown fact.*nonExistentFact/)
     })
 
@@ -1724,7 +1725,7 @@ describe('Category 8: Configuration error detection', () => {
         }
       ]
       expect(() =>
-        evaluateObligations({}, badObligation, {})
+        evaluateObligations({}, badObligation, {}, resolvers)
       ).toThrow(/my-broken-obligation/)
     })
   })
@@ -1742,7 +1743,7 @@ describe('Category 8: Configuration error detection', () => {
         }
       ]
       expect(() =>
-        evaluateObligations(notification, badObligation, {})
+        evaluateObligations(notification, badObligation, {}, resolvers)
       ).toThrow(/unknown test.*nonExistentTest/)
     })
 
@@ -1755,7 +1756,7 @@ describe('Category 8: Configuration error detection', () => {
         }
       ]
       // purposeGroup is null → deferred, never reaches the unknown test
-      const result = evaluateObligations({}, badObligation, {})
+      const result = evaluateObligations({}, badObligation, {}, resolvers)
       expect(result.obligations[0].status).toBe('deferred')
     })
   })
