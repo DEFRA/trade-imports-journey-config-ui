@@ -3,6 +3,7 @@ import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'
 
 import { router } from './plugins/router.js'
+import { evaluationEngine } from './plugins/evaluation-engine/index.js'
 import { config } from '#config/config.js'
 import { pulse } from './plugins/pulse.js'
 import { catchAll } from './common/helpers/errors.js'
@@ -64,6 +65,7 @@ export async function createServer() {
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
+    evaluationEngine, // Must register before router so routes can access server.app.evaluationEngine
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
