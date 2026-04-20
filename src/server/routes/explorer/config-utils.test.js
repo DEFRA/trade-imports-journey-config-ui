@@ -1,0 +1,155 @@
+import { describe, test, expect } from 'vitest'
+import {
+  parseCommodityKey,
+  formatCommodityLabel,
+  buildMinimalNotification,
+  extractCommodityOptions,
+  toSelectItems
+} from './config-utils.js'
+
+describe('parseCommodityKey', () => {
+  test('parses valid commodity key with species', () => {
+    expect(parseCommodityKey('102|Bos taurus')).toEqual({
+      commodityID: '102',
+      speciesName: 'Bos taurus'
+    })
+  })
+
+  test('parses commodity key with empty species', () => {
+    expect(parseCommodityKey('102|')).toEqual({
+      commodityID: '102',
+      speciesName: ''
+    })
+  })
+
+  test('handles null gracefully', () => {
+    expect(parseCommodityKey(null)).toEqual({
+      commodityID: '',
+      speciesName: ''
+    })
+  })
+
+  test('handles undefined gracefully', () => {
+    expect(parseCommodityKey(undefined)).toEqual({
+      commodityID: '',
+      speciesName: ''
+    })
+  })
+
+  test('parses commodity key with species containing special characters', () => {
+    expect(parseCommodityKey('0101|Bos-taurus (Holstein)')).toEqual({
+      commodityID: '0101',
+      speciesName: 'Bos-taurus (Holstein)'
+    })
+  })
+})
+
+describe('buildMinimalNotification', () => {
+  test('builds notification with purpose and commodity', () => {
+    const result = buildMinimalNotification('For Import', '0101210000|Horses')
+
+    expect(result.type).toBe('IMPv2')
+    expect(result.partOne.purpose.purposeGroup).toBe('For Import')
+    expect(result.partOne.commodities.commodityComplement[0].commodityID).toBe(
+      '0101210000'
+    )
+    expect(result.partOne.commodities.commodityComplement[0].speciesName).toBe(
+      'Horses'
+    )
+  })
+
+  test('sets speciesName to undefined when not in key', () => {
+    const result = buildMinimalNotification('For Import', '0101210000|')
+    expect(
+      result.partOne.commodities.commodityComplement[0].speciesName
+    ).toBeUndefined()
+  })
+
+  test('does not include countryOfOrigin when null', () => {
+    const result = buildMinimalNotification('For Import', '0101210000|Horses')
+    expect(result.partOne.commodities.countryOfOrigin).toBeUndefined()
+  })
+
+  test('includes countryOfOrigin when provided', () => {
+    const result = buildMinimalNotification(
+      'For Import',
+      '0101210000|Horses',
+      'FR'
+    )
+    expect(result.partOne.commodities.countryOfOrigin).toBe('FR')
+  })
+
+  test('does not include countryOfOrigin when empty string', () => {
+    const result = buildMinimalNotification(
+      'For Import',
+      '0101210000|Horses',
+      ''
+    )
+    expect(result.partOne.commodities.countryOfOrigin).toBeUndefined()
+  })
+})
+
+describe('formatCommodityLabel', () => {
+  test('formats commodity with species using en-dash separator', () => {
+    expect(
+      formatCommodityLabel({ commodityID: '0101', speciesName: 'Equus caballus' })
+    ).toBe('0101 – Equus caballus')
+  })
+
+  test('formats commodity without species as (no species)', () => {
+    expect(
+      formatCommodityLabel({ commodityID: '0101', speciesName: '' })
+    ).toBe('0101 (no species)')
+  })
+})
+
+describe('extractCommodityOptions', () => {
+  test('extracts and sorts commodity options from refdata routing', () => {
+    const refdata = {
+      routing: {
+        '0101210000|Horses': { has_certified_as: true },
+        '0106190000|Bees': { has_certified_as: false }
+      }
+    }
+
+    const options = extractCommodityOptions(refdata)
+    expect(options).toHaveLength(2)
+    expect(options[0].value).toBe('0101210000|Horses')
+    expect(options[0].label).toBe('0101210000 – Horses')
+    expect(options[1].value).toBe('0106190000|Bees')
+  })
+
+  test('handles commodity without species name', () => {
+    const refdata = { routing: { '0101210000|': {} } }
+    const options = extractCommodityOptions(refdata)
+    expect(options[0].label).toBe('0101210000 (no species)')
+  })
+
+  test('includes parsed commodityID and speciesName in each option', () => {
+    const refdata = { routing: { '102|Bos taurus': {} } }
+    const [option] = extractCommodityOptions(refdata)
+    expect(option.commodityID).toBe('102')
+    expect(option.speciesName).toBe('Bos taurus')
+  })
+})
+
+describe('toSelectItems', () => {
+  const options = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Beta' }
+  ]
+
+  test('builds select items with placeholder when nothing selected', () => {
+    const items = toSelectItems(options, null, 'Pick one')
+    expect(items[0]).toEqual({ value: '', text: 'Pick one', selected: true })
+    expect(items[1]).toEqual({ value: 'a', text: 'Alpha', selected: false })
+    expect(items[2]).toEqual({ value: 'b', text: 'Beta', selected: false })
+  })
+
+  test('marks the selected option', () => {
+    const items = toSelectItems(options, 'b', 'Pick one')
+    expect(items[0].selected).toBe(false)
+    expect(items[1].selected).toBe(false)
+    expect(items[2].selected).toBe(true)
+  })
+})

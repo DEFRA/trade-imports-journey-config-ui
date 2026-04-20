@@ -1,0 +1,195 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/table/macro.njk" import govukTable %}
+{% from "govuk/components/tag/macro.njk" import govukTag %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Obligation Evaluation Engine"
+  }) }}
+
+  {% include "partials/explorer-nav.njk" %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+      {# Commodity selection form #}
+      <form method="get" action="/explorer/commodity-config" id="commodity-form" class="govuk-!-margin-bottom-8">
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-one-half">
+            {{ govukSelect({
+              id: "commodity",
+              name: "commodity",
+              label: {
+                text: "Select commodity"
+              },
+              items: commodityOptions
+            }) }}
+          </div>
+        </div>
+
+        {{ govukButton({
+          text: "View configuration"
+        }) }}
+      </form>
+
+      {# Error message #}
+      {% if error %}
+        <div class="govuk-error-summary" role="alert">
+          <h2 class="govuk-error-summary__title">There is a problem</h2>
+          <div class="govuk-error-summary__body">
+            <p class="govuk-body">{{ error }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      {# Configuration display (only if commodity selected) #}
+      {% if selectedCommodity and not error %}
+
+        {# Commodity summary #}
+        <div class="app-explorer-section">
+          <h2 class="govuk-heading-l">Commodity Summary</h2>
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Commodity code</dt>
+              <dd class="govuk-summary-list__value">{{ commodityID }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Species name</dt>
+              <dd class="govuk-summary-list__value">{{ speciesName }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Purpose set</dt>
+              <dd class="govuk-summary-list__value">{{ purposeSetName }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Identifier set</dt>
+              <dd class="govuk-summary-list__value">{{ identifierSetName }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Quantity type</dt>
+              <dd class="govuk-summary-list__value">{{ quantityType.label }} ({{ quantityType.name }})</dd>
+            </div>
+          </dl>
+        </div>
+
+        {# Routing flags #}
+        <div class="app-explorer-section">
+          <h2 class="govuk-heading-l">Routing Flags</h2>
+          <p class="govuk-body">
+            These flags control which conditional sections appear on the notification form for this commodity.
+          </p>
+
+          {{ govukTable({
+            head: [
+              { text: "Flag" },
+              { text: "Value" }
+            ],
+            rows: routingFlagRows
+          }) }}
+        </div>
+
+        {# Purpose options #}
+        <div class="app-explorer-section">
+          <h2 class="govuk-heading-l">Purpose Options</h2>
+          <p class="govuk-body">
+            Allowed purpose values for this commodity: <strong>{{ purposeCount }} of {{ purposeTotal }} possible values</strong> ({{ purposeSetName }})
+          </p>
+
+          <h3 class="govuk-heading-s govuk-!-margin-top-4">Included values</h3>
+          <ul class="govuk-list">
+            {% for item in purposes %}
+              <li class="app-value-item{% if item.classification == 'specific' %} app-value-item--specific{% endif %}">
+                {{ item.value }}
+                {% if item.classification == 'specific' %}
+                  <strong class="govuk-tag govuk-tag--blue app-value-tag">Commodity-specific</strong>
+                  <span class="govuk-body-s app-value-frequency"> ({{ item.frequency }} of {{ totalCommodities }} commodities)</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+
+          {% if absentPurposes.length > 0 %}
+            <h3 class="govuk-heading-s govuk-!-margin-top-6">Excluded values</h3>
+            <ul class="govuk-list app-absent-list">
+              {% for item in absentPurposes %}
+                <li class="app-absent-item">
+                  {{ item.value }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        {# Identifier types #}
+        <div class="app-explorer-section">
+          <h2 class="govuk-heading-l">Identifier Types</h2>
+          <p class="govuk-body">
+            Allowed identifier types for this commodity: <strong>{{ identifierCount }} of {{ identifierTotal }} possible values</strong> ({{ identifierSetName }})
+          </p>
+
+          <h3 class="govuk-heading-s govuk-!-margin-top-4">Included values</h3>
+          <ul class="govuk-list">
+            {% for item in identifiers %}
+              <li class="app-value-item{% if item.classification == 'specific' %} app-value-item--specific{% endif %}">
+                {{ item.value }}
+                {% if item.classification == 'specific' %}
+                  <strong class="govuk-tag govuk-tag--blue app-value-tag">Commodity-specific</strong>
+                  <span class="govuk-body-s app-value-frequency"> ({{ item.frequency }} of {{ totalCommodities }} commodities)</span>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+
+          {% if absentIdentifiers.length > 0 %}
+            <h3 class="govuk-heading-s govuk-!-margin-top-6">Excluded values</h3>
+            <ul class="govuk-list app-absent-list">
+              {% for item in absentIdentifiers %}
+                <li class="app-absent-item">
+                  {{ item.value }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        {# Quantity type #}
+        <div class="app-explorer-section">
+          <h2 class="govuk-heading-l">Quantity Type</h2>
+          <dl class="govuk-summary-list">
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Label</dt>
+              <dd class="govuk-summary-list__value">{{ quantityType.label }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">Field name</dt>
+              <dd class="govuk-summary-list__value">{{ quantityType.name }}</dd>
+            </div>
+            <div class="govuk-summary-list__row">
+              <dt class="govuk-summary-list__key">ID</dt>
+              <dd class="govuk-summary-list__value">{{ quantityType.id }}</dd>
+            </div>
+          </dl>
+        </div>
+
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}
+
+{% block bodyEnd %}
+  {{ super() }}
+  {# Auto-submit form when commodity selected #}
+  <script>
+    document.getElementById('commodity-form').addEventListener('change', function() {
+      var commodity = document.getElementById('commodity').value
+      if (commodity) {
+        this.submit()
+      }
+    })
+  </script>
+{% endblock %}

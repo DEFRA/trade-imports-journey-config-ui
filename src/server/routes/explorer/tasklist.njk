@@ -1,0 +1,73 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/task-list/macro.njk" import govukTaskList %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Obligation Evaluation Engine"
+  }) }}
+
+  {% include "partials/explorer-nav.njk" %}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+      {# Current state indicator #}
+      {% if presetName == 'Custom' %}
+        <p class="govuk-body govuk-!-margin-bottom-6">
+          <strong>Current state:</strong> Custom (set via Journey Configuration)
+        </p>
+      {% else %}
+        <p class="govuk-body govuk-!-margin-bottom-6">
+          <strong>Current state:</strong> {{ presetName }}
+        </p>
+      {% endif %}
+
+      {# Error message #}
+      {% if error %}
+        <div class="govuk-error-summary" role="alert">
+          <h2 class="govuk-error-summary__title">There is a problem</h2>
+          <div class="govuk-error-summary__body">
+            <p class="govuk-body">{{ error }}</p>
+          </div>
+        </div>
+      {% endif %}
+
+      {# Task list sections #}
+      {% if sections and sections.length > 0 %}
+        {% for section in sections %}
+          <h2 class="govuk-heading-m govuk-!-margin-top-6">
+            {{ loop.index }}. {{ section.sectionName }}
+          </h2>
+
+          {{ govukTaskList({
+            items: section.taskListItems
+          }) }}
+        {% endfor %}
+
+        {# Submit section #}
+        <h2 class="govuk-heading-m govuk-!-margin-top-8">
+          Submit your notification
+        </h2>
+
+        {% if submittable %}
+          {{ govukButton({
+            text: "Check your answers and submit",
+            href: "#"
+          }) }}
+        {% else %}
+          {{ govukButton({
+            text: "Check your answers and submit",
+            classes: "govuk-button--disabled",
+            disabled: true
+          }) }}
+        {% endif %}
+      {% else %}
+        <p class="govuk-body">No notification data available. Use the <a href="/explorer" class="govuk-link">Journey Configuration</a> page to set up a notification first.</p>
+      {% endif %}
+
+    </div>
+  </div>
+{% endblock %}

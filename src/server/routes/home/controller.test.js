@@ -1,5 +1,5 @@
-import { createServer } from '#/server/server.js'
-import { statusCodes } from '#/server/common/constants/status-codes.js'
+import { createServer } from '#server/server.js'
+import { statusCodes } from '#server/common/constants/status-codes.js'
 
 describe('#homeController', () => {
   let server
@@ -13,13 +13,13 @@ describe('#homeController', () => {
     await server.stop({ timeout: 0 })
   })
 
-  test('Should provide expected response', async () => {
-    const { result, statusCode } = await server.inject({
+  test('Should redirect to /explorer', async () => {
+    const { statusCode, headers } = await server.inject({
       method: 'GET',
       url: '/'
     })
 
-    expect(result).toEqual(expect.stringContaining('Home |'))
-    expect(statusCode).toBe(statusCodes.ok)
+    expect(statusCode).toBe(302)
+    expect(headers.location).toBe('/explorer')
   })
 })
