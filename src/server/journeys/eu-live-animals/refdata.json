@@ -1,0 +1,854 @@
+{
+  "metadata": {
+    "generated": "2026-03-25T11:12:02.016Z",
+    "source": "reference-data-table.xlsx",
+    "commodityCount": 67
+  },
+  "routing": {
+    "1063100|Strigiformes": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1063100|Falconiformes": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1063100|Accipitriformes": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1061900|Felis catus": {
+      "cph_number": false,
+      "permanent_address": true,
+      "transporter_address": true
+    },
+    "102|Bos taurus": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1061900|Canis familiaris": {
+      "cph_number": false,
+      "permanent_address": true,
+      "transporter_address": true
+    },
+    "1061900|Canis familiarisFelis catus": {
+      "cph_number": false,
+      "permanent_address": true,
+      "transporter_address": true
+    },
+    "5119985|Bos taurus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": false
+    },
+    "5119985|Capra Hircus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": false
+    },
+    "5119985|Equus Cabalus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": false
+    },
+    "5119985|Ovis Aries": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": false
+    },
+    "5119985|Sus Scrofa Domesticus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": false
+    },
+    "1061900|Mustela putorius furio": {
+      "cph_number": false,
+      "permanent_address": true,
+      "transporter_address": true
+    },
+    "1063980|Alectoris Spp.": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1063980|Phasianus Spp.": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "4071919|Phasianidae": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "10420|Capra hircus": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "101|Equus caballus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "101|Equus asinus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1064900|Otra Insecta": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1064900|Vespa velutina nigrithorax": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "103|Sus scrofa domesticus": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "203|Sus scrofa domesticus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": false
+    },
+    "1059400|Gallus Gallus": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059910|Anas spp": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059920|Anser spp.": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059930|Meleagris gallopavo": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059950|Numida meleagris": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051111|Gallus Gallus": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051200|Meleagris gallopavo": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051300|Anas spp": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051400|Anser spp.": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051500|Numida meleagris": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "4071100|Gallus Gallus": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "4071911|Meleagris gallopavo": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "4071911|Anser spp.": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "4071919|Anas spp": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "4071919|Numida meleagris": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1063200|Psittaciformes": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1061410|Oryctolagus cuniculus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1061410|Otra Lagomorpha": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1062000|Reptilia": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1061900|Rodentia": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "5111000|Bos taurus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": false
+    },
+    "5119985|Otra": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": false
+    },
+    "10410|Ovis Aries": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "407|Gallus gallus": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "102|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "103|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "10410|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "10420|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051111|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051119|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051191|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051199|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051200|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051300|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051400|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1051500|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059400|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059910|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059920|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059930|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1059950|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1061300|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1061900|": {
+      "cph_number": true,
+      "permanent_address": false,
+      "transporter_address": true
+    },
+    "1064100|": {
+      "cph_number": false,
+      "permanent_address": false,
+      "transporter_address": true
+    }
+  },
+  "content": {
+    "1063100|Strigiformes": {
+      "purpose": "purpose_set_05",
+      "identifiers": "identifier_set_06",
+      "quantity": "numberOfAnimals"
+    },
+    "1063100|Falconiformes": {
+      "purpose": "purpose_set_05",
+      "identifiers": "identifier_set_06",
+      "quantity": "numberOfAnimals"
+    },
+    "1063100|Accipitriformes": {
+      "purpose": "purpose_set_05",
+      "identifiers": "identifier_set_06",
+      "quantity": "numberOfAnimals"
+    },
+    "1061900|Felis catus": {
+      "purpose": "purpose_set_06",
+      "identifiers": "identifier_set_07",
+      "quantity": "numberOfAnimals"
+    },
+    "102|Bos taurus": {
+      "purpose": "purpose_set_04",
+      "identifiers": "identifier_set_13",
+      "quantity": "numberOfAnimals"
+    },
+    "1061900|Canis familiaris": {
+      "purpose": "purpose_set_06",
+      "identifiers": "identifier_set_07",
+      "quantity": "numberOfAnimals"
+    },
+    "1061900|Canis familiarisFelis catus": {
+      "purpose": "purpose_set_11",
+      "identifiers": "identifier_set_07",
+      "quantity": "numberOfAnimals"
+    },
+    "5119985|Bos taurus": {
+      "purpose": "purpose_set_03",
+      "identifiers": "identifier_set_03",
+      "quantity": "simpleUnits"
+    },
+    "5119985|Capra Hircus": {
+      "purpose": "purpose_set_03",
+      "identifiers": "identifier_set_03",
+      "quantity": "simpleUnits"
+    },
+    "5119985|Equus Cabalus": {
+      "purpose": "purpose_set_03",
+      "identifiers": "identifier_set_03",
+      "quantity": "simpleUnits"
+    },
+    "5119985|Ovis Aries": {
+      "purpose": "purpose_set_03",
+      "identifiers": "identifier_set_03",
+      "quantity": "simpleUnits"
+    },
+    "5119985|Sus Scrofa Domesticus": {
+      "purpose": "purpose_set_03",
+      "identifiers": "identifier_set_03",
+      "quantity": "simpleUnits"
+    },
+    "1061900|Mustela putorius furio": {
+      "purpose": "purpose_set_06",
+      "identifiers": "identifier_set_09",
+      "quantity": "numberOfAnimals"
+    },
+    "1063980|Alectoris Spp.": {
+      "purpose": "purpose_set_08",
+      "identifiers": "identifier_set_02",
+      "quantity": "numberOfAnimals"
+    },
+    "1063980|Phasianus Spp.": {
+      "purpose": "purpose_set_08",
+      "identifiers": "identifier_set_02",
+      "quantity": "numberOfAnimals"
+    },
+    "4071919|Phasianidae": {
+      "purpose": "purpose_set_12",
+      "identifiers": "identifier_set_02",
+      "quantity": "numberOfAnimals"
+    },
+    "10420|Capra hircus": {
+      "purpose": "purpose_set_04",
+      "identifiers": "identifier_set_14",
+      "quantity": "numberOfAnimals"
+    },
+    "101|Equus caballus": {
+      "purpose": "purpose_set_09",
+      "identifiers": "identifier_set_15",
+      "quantity": "numberOfAnimals"
+    },
+    "101|Equus asinus": {
+      "purpose": "purpose_set_09",
+      "identifiers": "identifier_set_09",
+      "quantity": "numberOfAnimals"
+    },
+    "1064900|Otra Insecta": {
+      "purpose": "purpose_set_07",
+      "identifiers": "identifier_set_08",
+      "quantity": "numberOfAnimals"
+    },
+    "1064900|Vespa velutina nigrithorax": {
+      "purpose": "purpose_set_07",
+      "identifiers": "identifier_set_08",
+      "quantity": "numberOfAnimals"
+    },
+    "103|Sus scrofa domesticus": {
+      "purpose": "purpose_set_04",
+      "identifiers": "identifier_set_10",
+      "quantity": "numberOfAnimals"
+    },
+    "203|Sus scrofa domesticus": {
+      "purpose": "purpose_set_13",
+      "identifiers": "identifier_set_11",
+      "quantity": "kilograms"
+    },
+    "1059400|Gallus Gallus": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_02",
+      "quantity": "numberOfAnimals"
+    },
+    "1059910|Anas spp": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_02",
+      "quantity": "numberOfAnimals"
+    },
+    "1059920|Anser spp.": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_02",
+      "quantity": "numberOfAnimals"
+    },
+    "1059930|Meleagris gallopavo": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_02",
+      "quantity": "numberOfAnimals"
+    },
+    "1059950|Numida meleagris": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_02",
+      "quantity": "numberOfAnimals"
+    },
+    "1051111|Gallus Gallus": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_05",
+      "quantity": "numberOfAnimals"
+    },
+    "1051200|Meleagris gallopavo": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_05",
+      "quantity": "numberOfAnimals"
+    },
+    "1051300|Anas spp": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_05",
+      "quantity": "numberOfAnimals"
+    },
+    "1051400|Anser spp.": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_05",
+      "quantity": "numberOfAnimals"
+    },
+    "1051500|Numida meleagris": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_05",
+      "quantity": "numberOfAnimals"
+    },
+    "4071100|Gallus Gallus": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_04",
+      "quantity": "numberOfAnimals"
+    },
+    "4071911|Meleagris gallopavo": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_04",
+      "quantity": "numberOfAnimals"
+    },
+    "4071911|Anser spp.": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_04",
+      "quantity": "numberOfAnimals"
+    },
+    "4071919|Anas spp": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_04",
+      "quantity": "numberOfAnimals"
+    },
+    "4071919|Numida meleagris": {
+      "purpose": "purpose_set_02",
+      "identifiers": "identifier_set_04",
+      "quantity": "numberOfAnimals"
+    },
+    "1063200|Psittaciformes": {
+      "purpose": "purpose_set_14",
+      "identifiers": "identifier_set_16",
+      "quantity": "numberOfAnimals"
+    },
+    "1061410|Oryctolagus cuniculus": {
+      "purpose": "purpose_set_10",
+      "identifiers": "identifier_set_12",
+      "quantity": "numberOfAnimals"
+    },
+    "1061410|Otra Lagomorpha": {
+      "purpose": "purpose_set_10",
+      "identifiers": "identifier_set_12",
+      "quantity": "numberOfAnimals"
+    },
+    "1062000|Reptilia": {
+      "purpose": "purpose_set_07",
+      "identifiers": "identifier_set_17",
+      "quantity": "numberOfAnimals"
+    },
+    "1061900|Rodentia": {
+      "purpose": "purpose_set_15",
+      "identifiers": "identifier_set_11",
+      "quantity": "numberOfAnimals"
+    },
+    "5111000|Bos taurus": {
+      "purpose": "purpose_set_03",
+      "identifiers": "identifier_set_03",
+      "quantity": "simpleUnits"
+    },
+    "5119985|Otra": {
+      "purpose": "purpose_set_03",
+      "identifiers": "identifier_set_03",
+      "quantity": "simpleUnits"
+    },
+    "10410|Ovis Aries": {
+      "purpose": "purpose_set_04",
+      "identifiers": "identifier_set_10",
+      "quantity": "numberOfAnimals"
+    },
+    "407|Gallus gallus": {
+      "purpose": "purpose_set_16",
+      "identifiers": "identifier_set_04",
+      "quantity": "numberOfAnimals"
+    },
+    "102|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "103|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "10410|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "10420|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1051111|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1051119|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1051191|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1051199|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1051200|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1051300|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1051400|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1051500|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1059400|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1059910|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1059920|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1059930|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1059950|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1061300|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1061900|": {
+      "purpose": "purpose_set_01",
+      "identifiers": "identifier_set_01",
+      "quantity": "quantity"
+    },
+    "1064100|": {
+      "purpose": "purpose_set_17",
+      "identifiers": "identifier_set_08",
+      "quantity": "numberOfAnimals"
+    }
+  },
+  "definitions": {
+    "purpose_sets": {
+      "purpose_set_01": [
+        "Animal feeding stuff",
+        "Artificial reproduction",
+        "Breeding",
+        "Commercial sale",
+        "Fattening",
+        "Game restocking",
+        "Human consumption",
+        "Other",
+        "Production",
+        "Racing/Competition",
+        "Registered equidae",
+        "Rejected or Returned consignment",
+        "Rescue/Rehoming",
+        "Research",
+        "Slaughter",
+        "Technical/Pharmaceutical use",
+        "Transit",
+        "Zoo/Collection"
+      ],
+      "purpose_set_02": [
+        "Breeding",
+        "Fattening",
+        "Rejected or Returned consignment",
+        "Slaughter",
+        "Transit"
+      ],
+      "purpose_set_03": [
+        "Artificial reproduction",
+        "Rejected or Returned consignment",
+        "Research",
+        "Transit"
+      ],
+      "purpose_set_04": [
+        "Breeding",
+        "Fattening",
+        "Production",
+        "Rejected or Returned consignment",
+        "Slaughter",
+        "Transit"
+      ],
+      "purpose_set_05": [
+        "Breeding",
+        "Rejected or Returned consignment",
+        "Transit",
+        "Zoo/Collection"
+      ],
+      "purpose_set_06": [
+        "Breeding",
+        "Commercial sale",
+        "Personally owned pets not for rehoming",
+        "Rejected or Returned consignment",
+        "Rescue/Rehoming",
+        "Research",
+        "Transit"
+      ],
+      "purpose_set_07": [
+        "Commercial sale",
+        "Rejected or Returned consignment",
+        "Transit",
+        "Zoo/Collection"
+      ],
+      "purpose_set_08": [
+        "Breeding",
+        "Game restocking",
+        "Rejected or Returned consignment",
+        "Transit"
+      ],
+      "purpose_set_09": [
+        "Breeding",
+        "Other",
+        "Racing/Competition",
+        "Registered equidae",
+        "Rejected or Returned consignment",
+        "Transit"
+      ],
+      "purpose_set_10": [
+        "Breeding",
+        "Commercial sale",
+        "Rejected or Returned consignment",
+        "Research",
+        "Transit",
+        "Zoo/Collection"
+      ],
+      "purpose_set_11": [
+        "Breeding",
+        "Commercial sale",
+        "Rejected or Returned consignment",
+        "Rescue/Rehoming",
+        "Transit"
+      ],
+      "purpose_set_12": [
+        "Game restocking",
+        "Rejected or Returned consignment",
+        "Transit"
+      ],
+      "purpose_set_13": [
+        "Human consumption",
+        "Rejected or Returned consignment",
+        "Transit"
+      ],
+      "purpose_set_14": [
+        "Breeding",
+        "Commercial sale",
+        "Rejected or Returned consignment",
+        "Transit",
+        "Zoo/Collection"
+      ],
+      "purpose_set_15": [
+        "Commercial sale",
+        "Rejected or Returned consignment",
+        "Research",
+        "Transit",
+        "Zoo/Collection"
+      ],
+      "purpose_set_16": [
+        "Rejected or Returned consignment",
+        "Research",
+        "Technical/Pharmaceutical use",
+        "Transit"
+      ],
+      "purpose_set_17": [
+        "Breeding",
+        "Other",
+        "Production",
+        "Rejected or Returned consignment",
+        "Transit"
+      ]
+    },
+    "identifier_sets": {
+      "identifier_set_01": ["Description", "Identification details"],
+      "identifier_set_02": ["Flock ID"],
+      "identifier_set_03": ["Collection date", "Donor ID"],
+      "identifier_set_04": ["Collection date", "Egg mark"],
+      "identifier_set_05": ["Flock ID", "Hatching date"],
+      "identifier_set_06": ["Leg ring", "Microchip"],
+      "identifier_set_07": ["Microchip", "Passport", "Tattoo"],
+      "identifier_set_08": ["Identification details\r\nDescription"],
+      "identifier_set_09": ["Microchip", "Passport"],
+      "identifier_set_10": ["Ear tag"],
+      "identifier_set_11": ["NONE"],
+      "identifier_set_12": ["Microchip"],
+      "identifier_set_13": ["Ear tag", "Passport"],
+      "identifier_set_14": ["Ear tag", "Microchip"],
+      "identifier_set_15": ["Horse Name", "Microchip", "Passport"],
+      "identifier_set_16": ["Bird breed", "Leg ring", "Microchip"],
+      "identifier_set_17": ["Reptile species"]
+    },
+    "quantity_types": {
+      "numberOfAnimals": {
+        "id": "number-of-animals",
+        "label": "Number of animals",
+        "name": "numberOfAnimals"
+      },
+      "simpleUnits": {
+        "id": "simple-units",
+        "label": "Units",
+        "name": "simpleUnits"
+      },
+      "quantity": {
+        "id": "quantity",
+        "label": "Quantity",
+        "name": "quantity"
+      },
+      "kilograms": {
+        "id": "kilograms",
+        "label": "Kilograms",
+        "name": "numberKG"
+      }
+    }
+  }
+}
