@@ -2,7 +2,7 @@
 name: code-reviewer
 description: |
   Use this agent immediately after writing or modifying code to catch
-  correctness, security, and edge-case issues before the change is
+  correctness, ai-slop / hallucination, security, and edge-case issues before the change is
   committed. This agent owns correctness/security review only — it does
   NOT judge structural refactoring (DRY, decomposition, pure-fn
   extraction); that belongs to `refactoring-enforcer`.
@@ -10,7 +10,7 @@ description: |
   <example>
   Context: A feature has just been implemented.
   user: "I've added a new route that accepts a journeyKey query param and returns obligations."
-  assistant: "I'll run the code-reviewer agent on the new route to check input validation, error handling, and edge cases."
+  assistant: "I'll run the code-reviewer agent on the new route to check input validation, error handling, and edge cases. I'll also check that AI input has not overgenerated code or hallucinated requirements beyond the scope of the feature."
   <commentary>Correctness review immediately after writing code — this agent's core trigger.</commentary>
   </example>
 

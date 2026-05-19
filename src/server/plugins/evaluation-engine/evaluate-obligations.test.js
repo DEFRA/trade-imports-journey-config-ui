@@ -123,9 +123,6 @@ const PURPOSE_CONDITIONAL_IDS = [
   'transit-routing'
 ]
 
-// All conditional obligation IDs
-const CONDITIONAL_IDS = [...COMMODITY_CONDITIONAL_IDS, ...PURPOSE_CONDITIONAL_IDS]
-
 // =========================================================================
 // Helper unit tests
 // =========================================================================

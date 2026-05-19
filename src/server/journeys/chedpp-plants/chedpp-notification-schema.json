@@ -1,0 +1,746 @@
+{
+  "$id": "chedpp-notification-schema",
+  "description": "Pruned notification schema containing only the paths and definitions used by the CHEDPP (plants) journey obligations. Derived from notification-schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "The Type of notification that has been submitted",
+      "enum": [
+        "CHEDPP"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status of the CHEDPP notification",
+      "enum": [
+        "DRAFT",
+        "AMENDED",
+        "SUBMITTED",
+        "CANCELLED",
+        "REJECTED"
+      ]
+    },
+    "partOne": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "submissionDate": {
+          "type": "string",
+          "description": "Date and time when the notification was submitted"
+        },
+        "consignor": {
+          "$ref": "#/definitions/EconomicOperator",
+          "description": "Person or Company that sends shipment"
+        },
+        "importer": {
+          "$ref": "#/definitions/EconomicOperator",
+          "description": "Person or Company that is importing the consignment"
+        },
+        "packer": {
+          "$ref": "#/definitions/EconomicOperator",
+          "description": "Person or Company that packs the shipment"
+        },
+        "placeOfDestination": {
+          "$ref": "#/definitions/EconomicOperator",
+          "description": "Where the shipment is to be sent? For IMP minimum 48 hour accommodation/holding location."
+        },
+        "contactDetails": {
+          "$ref": "#/definitions/ContactDetails",
+          "description": "Person to be contacted if there is an issue with the consignment"
+        },
+        "nominatedContacts": {
+          "type": "array",
+          "description": "List of nominated contacts to receive text and email notifications",
+          "items": {
+            "$ref": "#/definitions/NominatedContact"
+          }
+        },
+        "pointOfEntry": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 30,
+          "description": "Either a Border-Inspection-Post or Designated-Point-Of-Entry, e.g. GBFXT1"
+        },
+        "pointOfEntryControlPoint": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 30,
+          "description": "A control point at the point of entry"
+        },
+        "arrivalDate": {
+          "type": "string",
+          "description": "Date when consignment arrives"
+        },
+        "arrivalTime": {
+          "type": "string",
+          "description": "Time (HH:MM) when consignment arrives"
+        },
+        "meansOfTransport": {
+          "$ref": "#/definitions/MeansOfTransport",
+          "description": "How consignment is transported after BIP"
+        },
+        "meansOfTransportFromEntryPoint": {
+          "$ref": "#/definitions/MeansOfTransport",
+          "description": "Transport to BIP"
+        },
+        "sealsContainers": {
+          "type": "array",
+          "description": "Array that contains pair of seal number and container number",
+          "items": {
+            "$ref": "#/definitions/SealContainer"
+          }
+        },
+        "isGVMSRoute": {
+          "type": "boolean",
+          "description": "Is GVMS route?"
+        },
+        "provideCtcMrn": {
+          "type": "string",
+          "description": "When the NCTS MRN will be added for the Common Transit Convention (CTC)",
+          "enum": [
+            "YES",
+            "YES_ADD_LATER",
+            "NO"
+          ]
+        },
+        "importerLocalReferenceNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 90,
+          "description": "Reference number added by the importer"
+        },
+        "billingInformation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "isConfirmed": {
+              "type": "boolean",
+              "description": "Indicates whether user has confirmed their billing information"
+            },
+            "emailAddress": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "description": "Billing email address"
+            },
+            "phoneNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30,
+              "description": "Billing phone number"
+            },
+            "contactName": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255,
+              "description": "Billing Contact Name"
+            },
+            "postalAddress": {
+              "description": "Billing postal address",
+              "type": "object",
+              "properties": {
+                "addressLine1": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255,
+                  "description": "1st line of address"
+                },
+                "addressLine2": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 255,
+                  "description": "2nd line of address"
+                },
+                "addressLine3": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 255,
+                  "description": "3rd line of address"
+                },
+                "addressLine4": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 255,
+                  "description": "4th line of address"
+                },
+                "county": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 255,
+                  "description": "3rd line of address"
+                },
+                "cityOrTown": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255,
+                  "description": "City or town name"
+                },
+                "postalCode": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 32,
+                  "description": "Post code"
+                }
+              }
+            }
+          }
+        },
+        "complexCommoditySelected": {
+          "type": "boolean",
+          "description": "Was complex commodity selected. Indicating if importer provided commodity code."
+        },
+        "purpose": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Purpose of consignment details",
+          "properties": {
+            "purposeGroup": {
+              "type": "string",
+              "description": "Purpose group of consignment (general purpose)",
+              "enum": [
+                "For Import",
+                "For NON-Conforming Consignments",
+                "For Transhipment to",
+                "For Transit to 3rd Country",
+                "For Re-Import",
+                "For Private Import",
+                "For Transfer To",
+                "For Import Re-Conformity Check",
+                "For Import Non-Internal Market"
+              ]
+            },
+            "forImportOrAdmission": {
+              "type": "string",
+              "description": "Specification of Import or admission purpose",
+              "enum": [
+                "Definitive import",
+                "Horses Re-entry",
+                "Temporary admission horses"
+              ]
+            },
+            "exitBIP": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 15,
+              "description": "Exit Border Inspection Post"
+            },
+            "thirdCountry": {
+              "type": "string",
+              "description": "Country to which consignment is transited"
+            }
+          }
+        },
+        "commodities": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "countryOfOrigin": {
+              "$ref": "#/definitions/Country",
+              "description": "Consignments country of origin"
+            },
+            "consignedCountry": {
+              "$ref": "#/definitions/Country",
+              "description": "Country from where commodity was sent"
+            },
+            "regionOfOrigin": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10,
+              "description": "Region of country"
+            },
+            "totalNetWeight": {
+              "type": "number",
+              "minimum": 0,
+              "description": "The total net weight of the commodities within this consignment"
+            },
+            "totalGrossWeight": {
+              "type": "number",
+              "minimum": 0,
+              "description": "The total gross weight of the consignment.  It must be bigger than the total net weight of the commodities"
+            },
+            "totalGrossVolume": {
+              "type": "number",
+              "minimum": 0,
+              "description": "The total gross volume of the commodities within this consignment"
+            },
+            "totalGrossVolumeUnit": {
+              "type": "string",
+              "description": "Unit used for specifying total gross volume of this consignment (litres or metres cubed)"
+            },
+            "numberOfPackages": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "The total number of packages within this consignment"
+            },
+            "gmsDeclarationAccepted": {
+              "type": "boolean",
+              "description": "Flag to record when the GMS declaration has been accepted"
+            },
+            "temperature": {
+              "$ref": "#/definitions/Temperature",
+              "description": "Temperature (type) of commodity"
+            },
+            "commodityComplement": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Holder for additional parameters of a commodity",
+                "properties": {
+                  "commodityID": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20,
+                    "description": "The unique commodity ID"
+                  },
+                  "commodityDescription": {
+                    "type": "string",
+                    "description": "Description of the commodity"
+                  },
+                  "complementID": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Identifier of complement chosen from speciesFamily,speciesClass and speciesType'. This is also used to link to the complementParameterSet"
+                  },
+                  "complementName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "description": "Represents the lowest granularity - either type, class, family or species name - for the commodity selected.  This is also used to drive behaviour for EU Import journeys"
+                  },
+                  "eppoCode": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "description": "EPPO Code related to plant commodities and wood packaging"
+                  },
+                  "speciesName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Species name"
+                  },
+                  "speciesID": {
+                    "type": "string",
+                    "description": "The species ID of the commodity that is imported. Not every commodity has a species ID. This is also used to link to the complementParameterSet. The species ID can change over time"
+                  },
+                  "uniqueComplementID": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 36,
+                    "description": "UUID used to match commodityComplement to its complementParameter set. CHEDPP only"
+                  }
+                }
+              }
+            },
+            "complementParameterSet": {
+              "type": "array",
+              "description": "Additional data for commodityComplement part containing such data as net weight",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "complementID": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "speciesID": {
+                    "type": "string"
+                  },
+                  "uniqueComplementID": {
+                    "type": "string",
+                    "minLength": 0,
+                    "maxLength": 36,
+                    "description": "UUID used to match commodityComplement to its complementParameter set. CHEDPP only"
+                  },
+                  "keyDataPair": {
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "data": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "veterinaryInformation": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Part 1 - Holds the information related to veterinary checks and details",
+          "properties": {
+            "accompanyingDocuments": {
+              "type": "array",
+              "description": "Accompanying documents",
+              "items": {
+                "$ref": "#/definitions/AccompanyingDocument"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "EconomicOperator": {
+      "description": "An organisation as part of the DEFRA system",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "regex",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "description": "The unique identifier of this organisation"
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of organisation",
+          "enum": [
+            "consignee",
+            "destination",
+            "exporter",
+            "importer",
+            "charity",
+            "commercial transporter",
+            "commercial transporter - user added",
+            "private transporter",
+            "temporary address",
+            "premises of origin",
+            "organisation branch address",
+            "packer",
+            "pod"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of organisation",
+          "enum": [
+            "approved",
+            "nonapproved",
+            "suspended"
+          ]
+        },
+        "companyName": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 255,
+          "description": "Name of organisation"
+        },
+        "individualName": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 255,
+          "description": "Individual name"
+        },
+        "address": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Address of economic operator",
+          "properties": {
+            "addressLine1": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 255,
+              "description": "1st line of address"
+            },
+            "addressLine2": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 255,
+              "description": "2nd line of address"
+            },
+            "addressLine3": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 255,
+              "description": "3rd line of address"
+            },
+            "city": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 58,
+              "description": "City"
+            },
+            "postalZipCode": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 32,
+              "description": "Post / zip code"
+            },
+            "countryISOCode": {
+              "type": "string",
+              "pattern": "^([A-Z]{2}||[A-Z]{2}-[A-Z]{2,3})$",
+              "description": "country 2-digits ISO code"
+            },
+            "email": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "Email address"
+            },
+            "ukTelephone": {
+              "type": "string",
+              "minLength": 9,
+              "maxLength": 11,
+              "description": "UK phone number"
+            },
+            "telephone": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30,
+              "description": "Telephone number"
+            },
+            "internationalTelephone": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "International phone number",
+              "properties": {
+                "countryCode": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 3,
+                  "description": "Country code of phone number"
+                },
+                "subscriberNumber": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 12,
+                  "description": "Phone number"
+                }
+              },
+              "required": [
+                "countryCode",
+                "subscriberNumber"
+              ]
+            }
+          }
+        },
+        "approvalNumber": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 100,
+          "description": "Approval Number which identifies an Economic Operator unambiguously per type of organisation per country."
+        },
+        "otherIdentifier": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 100,
+          "description": "Optional Business General Number, often named Aggregation Code, which identifies an Economic Operator."
+        },
+        "tracesId": {
+          "type": "integer",
+          "description": "Traces Id of the economic operator generated by IPAFFS"
+        }
+      }
+    },
+    "ContactDetails": {
+      "type": "object",
+      "description": "Person to be contacted if there is an issue with the consignment",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "Name of designated contact"
+        },
+        "telephone": {
+          "type": "string",
+          "maxLength": 30,
+          "description": "Telephone number of designated contact"
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "Email address of designated contact"
+        },
+        "agent": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "Name of agent representing designated contact"
+        }
+      }
+    },
+    "NominatedContact": {
+      "type": "object",
+      "description": "Person to be nominated for text and email contact for the consignment",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Name of nominated contact"
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "Email address of nominated contact"
+        },
+        "telephone": {
+          "type": "string",
+          "maxLength": 30,
+          "description": "Telephone number of nominated contact"
+        }
+      }
+    },
+    "MeansOfTransport": {
+      "type": "object",
+      "description": "Details of transport",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of transport",
+          "enum": [
+            "Aeroplane",
+            "Road Vehicle",
+            "Railway Wagon",
+            "Ship",
+            "Other",
+            "Road vehicle Aeroplane",
+            "Ship Railway wagon",
+            "Ship Road vehicle"
+          ]
+        },
+        "document": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "description": "Document for transport"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "ID of transport"
+        }
+      }
+    },
+    "AccompanyingDocument": {
+      "type": "object",
+      "description": "Accompanying document",
+      "properties": {
+        "documentType": {
+          "type": "string",
+          "description": "Additional document type",
+          "enum": [
+            "airWaybill",
+            "billOfLading",
+            "cargoManifest",
+            "catchCertificate",
+            "commercialDocument",
+            "commercialInvoice",
+            "conformityCertificate",
+            "containerManifest",
+            "customsDeclaration",
+            "docom",
+            "healthCertificate",
+            "heatTreatmentCertificate",
+            "importPermit",
+            "inspectionCertificate",
+            "itahc",
+            "journeyLog",
+            "laboratorySamplingResultsForAflatoxin",
+            "latestVeterinaryHealthCertificate",
+            "letterOfAuthority",
+            "licenseOrAuthorisation",
+            "mycotoxinCertification",
+            "originCertificate",
+            "other",
+            "phytosanitaryCertificate",
+            "processingStatement",
+            "proofOfStorage",
+            "railwayBill",
+            "seaWaybill",
+            "veterinaryHealthCertificate",
+            "listOfIngredients",
+            "packingList",
+            "roadConsignmentNote"
+          ]
+        },
+        "documentReference": {
+          "type": "string",
+          "description": "Additional document reference"
+        },
+        "documentIssueDate": {
+          "type": "string",
+          "description": "Additional document issue date"
+        },
+        "attachmentId": {
+          "type": "string",
+          "description": "The UUID used for the uploaded file in blob storage"
+        },
+        "attachmentFilename": {
+          "type": "string",
+          "description": "The original filename of the uploaded file"
+        },
+        "attachmentContentType": {
+          "type": "string",
+          "description": "The MIME type of the uploaded file"
+        },
+        "uploadUserId": {
+          "type": "string",
+          "description": "The UUID for the user that uploaded the file"
+        },
+        "uploadOrganisationId": {
+          "type": "string",
+          "description": "The UUID for the organisation that the upload user is associated with"
+        },
+        "externalReference": {
+          "description": "External reference of accompanying document, which relates to a downstream service",
+          "$ref": "#/definitions/ExternalReference"
+        }
+      }
+    },
+    "Country": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 6,
+      "pattern": "^([A-Z]{2}||[A-Z]{2}-[A-Z]{2,3})$",
+      "description": "ISO code of country"
+    },
+    "Temperature": {
+      "type": "string",
+      "description": "Type of temperature",
+      "enum": [
+        "Ambient",
+        "Chilled",
+        "Frozen"
+      ]
+    },
+    "SealContainer": {
+      "type": "object",
+      "description": "Seal container details",
+      "properties": {
+        "sealNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "containerNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "officialSeal": {
+          "type": "boolean"
+        },
+        "resealedSealNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      }
+    }
+  }
+}
