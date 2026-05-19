@@ -1,12 +1,15 @@
 import { mapToScreens, rollUpToSections } from './map-to-screens.js'
+import { SCREEN_STATUS } from '../../engine/types.js'
 
 /**
  * Map screen status to GOV.UK task list tag configuration.
+ * Keys mirror `SCREEN_STATUS` wire values (the table is keyed by the
+ * wire status the engine emits).
  */
 const SCREEN_STATUS_TAGS = {
-  complete: { text: 'Done', classes: 'govuk-tag--green' },
-  incomplete: { text: 'To do', classes: 'govuk-tag--blue' },
-  cannotStartYet: { text: 'Cannot start yet', classes: 'govuk-tag--grey' }
+  [SCREEN_STATUS.COMPLETE]: { text: 'Done', classes: 'govuk-tag--green' },
+  [SCREEN_STATUS.INCOMPLETE]: { text: 'To do', classes: 'govuk-tag--blue' },
+  [SCREEN_STATUS.CANNOT_START_YET]: { text: 'Cannot start yet', classes: 'govuk-tag--grey' }
 }
 
 /**
@@ -30,7 +33,7 @@ const toTaskListSections = (sections) =>
       }
 
       // GOV.UK task list renders items without href as non-clickable
-      if (screen.status !== 'cannotStartYet') {
+      if (screen.status !== SCREEN_STATUS.CANNOT_START_YET) {
         item.href = '#'
       }
 

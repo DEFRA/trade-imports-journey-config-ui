@@ -8,6 +8,7 @@
  * All schema-specific work is delegated to the journey's `resolvers`
  * (facts, tests, submissionDatePath).
  */
+import { OBLIGATION_STATUS } from '../../engine/types.js'
 
 // ---------------------------------------------------------------------------
 // Path resolution helpers
@@ -102,11 +103,18 @@ const calculateSummary = (obligations) => {
       acc[o.status]++
       return acc
     },
-    { satisfied: 0, unsatisfied: 0, deferred: 0, inactive: 0 }
+    {
+      [OBLIGATION_STATUS.SATISFIED]: 0,
+      [OBLIGATION_STATUS.UNSATISFIED]: 0,
+      [OBLIGATION_STATUS.DEFERRED]: 0,
+      [OBLIGATION_STATUS.INACTIVE]: 0
+    }
   )
 
   const submittable = obligations.every(
-    (o) => o.status === 'satisfied' || o.status === 'inactive'
+    (o) =>
+      o.status === OBLIGATION_STATUS.SATISFIED ||
+      o.status === OBLIGATION_STATUS.INACTIVE
   )
 
   return {
@@ -142,7 +150,7 @@ const evaluateObligations = (notification, obligations, refdata, resolvers) => {
 
       // Fact absent → deferred
       if (factValue === null || factValue === undefined) {
-        return { id, status: 'deferred', reason: `${fact} not yet provided` }
+        return { id, status: OBLIGATION_STATUS.DEFERRED, reason: `${fact} not yet provided` }
       }
 
       // Apply the test
@@ -154,7 +162,7 @@ const evaluateObligations = (notification, obligations, refdata, resolvers) => {
 
       // Test failed → inactive
       if (!resolution.active) {
-        return { id, status: 'inactive', reason: resolution.reason }
+        return { id, status: OBLIGATION_STATUS.INACTIVE, reason: resolution.reason }
       }
     }
 
@@ -174,9 +182,9 @@ const evaluateSatisfaction = (id, schemaPaths, notification, resolvers) => {
   if (!schemaPaths || schemaPaths.length === 0) {
     const submissionDate = resolvePath(notification, resolvers.submissionDatePath)
     if (!isEmpty(submissionDate)) {
-      return { id, status: 'satisfied', missingPaths: [] }
+      return { id, status: OBLIGATION_STATUS.SATISFIED, missingPaths: [] }
     }
-    return { id, status: 'unsatisfied', missingPaths: [] }
+    return { id, status: OBLIGATION_STATUS.UNSATISFIED, missingPaths: [] }
   }
 
   const missingPaths = schemaPaths.filter((path) => {
@@ -186,7 +194,10 @@ const evaluateSatisfaction = (id, schemaPaths, notification, resolvers) => {
 
   return {
     id,
-    status: missingPaths.length === 0 ? 'satisfied' : 'unsatisfied',
+    status:
+      missingPaths.length === 0
+        ? OBLIGATION_STATUS.SATISFIED
+        : OBLIGATION_STATUS.UNSATISFIED,
     missingPaths
   }
 }

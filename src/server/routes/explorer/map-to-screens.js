@@ -5,6 +5,11 @@
  * screen status using precedence rules (unsatisfied > deferred > satisfied/inactive)
  * and enrich fields with obligation statuses.
  */
+import {
+  OBLIGATION_STATUS,
+  SCREEN_STATUS,
+  SECTION_STATUS
+} from '../../engine/types.js'
 
 // ===========================================================================
 // PART 1: mapToScreens
@@ -18,19 +23,20 @@
  * Check if any obligation is unsatisfied.
  */
 const hasUnsatisfiedObligation = (obligations) =>
-  obligations.some((o) => o.status === 'unsatisfied')
+  obligations.some((o) => o.status === OBLIGATION_STATUS.UNSATISFIED)
 
 /**
  * Check if any obligation is deferred.
  */
 const hasDeferredObligation = (obligations) =>
-  obligations.some((o) => o.status === 'deferred')
+  obligations.some((o) => o.status === OBLIGATION_STATUS.DEFERRED)
 
 /**
  * Check if all obligations are inactive.
  */
 const allObligationsInactive = (obligations) =>
-  obligations.length > 0 && obligations.every((o) => o.status === 'inactive')
+  obligations.length > 0 &&
+  obligations.every((o) => o.status === OBLIGATION_STATUS.INACTIVE)
 
 /**
  * Check if screen has no obligations to satisfy.
@@ -55,22 +61,22 @@ const hasNoObligations = (obligations) => obligations.length === 0
  */
 const deriveScreenStatus = (obligations) => {
   if (hasNoObligations(obligations)) {
-    return 'complete' // Nothing to do
+    return SCREEN_STATUS.COMPLETE // Nothing to do
   }
 
   if (hasUnsatisfiedObligation(obligations)) {
-    return 'incomplete' // Highest priority
+    return SCREEN_STATUS.INCOMPLETE // Highest priority
   }
 
   if (hasDeferredObligation(obligations)) {
-    return 'cannotStartYet' // Second priority (deferred wins over satisfied)
+    return SCREEN_STATUS.CANNOT_START_YET // Second priority (deferred wins over satisfied)
   }
 
   if (allObligationsInactive(obligations)) {
-    return 'notApplicable' // All obligations structurally irrelevant
+    return SCREEN_STATUS.NOT_APPLICABLE // All obligations structurally irrelevant
   }
 
-  return 'complete' // All satisfied, or mix of satisfied + inactive
+  return SCREEN_STATUS.COMPLETE // All satisfied, or mix of satisfied + inactive
 }
 
 // ---------------------------------------------------------------------------
@@ -257,15 +263,15 @@ export const mapToScreens = (evaluationResult, journeyMap) => {
  * @returns {string} Section status
  */
 const deriveSectionStatus = (screens) => {
-  if (screens.some((s) => s.status === 'incomplete')) {
-    return 'incomplete'
+  if (screens.some((s) => s.status === SCREEN_STATUS.INCOMPLETE)) {
+    return SECTION_STATUS.INCOMPLETE
   }
 
-  if (screens.some((s) => s.status === 'cannotStartYet')) {
-    return 'cannotStartYet'
+  if (screens.some((s) => s.status === SCREEN_STATUS.CANNOT_START_YET)) {
+    return SECTION_STATUS.CANNOT_START_YET
   }
 
-  return 'complete'
+  return SECTION_STATUS.COMPLETE
 }
 
 // ---------------------------------------------------------------------------
@@ -321,7 +327,7 @@ export const rollUpToSections = (screens) => {
     }
 
     // Filter: only include non-notApplicable screens
-    if (screen.status !== 'notApplicable') {
+    if (screen.status !== SCREEN_STATUS.NOT_APPLICABLE) {
       sectionMap.get(key).screens.push(screen)
     }
   }

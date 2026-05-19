@@ -16,6 +16,7 @@ import {
   resolvePath,
   isEmpty
 } from './evaluate-obligations.js'
+import { OBLIGATION_STATUS } from '../../engine/types.js'
 
 // ---------------------------------------------------------------------------
 // Module 1: Trace Step Builders (Pure Functions)
@@ -115,7 +116,7 @@ const traceObligation = (obligation, notification, refdata, resolvers) => {
     if (factValue === null || factValue === undefined) {
       const reason = `${fact} not yet provided`
       steps.push(buildDeferredStep(reason))
-      return { id, status: 'deferred', reason, trace }
+      return { id, status: OBLIGATION_STATUS.DEFERRED, reason, trace }
     }
 
     // Apply the test
@@ -132,7 +133,7 @@ const traceObligation = (obligation, notification, refdata, resolvers) => {
     if (!resolution.active) {
       const reason = resolution.reason
       steps.push(buildInactiveStep(reason))
-      return { id, status: 'inactive', reason, trace }
+      return { id, status: OBLIGATION_STATUS.INACTIVE, reason, trace }
     }
   }
 
@@ -162,7 +163,9 @@ const buildSatisfactionSteps = (schemaPaths, notification, resolvers) => {
     steps.push(buildActionCheckStep(isSatisfied))
     return {
       steps,
-      status: isSatisfied ? 'satisfied' : 'unsatisfied',
+      status: isSatisfied
+        ? OBLIGATION_STATUS.SATISFIED
+        : OBLIGATION_STATUS.UNSATISFIED,
       missingPaths: []
     }
   }
@@ -175,7 +178,10 @@ const buildSatisfactionSteps = (schemaPaths, notification, resolvers) => {
 
   steps.push(buildSatisfactionStep(schemaPaths, missingPaths))
 
-  const status = missingPaths.length === 0 ? 'satisfied' : 'unsatisfied'
+  const status =
+    missingPaths.length === 0
+      ? OBLIGATION_STATUS.SATISFIED
+      : OBLIGATION_STATUS.UNSATISFIED
 
   return { steps, status, missingPaths }
 }
@@ -215,11 +221,18 @@ const calculateSummary = (obligations) => {
       acc[o.status]++
       return acc
     },
-    { satisfied: 0, unsatisfied: 0, deferred: 0, inactive: 0 }
+    {
+      [OBLIGATION_STATUS.SATISFIED]: 0,
+      [OBLIGATION_STATUS.UNSATISFIED]: 0,
+      [OBLIGATION_STATUS.DEFERRED]: 0,
+      [OBLIGATION_STATUS.INACTIVE]: 0
+    }
   )
 
   const submittable = obligations.every(
-    (o) => o.status === 'satisfied' || o.status === 'inactive'
+    (o) =>
+      o.status === OBLIGATION_STATUS.SATISFIED ||
+      o.status === OBLIGATION_STATUS.INACTIVE
   )
 
   return {
