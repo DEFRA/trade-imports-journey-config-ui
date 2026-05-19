@@ -16,11 +16,45 @@ produce `summary` — the only caller that needs it
 (`traceEvaluateObligations`) computes its own. This is an oversight,
 not a design choice.
 
-Aligning the canonical path with the documented contract has to happen
-before the structural refactor begins, because every subsequent story
-tests against the protocol shape. Isolating this one behavioural delta
-in its own commit also separates "behaviour change" from the
-mechanical moves that follow.
+### Why summary lives on both evaluator paths
+
+After this story, the canonical evaluator and the trace evaluator
+differ in *exactly two ways*:
+
+1. The trace evaluator adds a `trace` field per obligation
+   (chronological steps showing how each status was derived).
+2. The trace evaluator runs the canonical-equivalence assertion
+   (calls the canonical evaluator internally and throws if statuses
+   diverge — a runtime safety net).
+
+Summary is *not* a third differentiator — it lives on both. The
+reason is twofold:
+
+- **Cost.** Summary is a single reduction (six counts plus a boolean)
+  over the obligations array. Sub-millisecond work. Making it
+  conditional adds branching without saving anything meaningful.
+- **Demand.** Every host that uses the engine today consumes
+  `submittable`: the task list shows it, the submit gate uses it,
+  the journey controller branches on it. If the canonical path
+  doesn't compute summary, every host iterates obligations to
+  re-derive it — duplication the contract avoids.
+
+The "production vs diagnostic" distinction the trace evaluator was
+designed for is preserved by the *trace field*, not by the summary.
+Trace generation is measurably more work (per-obligation step
+builders; the double pass — canonical first, then trace — for the
+equivalence assertion). That's the cost the trace evaluator exists
+to opt into. The canonical `evaluate` skips that work entirely and
+still returns enough to drive the production submission gate and
+basic UI state.
+
+### Why preflight
+
+Aligning the canonical path with the documented contract has to
+happen before the structural refactor begins, because every
+subsequent story tests against the protocol shape. Isolating this
+one behavioural delta in its own commit also separates "behaviour
+change" from the mechanical moves that follow.
 
 ## Context
 
