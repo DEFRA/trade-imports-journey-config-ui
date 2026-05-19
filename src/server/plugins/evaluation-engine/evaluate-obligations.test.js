@@ -24,6 +24,7 @@ import {
   tests,
   TRANSIT_PURPOSES
 } from '../../journeys/eu-live-animals/resolvers.js'
+import { scenarioMap } from '../../journeys/eu-live-animals/scenarios.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const INPUT_DIR = join(__dirname, '../../journeys/eu-live-animals')
@@ -1804,4 +1805,166 @@ describe('Known gaps and pending work', () => {
   it.todo(
     'Gap 7: taskGroup mapping — screens grouped into task list items not yet in journey map'
   )
+})
+
+// ---------------------------------------------------------------------------
+// Summary — protocol.md §5.1
+//
+// The canonical evaluator returns `{ obligations, summary }`. `summary` is a
+// reduction over obligations producing counts per status, total, and the
+// `submittable` boolean: true iff every obligation is `satisfied` or
+// `inactive`.
+// ---------------------------------------------------------------------------
+
+describe('Summary', () => {
+  // Custom resolvers and obligation builders for the submittable-rule table:
+  // they let us construct obligations that resolve deterministically to each
+  // of the four statuses without coupling to the production journey's data.
+  const syntheticResolvers = {
+    facts: {
+      always: () => 'present',
+      never: () => null
+    },
+    tests: {
+      isActive: () => ({ active: true, reason: 'active' }),
+      isInactive: () => ({ active: false, reason: 'inactive' })
+    },
+    submissionDatePath: 'notification.submissionDate'
+  }
+
+  const syntheticNotification = { flag: 'present' }
+
+  const obligationByStatus = {
+    satisfied: (i) => ({
+      id: `sat-${i}`,
+      schemaPaths: ['notification.flag']
+    }),
+    unsatisfied: (i) => ({
+      id: `uns-${i}`,
+      schemaPaths: ['notification.missing']
+    }),
+    deferred: (i) => ({
+      id: `def-${i}`,
+      schemaPaths: ['notification.flag'],
+      condition: { fact: 'never', test: 'isActive' }
+    }),
+    inactive: (i) => ({
+      id: `ina-${i}`,
+      schemaPaths: ['notification.flag'],
+      condition: { fact: 'always', test: 'isInactive' }
+    })
+  }
+
+  const statusesToObligations = (statuses) =>
+    statuses.map((s, i) => obligationByStatus[s](i))
+
+  // --- Case A: empty notification is not submittable ---
+  //
+  // With no notification data, no schema path is populated (so nothing can
+  // be satisfied) and every conditional obligation's fact returns null (so
+  // nothing can be inactive — they all defer). Pinning the buckets that are
+  // *necessarily* zero plus the contract's submittable rule, rather than the
+  // exact unsatisfied/deferred split, keeps this test stable against future
+  // obligation-inventory changes.
+
+  it('summary indicates not-submittable for an empty notification', () => {
+    const result = evaluate({})
+    expect(result.summary.satisfied).toBe(0)
+    expect(result.summary.inactive).toBe(0)
+    expect(result.summary.submittable).toBe(false)
+    expect(result.summary.total).toBe(result.obligations.length)
+    const { satisfied, unsatisfied, deferred, inactive, total } =
+      result.summary
+    expect(satisfied + unsatisfied + deferred + inactive).toBe(total)
+  })
+
+  // --- Case B: a fully-populated scenario indicates submittable ---
+
+  it('summary indicates submittable for the import-cattle scenario', () => {
+    const result = evaluate(scenarioMap['import-cattle'].notification)
+    expect(result.summary.unsatisfied).toBe(0)
+    expect(result.summary.deferred).toBe(0)
+    expect(result.summary.submittable).toBe(true)
+    expect(result.summary.satisfied + result.summary.inactive).toBe(23)
+  })
+
+  // --- Case C: submittable rule pinned across status combinations ---
+  //
+  // These cases test the summary reducer and the `submittable` predicate
+  // against status combinations the real eu-live-animals fixtures cannot
+  // produce in isolation (e.g. "one inactive obligation, nothing else").
+  // They do NOT prove that real resolvers produce the right statuses for
+  // real notifications — Cases A, B, and D cover that.
+  //
+  // The "no obligations" row codifies a deliberate contract decision:
+  // per protocol §5.1, `submittable === (unsatisfied === 0 && deferred === 0)`,
+  // which is vacuously true for an empty obligations array. Pinning it
+  // here documents the choice.
+
+  describe('submittable rule', () => {
+    const cases = [
+      { name: 'no obligations',          statuses: [],                           expected: { total: 0, submittable: true } },
+      { name: 'one satisfied',           statuses: ['satisfied'],                expected: { satisfied: 1, total: 1, submittable: true } },
+      { name: 'one inactive',            statuses: ['inactive'],                 expected: { inactive: 1, total: 1, submittable: true } },
+      { name: 'satisfied + inactive',    statuses: ['satisfied', 'inactive'],    expected: { satisfied: 1, inactive: 1, total: 2, submittable: true } },
+      { name: 'satisfied + unsatisfied', statuses: ['satisfied', 'unsatisfied'], expected: { satisfied: 1, unsatisfied: 1, total: 2, submittable: false } },
+      { name: 'satisfied + deferred',    statuses: ['satisfied', 'deferred'],    expected: { satisfied: 1, deferred: 1, total: 2, submittable: false } },
+      { name: 'one unsatisfied',         statuses: ['unsatisfied'],              expected: { unsatisfied: 1, total: 1, submittable: false } },
+      { name: 'one deferred',            statuses: ['deferred'],                 expected: { deferred: 1, total: 1, submittable: false } }
+    ]
+
+    it.each(cases)('$name', ({ statuses, expected }) => {
+      const obligations = statusesToObligations(statuses)
+      const result = evaluateObligations(
+        syntheticNotification,
+        obligations,
+        {},
+        syntheticResolvers
+      )
+
+      // Per-bucket counts (default any unspecified bucket to zero).
+      const allBuckets = {
+        satisfied: 0,
+        unsatisfied: 0,
+        deferred: 0,
+        inactive: 0,
+        ...expected
+      }
+      expect(result.summary.satisfied).toBe(allBuckets.satisfied)
+      expect(result.summary.unsatisfied).toBe(allBuckets.unsatisfied)
+      expect(result.summary.deferred).toBe(allBuckets.deferred)
+      expect(result.summary.inactive).toBe(allBuckets.inactive)
+      expect(result.summary.total).toBe(expected.total)
+      expect(result.summary.submittable).toBe(expected.submittable)
+
+      // Invariant: bucket counts sum to total.
+      const { satisfied, unsatisfied, deferred, inactive, total } =
+        result.summary
+      expect(satisfied + unsatisfied + deferred + inactive).toBe(total)
+    })
+  })
+
+  // --- Case D: invariants hold across every committed scenario ---
+
+  describe('invariants across committed scenarios', () => {
+    it.each(Object.entries(scenarioMap))(
+      'scenario %s satisfies counts-sum and submittable rule',
+      (_name, { notification }) => {
+        const result = evaluate(notification)
+        const {
+          satisfied,
+          unsatisfied,
+          deferred,
+          inactive,
+          total,
+          submittable
+        } = result.summary
+        // Invariant 1: bucket counts sum to total.
+        expect(satisfied + unsatisfied + deferred + inactive).toBe(total)
+        expect(total).toBe(result.obligations.length)
+        // Invariant 2: submittable rule per protocol §5.1.
+        expect(submittable).toBe(unsatisfied === 0 && deferred === 0)
+      }
+    )
+  })
 })

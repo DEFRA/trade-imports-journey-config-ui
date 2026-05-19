@@ -85,13 +85,45 @@ const isEmpty = (value) => {
 // ---------------------------------------------------------------------------
 
 /**
+ * Reduce evaluated obligations to a Summary per protocol.md §5.1.
+ *
+ * Invariants:
+ *   satisfied + unsatisfied + deferred + inactive === total
+ *   submittable === (unsatisfied === 0 && deferred === 0)
+ *
+ * Mirrored verbatim from trace-evaluate-obligations.js so the two
+ * evaluator paths produce identical summaries for the same inputs.
+ * Story 04 (engine/evaluate.js) consolidates the calculation into one
+ * shared source.
+ */
+const calculateSummary = (obligations) => {
+  const counts = obligations.reduce(
+    (acc, o) => {
+      acc[o.status]++
+      return acc
+    },
+    { satisfied: 0, unsatisfied: 0, deferred: 0, inactive: 0 }
+  )
+
+  const submittable = obligations.every(
+    (o) => o.status === 'satisfied' || o.status === 'inactive'
+  )
+
+  return {
+    ...counts,
+    total: obligations.length,
+    submittable
+  }
+}
+
+/**
  * Evaluate all obligations against the current notification state.
  *
  * @param {object} notification - The notification object (fact store)
  * @param {Array} obligations - Array of obligation definitions
  * @param {object} refdata - Reference data (journey-specific shape)
  * @param {object} resolvers - { facts, tests, submissionDatePath }
- * @returns {{ obligations: Array<{ id, status, missingPaths?, reason? }> }}
+ * @returns {{ obligations: Array<{ id, status, missingPaths?, reason? }>, summary: Summary }}
  */
 const evaluateObligations = (notification, obligations, refdata, resolvers) => {
   const evaluated = obligations.map((obligation) => {
@@ -130,7 +162,8 @@ const evaluateObligations = (notification, obligations, refdata, resolvers) => {
     return evaluateSatisfaction(id, schemaPaths, notification, resolvers)
   })
 
-  return { obligations: evaluated }
+  const summary = calculateSummary(evaluated)
+  return { obligations: evaluated, summary }
 }
 
 /**
