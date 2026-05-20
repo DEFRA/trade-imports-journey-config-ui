@@ -50,10 +50,10 @@ they are different starting points within the same loop. The skill does
 not tag stories with a workflow class.
 
 Two skills feed the loop:
-- `.claude/skills/valuable-unit-tests.md` — governs test selection
+- `.claude/skills/valuable-unit-tests/SKILL.md` — governs test selection
   per module. Stories should describe behaviour at a level the
   qa-test-planner can plan against, not pre-decompose modules.
-- `.claude/skills/create-stories.md` (this skill) — produces the
+- `.claude/skills/create-stories/SKILL.md` (this skill) — produces the
   stories the loop consumes.
 
 ## Process
@@ -260,7 +260,7 @@ proven (e.g. "protocol.md §5.1"). Name the test files added or
 extended. Describe behaviour at the level qa-test-planner can plan
 against — don't pre-decompose into modules; the Plan agent does that
 during implementation. Test selection follows
-`.claude/skills/valuable-unit-tests.md`.>
+`.claude/skills/valuable-unit-tests/SKILL.md`.>
 
 ## Acceptance Criteria
 <Checkboxes derived directly from the green-card examples in Step 3.

@@ -41,9 +41,10 @@ that exist only to raise coverage.
 Read code directly. If you spot correctness or structural problems in
 passing, note them in the "Refer elsewhere" footer.
 
-**Skill rule**: Before writing any test, apply the `valuable-unit-tests`
-skill. It is the single source of truth for test selection and the project's
-Vitest conventions. Do not restate its rules in this file.
+**Skill rule**: Before writing any test, read
+`.claude/skills/valuable-unit-tests/SKILL.md` and apply it. It is the
+single source of truth for test selection and the project's Vitest
+conventions. Do not restate its rules in this file.
 
 ## Core responsibilities
 

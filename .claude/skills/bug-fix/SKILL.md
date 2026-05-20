@@ -19,7 +19,7 @@ You are about to fix a bug. Follow these steps IN ORDER. DO NOT skip steps.
 
 1. **Read the valuable unit test skill**:
 
-   - Read `.claude/skills/valuable-unit-tests.md`
+   - Read `.claude/skills/valuable-unit-tests/SKILL.md`
    - Apply the principles to determine what test is needed
 
 2. **Create a TodoWrite entry**:

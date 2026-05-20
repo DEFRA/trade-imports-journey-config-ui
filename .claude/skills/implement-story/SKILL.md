@@ -308,7 +308,7 @@ For each module/component:
 
 1. **Read the valuable unit test skill**:
 
-  - Read `.claude/skills/valuable-unit-tests.md`
+  - Read `.claude/skills/valuable-unit-tests/SKILL.md`
   - Apply principles to this specific module
 
 2. **Use qa-test-planner agent** (MANDATORY for all modules with logic):
