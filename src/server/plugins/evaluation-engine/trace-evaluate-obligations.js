@@ -11,11 +11,8 @@
  * - Summary provides counts and submittable flag
  */
 
-import {
-  evaluateObligations,
-  resolvePath,
-  isEmpty
-} from './evaluate-obligations.js'
+import { evaluateObligations } from './evaluate-obligations.js'
+import { resolvePath, isEmpty } from '../../engine/path.js'
 import { OBLIGATION_STATUS } from '../../engine/types.js'
 
 // ---------------------------------------------------------------------------

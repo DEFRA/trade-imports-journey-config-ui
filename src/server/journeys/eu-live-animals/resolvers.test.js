@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { resolvers, TRANSIT_PURPOSES } from './resolvers.js'
-import { resolvePath } from '../../plugins/evaluation-engine/evaluate-obligations.js'
+import { resolvePath } from '../../engine/path.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const refdata = JSON.parse(

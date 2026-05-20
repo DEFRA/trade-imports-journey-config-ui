@@ -13,11 +13,7 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { readFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import {
-  evaluateObligations,
-  resolvePath,
-  isEmpty
-} from './evaluate-obligations.js'
+import { evaluateObligations } from './evaluate-obligations.js'
 import {
   resolvers,
   facts,
@@ -127,52 +123,6 @@ const PURPOSE_CONDITIONAL_IDS = [
 // =========================================================================
 // Helper unit tests
 // =========================================================================
-describe('isEmpty', () => {
-  it('treats undefined as empty', () => {
-    expect(isEmpty(undefined)).toBe(true)
-  })
-
-  it('treats null as empty', () => {
-    expect(isEmpty(null)).toBe(true)
-  })
-
-  it('treats empty string as empty', () => {
-    expect(isEmpty('')).toBe(true)
-  })
-
-  it('treats non-empty string as non-empty', () => {
-    expect(isEmpty('hello')).toBe(false)
-  })
-
-  it('treats false as non-empty (boolean false is a value)', () => {
-    expect(isEmpty(false)).toBe(false)
-  })
-
-  it('treats true as non-empty', () => {
-    expect(isEmpty(true)).toBe(false)
-  })
-
-  it('treats 0 as non-empty', () => {
-    expect(isEmpty(0)).toBe(false)
-  })
-
-  it('treats empty array as empty', () => {
-    expect(isEmpty([])).toBe(true)
-  })
-
-  it('treats non-empty array as non-empty', () => {
-    expect(isEmpty([1])).toBe(false)
-  })
-
-  it('treats empty object as empty', () => {
-    expect(isEmpty({})).toBe(true)
-  })
-
-  it('treats non-empty object as non-empty', () => {
-    expect(isEmpty({ a: 1 })).toBe(false)
-  })
-})
-
 describe('facts.commodity', () => {
   it('returns null for empty notification', () => {
     expect(facts.commodity({})).toBe(null)
@@ -215,78 +165,6 @@ describe('facts.commodity', () => {
     const commodity = facts.commodity(n)
     expect(commodity).toBeDefined()
     expect(commodity.commodityID).toBe('1064100')
-  })
-})
-
-describe('resolvePath', () => {
-  it('resolves a simple dotted path', () => {
-    const obj = { partOne: { cphNumber: '12/345/6789' } }
-    expect(resolvePath(obj, 'notification.partOne.cphNumber')).toBe(
-      '12/345/6789'
-    )
-  })
-
-  it('returns undefined for missing intermediate', () => {
-    expect(resolvePath({}, 'notification.partOne.cphNumber')).toBeUndefined()
-  })
-
-  it('resolves an array path with []', () => {
-    const obj = {
-      partOne: {
-        commodities: {
-          commodityComplement: [{ commodityID: '102' }]
-        }
-      }
-    }
-    expect(
-      resolvePath(
-        obj,
-        'notification.partOne.commodities.commodityComplement[].commodityID'
-      )
-    ).toBe('102')
-  })
-
-  it('returns undefined for empty array with [] path', () => {
-    const obj = {
-      partOne: { commodities: { commodityComplement: [] } }
-    }
-    expect(
-      resolvePath(
-        obj,
-        'notification.partOne.commodities.commodityComplement[].commodityID'
-      )
-    ).toBeUndefined()
-  })
-
-  it('resolves nested array paths', () => {
-    const obj = {
-      partOne: {
-        commodities: {
-          complementParameterSet: [
-            {
-              identifiers: [{ data: 'UK123456' }]
-            }
-          ]
-        }
-      }
-    }
-    expect(
-      resolvePath(
-        obj,
-        'notification.partOne.commodities.complementParameterSet[].identifiers[].data'
-      )
-    ).toBe('UK123456')
-  })
-
-  it('resolves a path ending in [] (bare array)', () => {
-    const obj = {
-      partOne: {
-        nominatedContacts: [{ name: 'John' }]
-      }
-    }
-    expect(
-      resolvePath(obj, 'notification.partOne.nominatedContacts[]')
-    ).toEqual([{ name: 'John' }])
   })
 })
 
