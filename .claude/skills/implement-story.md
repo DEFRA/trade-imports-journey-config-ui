@@ -1,3 +1,8 @@
+---
+name: implement-story
+description: Rigorous agent-driven story implementation workflow — explore, plan, then test-first per module with qa-test-planner, code-reviewer, and refactoring-enforcer gates. Use when implementing a feature/story file from features/.
+---
+
 # Story Implementation Workflow
 
 You are about to implement a story using a **rigorous agent-driven workflow**. This ensures quality, test coverage, and adherence to functional programming principles.

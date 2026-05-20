@@ -1,3 +1,8 @@
+---
+name: bug-fix
+description: Test-first bug-fix workflow — write a failing regression test before any code change, fix minimally, then verify. Use when fixing a defect in this codebase.
+---
+
 # Bug Fix Workflow
 
 You are about to fix a bug. Follow these steps IN ORDER. DO NOT skip steps.
