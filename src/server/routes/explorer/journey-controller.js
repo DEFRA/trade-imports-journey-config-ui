@@ -1,5 +1,5 @@
 import { scenarios } from '../../journeys/eu-live-animals/index.js'
-import { mapToScreens } from './map-to-screens.js'
+import { resolveScreens } from '#server/engine/resolve-screens.js'
 
 /**
  * Scenario options for the dropdown, derived from the scenario map.
@@ -13,7 +13,7 @@ const SCENARIO_OPTIONS = Object.entries(scenarios).map(([value, { label }]) => (
 /**
  * Group flat screen array by sectionId, preserving order.
  *
- * @param {Array<Object>} screens - Output from mapToScreens
+ * @param {Array<Object>} screens - Output from resolveScreens
  * @returns {Array<Object>} Sections with screens array
  */
 const groupScreensBySection = (screens) => {
@@ -97,7 +97,7 @@ export const journeyController = {
       try {
         const traced = evaluationEngine.evaluate('eu-live-animals', notification)
         const { journeyMap } = evaluationEngine.getJourney('eu-live-animals')
-        const screens = mapToScreens(traced, journeyMap)
+        const screens = resolveScreens(traced, journeyMap)
         sections = groupScreensBySection(screens)
         summary = traced.summary
       } catch (err) {

@@ -22,7 +22,6 @@ export const parseCommodityKey = (commodityKey) => {
 /**
  * Build a minimal notification from purpose group, commodity key, and optional country.
  *
- * This mirrors the test fixture builder pattern from evaluate-obligations.test.js.
  * The minimal notification includes only the data needed for obligation evaluation:
  * - purposeGroup (drives transit/import conditional logic)
  * - commodity (drives species-specific routing flags)

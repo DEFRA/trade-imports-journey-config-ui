@@ -1,5 +1,6 @@
-import { mapToScreens, rollUpToSections } from './map-to-screens.js'
-import { SCREEN_STATUS } from '../../engine/types.js'
+import { resolveScreens } from '#server/engine/resolve-screens.js'
+import { rollUpToSections } from '#server/engine/roll-up-to-sections.js'
+import { SCREEN_STATUS } from '#server/engine/types.js'
 
 /**
  * Map screen status to GOV.UK task list tag configuration.
@@ -61,7 +62,7 @@ export const tasklistController = {
     try {
       const traced = evaluationEngine.evaluate('eu-live-animals', notification)
       const { journeyMap } = evaluationEngine.getJourney('eu-live-animals')
-      const screens = mapToScreens(traced, journeyMap)
+      const screens = resolveScreens(traced, journeyMap)
       sections = toTaskListSections(rollUpToSections(screens))
       submittable = traced.summary.submittable
     } catch (err) {

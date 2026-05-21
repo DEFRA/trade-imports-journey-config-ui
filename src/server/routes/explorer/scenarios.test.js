@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { traceEvaluateObligations } from '../../plugins/evaluation-engine/trace-evaluate-obligations.js'
+import { evaluate as evaluateAdapter } from '#server/engine/evaluate.js'
 import { obligations, refdata, resolvers } from '../../journeys/eu-live-animals/index.js'
 import {
   importSemen,
@@ -33,11 +33,12 @@ import {
  * - Not testing individual field values (plausible fakes, not domain-critical)
  */
 
+const adapter = { obligations, refdata, journeyResolver: resolvers }
+
 /**
  * Helper: evaluate a scenario and return the summary.
  */
-const evaluate = (notification) =>
-  traceEvaluateObligations(notification, obligations, refdata, resolvers)
+const evaluate = (notification) => evaluateAdapter(notification, adapter)
 
 // ---------------------------------------------------------------------------
 // Core contract: every scenario is submittable

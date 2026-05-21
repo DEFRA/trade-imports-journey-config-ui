@@ -1,4 +1,4 @@
-import { traceEvaluateObligations } from './trace-evaluate-obligations.js'
+import { evaluateWithTrace } from '#server/engine/evaluate-with-trace.js'
 
 // Journey modules — add new journeys here
 import * as euLiveAnimals from '../../journeys/eu-live-animals/index.js'
@@ -81,12 +81,11 @@ export const evaluationEngine = {
           if (!journey) {
             throw new Error(`Unknown journey: "${journeyKey}"`)
           }
-          return traceEvaluateObligations(
-            notification,
-            journey.obligations,
-            journey.refdata,
-            journey.resolvers
-          )
+          return evaluateWithTrace(notification, {
+            obligations: journey.obligations,
+            refdata: journey.refdata,
+            journeyResolver: journey.resolvers
+          })
         },
 
         /**
