@@ -3,7 +3,7 @@ import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'
 
 import { router } from './plugins/router.js'
-import { evaluationEngine } from './plugins/evaluation-engine/index.js'
+import { evaluationEngine } from './plugins/evaluation-engine/plugin.js'
 import { config } from '#config/config.js'
 import { pulse } from './plugins/pulse.js'
 import { catchAll } from './common/helpers/errors.js'
