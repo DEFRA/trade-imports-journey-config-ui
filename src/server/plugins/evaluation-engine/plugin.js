@@ -2,9 +2,11 @@ import { evaluateWithTrace } from '#server/engine/evaluate-with-trace.js'
 
 // Journey modules — add new journeys here
 import * as euLiveAnimals from '../../journeys/eu-live-animals/index.js'
+import * as chedppPlants from '../../journeys/chedpp-plants/index.js'
 
 const JOURNEYS = {
-  'eu-live-animals': euLiveAnimals
+  'eu-live-animals': euLiveAnimals,
+  'chedpp-plants': chedppPlants
 }
 
 const validateJourney = (key, journey) => {
