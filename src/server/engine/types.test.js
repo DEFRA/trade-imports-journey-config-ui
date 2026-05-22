@@ -1,5 +1,5 @@
 /**
- * Wire-compatibility tests for the engine protocol vocabulary.
+ * Freeze and literal-value tests for the engine protocol vocabulary.
  *
  * The only behavioural contract this module ships is the literal value
  * each enum member resolves to (per `features/modelling/protocol.md` §3)

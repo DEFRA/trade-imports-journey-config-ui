@@ -425,36 +425,45 @@ never(reason?: string)         → ConditionTest    // reason defaults to 'alway
 - `or()` or `and()` with zero arguments → `Error: or/and requires at least one test`
 - `not(test)` where `test` is not a function → `Error: not requires a ConditionTest`
 
-### 5.6 Service-form deployment (forward-looking)
+### 5.6 The FE/BE seam
 
-The library API in §5.1–§5.6 is designed so the engine can move behind a
-service boundary without changing its contracts. The current spike runs
-everything in-process; this section captures the deployment variant
-anticipated for follow-on work, so the interface choices above hold up
-under it.
+The protocol defines a **logical** seam between two concerns:
 
-Two facts are load-bearing for the HTTP shape:
+- **Backend (BE):** the engine + the journey adapters + the reference
+  data. Given a `notification` and a `journeyKey`, it computes state —
+  `EvaluationResult`, `Screen[]`, `Section[]` — and exposes that state
+  to whatever wants to render it. The BE owns *what is true* about the
+  notification: which obligations are met, which screens are complete,
+  whether the notification is submittable.
 
-- **Resolvers stay server-side.** `JourneyResolver` contains *functions*
-  (`facts`, `tests`) — code cannot cross the wire. The service hosts
-  the resolvers and the per-journey content (obligations, refdata,
-  journey map). Clients identify the journey by key, never by adapter.
-- **The wire form of `evaluate` is `(notification, journeyKey) → EvaluationResult`.**
-  Internally the service resolves `journeyKey` to a `JourneyAdapter`
-  and delegates to the library form in §5.1. The `EvaluationResult`
-  shape (and every other response shape in §5) is wire-safe: plain
-  data, no functions, no cycles.
+- **Frontend (FE):** the route handlers and the Nunjucks templates
+  (`journey-controller.js`, `tasklist-controller.js`, `debug-controller.js`,
+  view templates in `routes/explorer/*.njk`). The FE owns *how the
+  state is shown*: which page renders which screen, the routing/logical
+  sequence between pages, GOV.UK Frontend component selection, copy
+  and layout.
 
-How the rest of the pipeline splits is deliberately left open here:
+The contract between the two is the engine's output types in §5.1–§5.4:
+`EvaluationResult` (with optional `trace`), `Screen[]`, `Section[]`.
+Nothing else crosses the seam.
 
-- Whether `resolveScreens` / `rollUpToSections` run server-side
-  (frontend receives `Section[]`) or client-side (frontend receives
-  `EvaluationResult` and a separately-fetched `JourneyMap`) is a
-  deployment choice.
-- Whether a deployed service hosts one journey or many is open.
+Both halves currently run in the same Hapi process. There is no HTTP /
+service boundary and none is planned — the seam is logical, not
+physical. Two properties follow from this separation regardless of
+deployment:
 
-Every kernel function is pure values-in / values-out, so any split is a
-deployment decision, not a protocol change.
+- **Single source of truth.** The same engine that drives the rendered
+  task list and screen variance also gates submission. Drift between
+  *what is accepted* and *what is shown* is structurally impossible
+  because both paths terminate in the same `evaluate` /
+  `resolveScreens` calls.
+- **Common capability across journeys.** One engine; many journey
+  adapters. New journeys plug into the registry without changes to
+  the engine itself.
+
+The framework-isolation property (`engine/` has no Hapi imports) is
+kept because the BE half is a library — pure, unit-testable, framework-
+agnostic. That property is independent of any wire/process boundary.
 
 ## 6. Open questions for Phase 2 sign-off
 

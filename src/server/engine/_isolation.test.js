@@ -1,11 +1,13 @@
 /**
  * Framework-isolation test for the engine.
  *
- * The engine is a framework-agnostic library — its public modules and
- * their non-public helper (`path.js`) must not import any Hapi package.
- * If a future PR adds `import x from '@hapi/...'` anywhere under
- * `src/server/engine/`, this test fails: the boundary becomes
- * machine-enforced.
+ * The engine is a pure, unit-testable library — its public modules and
+ * their non-public helper (`path.js`) are exercised by tests that boot
+ * no Hapi server and stub no framework. If a future PR introduces
+ * `import x from '@hapi/...'` anywhere under `src/server/engine/`,
+ * those library tests start needing Hapi setup and the engine silently
+ * stops being reusable outside this app. This test catches that
+ * regression early.
  *
  * Mechanism: every non-test `.js` file under the engine directory is
  * scanned for ESM `import` / `export ... from` source specifiers; any

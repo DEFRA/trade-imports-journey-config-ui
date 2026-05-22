@@ -3,8 +3,8 @@
  *
  * Two responsibilities:
  *   1. Frozen named-constant exports for the status enums on the immovable
- *      surface (`protocol.md` §3). The literal string values are the wire
- *      format — consumers may compare against them directly.
+ *      surface (`protocol.md` §3). The literal string values are stable
+ *      identifiers — consumers may compare against them directly.
  *   2. JSDoc typedefs declaring the shape of every protocol record
  *      (`protocol.md` §2). JSDoc only; no runtime exports for the types.
  *
@@ -16,7 +16,7 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Per-obligation status. Wire values per `protocol.md` §3 immovable surface.
+ * Per-obligation status. Literal values per `protocol.md` §3 immovable surface.
  */
 export const OBLIGATION_STATUS = Object.freeze({
   SATISFIED: 'satisfied',
@@ -27,7 +27,7 @@ export const OBLIGATION_STATUS = Object.freeze({
 
 /**
  * Per-screen status, derived from a screen's obligations.
- * Wire values per `protocol.md` §5.3.
+ * Literal values per `protocol.md` §5.3.
  */
 export const SCREEN_STATUS = Object.freeze({
   COMPLETE: 'complete',
@@ -38,7 +38,7 @@ export const SCREEN_STATUS = Object.freeze({
 
 /**
  * Per-section status, derived from a section's non-`notApplicable` screens.
- * Wire values per `protocol.md` §5.4. Distinct from `SCREEN_STATUS`:
+ * Literal values per `protocol.md` §5.4. Distinct from `SCREEN_STATUS`:
  * sections never carry `notApplicable` (whole-notApplicable sections are
  * omitted from the output of `rollUpToSections`).
  */
@@ -179,9 +179,8 @@ export const SECTION_STATUS = Object.freeze({
 // ---------------------------------------------------------------------------
 
 /**
- * The whole journey contribution as a single record. Future stories
- * will pass this directly to engine functions instead of the current
- * positional `(notification, obligations, refdata, resolvers)` form.
+ * The whole journey contribution as a single record. Passed directly to
+ * engine functions per `protocol.md` §5.
  *
  * @typedef {Object} JourneyAdapter
  * @property {Obligation[]} obligations

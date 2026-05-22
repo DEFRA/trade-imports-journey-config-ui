@@ -253,70 +253,68 @@ shape. Journey-conventional helpers are private to the adapter; they may
 be promoted to the kernel only when a third journey shares the same
 convention.
 
-## 8. Deployment — Server-Driven UI (forward-looking)
+## 8. Architecture — the FE/BE seam
 
-When this work moves beyond the in-process spike to a real
-frontend/backend split, the engine and journey adapters live behind
-an HTTP boundary as a backend service. The frontend is a thin
-renderer that asks the backend for the state it should display, and
-the backend gates submission with the same engine that drove the
-rendering. This is the **Server-Driven UI (SDUI)** pattern — see
-prior art and published practice from Airbnb, Instagram, Spotify,
-Lyft, and others on the same problem (conditional flows with strong
-server-side validation).
+The protocol of §5 defines a logical separation of concerns between two
+halves of the application:
 
 ```mermaid
 %%{init: {'theme': 'default', 'themeVariables': {'fontSize': '14px', 'background': '#ffffff'}}}%%
 flowchart LR
-    subgraph fe["Frontend (per-journey or shared)"]
-        UI["UI Components<br/><i>thin renderer; owns layout, locale,<br/>components, optimistic state</i>"]
+    subgraph fe["Frontend (in-process)"]
+        RC["Route handlers<br/><i>journey, tasklist, debug</i>"]
+        NJK["Nunjucks templates<br/><i>GOV.UK Frontend components<br/>layout, copy, page sequence</i>"]
+        RC --> NJK
     end
 
-    subgraph be["Backend — Evaluation Service"]
-        direction TB
-        API["HTTP API<br/><i>POST /journeys/&lcub;key&rcub;/evaluate<br/>POST /journeys/&lcub;key&rcub;/submit<br/>GET&nbsp;&nbsp;/journeys/&lcub;key&rcub;/structure</i>"]
+    subgraph be["Backend (in-process library)"]
         ENG["Engine<br/><i>evaluate · evaluateWithTrace<br/>resolveScreens · rollUpToSections<br/>combinators</i>"]
-        REG[("Journey Registry<br/><i>eu-live-animals<br/>chedpp-plants<br/>future N…</i>")]
-
-        API --> ENG
-        ENG --> REG
+        ADP["Journey adapters<br/><i>obligations · journeyMap<br/>refdata · resolvers</i>"]
+        ENG --> ADP
     end
 
-    UI -->|"notification + journeyKey<br/>(request state)"| API
-    API -->|"EvaluationResult / Section[]<br/>(abstract page model)"| UI
-    UI -->|"notification + journeyKey<br/>(submit)"| API
-    API -.->|"accept iff submittable<br/>else reject with issues"| UI
+    RC -->|"notification + journeyKey"| ENG
+    ENG -->|"EvaluationResult /<br/>Screen[] / Section[]"| RC
 ```
 
-Key properties this enables:
+**Backend** owns *what is true* about a notification: which obligations
+are satisfied, which screens are complete, whether the notification is
+submittable, what reference data applies. It is the engine + the
+journey adapters + the refdata. It runs in-process today but is
+deliberately framework-agnostic — pure functions, no Hapi imports — so
+that the *what is true* logic is testable as a library.
 
-- **Single source of truth.** The engine that gates submission is the
-  same engine that drives the UI's task list and screen variance.
-  Drift between *what the backend will accept* and *what the frontend
-  shows* is structurally impossible.
-- **What crosses the wire is data, not rendering.** `Section[]` with
-  `Screen[]` is the abstract page model — sections exist, screens
-  carry status, fields name their obligation. The frontend owns
-  components, layout, copy, locale, optimistic state. The backend
-  owns the structure of *what is shown*.
-- **Resolvers stay server-side.** Per `protocol.md` §5.6, the
-  `JourneyResolver` contains functions; functions don't serialise. The
-  journey's resolver code runs in the service. Clients only ever
-  reference journeys by key.
+**Frontend** owns *how the state is shown* and *how the user moves
+through it*: which page renders which screen, the logical sequence and
+routing between pages, component selection from GOV.UK Frontend, copy
+and layout. It is the route handlers + the Nunjucks templates. The
+sequence in which screens are presented to the user is an FE concern,
+not encoded in the journey map's section order alone.
+
+**The seam between them is the engine's output:** `EvaluationResult`,
+`Screen[]`, `Section[]` (with the optional `trace` for diagnostics).
+Nothing else crosses. The FE never inspects the journey map directly;
+the engine resolves the map into screens with derived statuses and
+hands the FE a flat render-ready model.
+
+This is the *Server-Driven UI* pattern as a separation of concerns —
+state lives behind one seam, rendering lives behind the other. Both
+halves currently run in the same Hapi process; there is no HTTP / service
+boundary and none is planned. The properties that earn this separation
+are independent of where it deploys:
+
+- **Single source of truth.** The same engine that drives the rendered
+  task list and screen variance also gates submission. Drift between
+  *what is accepted* and *what is shown* is structurally impossible
+  because both paths terminate in the same `evaluate` /
+  `resolveScreens` calls.
 - **Common capability across journeys.** One engine; many journey
-  adapters; multiple frontend consumers (Animals UI, Plants UI,
-  future N). New journeys plug into the same engine without code
-  change to the engine itself.
+  adapters (today: `eu-live-animals`, `chedpp-plants`). New journeys
+  plug into the registry without changes to the engine itself.
+- **Independently testable halves.** The engine is unit-tested against
+  fixtures with no Hapi setup; the templates and route handlers can
+  evolve without re-deriving obligation logic.
 
-What this section deliberately doesn't decide (parked for follow-on
-design):
-
-- Whether `resolveScreens` / `rollUpToSections` run server-side (the
-  service returns `Section[]`) or client-side (the service returns
-  `EvaluationResult` and the FE folds it against a separately-fetched
-  `JourneyMap`). Both are protocol-consistent.
-- Whether one service hosts many journeys, or each journey gets its
-  own service (federated).
-- Caching, versioning, audit-record shape, optimistic-state
-  reconciliation. All real questions; none change the engine's
-  protocol.
+The framework-isolation property (`engine/` has no Hapi imports) makes
+the BE half a real library — usable wherever JS runs, easy to test in
+isolation, hard to couple to the wrong thing by accident.
