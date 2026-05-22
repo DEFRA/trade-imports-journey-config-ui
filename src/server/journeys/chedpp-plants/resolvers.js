@@ -8,6 +8,7 @@
  * and the chedpp-plants refdata structure. No other module should
  * contain this knowledge.
  */
+import { or } from '#server/engine/combinators.js'
 
 // ---------------------------------------------------------------------------
 // Fact extractors
@@ -57,22 +58,6 @@ const lookupRefdata = (table, commodity) => {
 // ---------------------------------------------------------------------------
 // Condition tests
 // ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Test composition
-// ---------------------------------------------------------------------------
-
-/**
- * Compose two test functions with OR semantics.
- * Returns the first active result, or the last inactive result.
- */
-const or = (testA, testB) => (factValue, refdata) => {
-  const a = testA(factValue, refdata)
-  if (a.active) return a
-  const b = testB(factValue, refdata)
-  if (b.active) return b
-  return { active: false, reason: `${a.reason}; ${b.reason}` }
-}
 
 // ---------------------------------------------------------------------------
 // Purpose predicates
@@ -183,7 +168,6 @@ export const resolvers = { facts, tests, submissionDatePath }
 export {
   facts,
   tests,
-  or,
   buildRefdataKey,
   lookupRefdata,
   TRANSIT_PURPOSES,
