@@ -48,31 +48,25 @@ describe('eu-live-animals journey module', () => {
       ])
     })
 
-    test('Each scenario should have notification with partOne', () => {
+    test('Each scenario should have a notification with a type', () => {
       Object.entries(scenarios).forEach(([_name, scenario]) => {
         expect(scenario.notification).toBeDefined()
-        expect(scenario.notification.partOne).toBeDefined()
-        expect(typeof scenario.notification.partOne).toBe('object')
+        expect(scenario.notification.type).toBeDefined()
+        expect(typeof scenario.notification.type).toBe('string')
       })
     })
 
     test('import-cattle scenario should have cattle commodity', () => {
       const { notification } = scenarios['import-cattle']
-      expect(
-        notification.partOne.commodities.commodityComplement[0].commodityID
-      ).toBe('102')
-      expect(
-        notification.partOne.commodities.commodityComplement[0].speciesName
-      ).toBe('Bos taurus')
+      expect(notification.commodities[0].id).toBe('102')
+      expect(notification.commodities[0].species.name).toBe('Bos taurus')
     })
 
     test('transhipment-cattle scenario should have transit purpose and exit details', () => {
       const { notification } = scenarios['transhipment-cattle']
-      expect(notification.partOne.purpose.purposeGroup).toBe(
-        'For Transhipment to'
-      )
-      expect(notification.partOne.purpose.exitBIP).toBeDefined()
-      expect(notification.partOne.portOfExit).toBeDefined()
+      expect(notification.purpose.group).toBe('For Transhipment to')
+      expect(notification.purpose.exitBIP).toBeDefined()
+      expect(notification.entry.portOfExit).toBeDefined()
     })
   })
 })

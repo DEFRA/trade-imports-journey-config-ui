@@ -1,12 +1,13 @@
 /**
  * EU Live Animals journey resolvers.
  *
- * Schema-specific fact extractors and condition tests for the IPAFFS
- * notification structure (notification.partOne.* shape).
+ * Schema-specific fact extractors and condition tests for the
+ * eu-live-animals notification structure (see
+ * `features/notification-shape/01-target-shape.md`).
  *
- * These functions know how to navigate the IPAFFS notification schema
- * and the eu-live-animals refdata structure. No other module should
- * contain this knowledge.
+ * These functions know how to navigate the notification shape and the
+ * eu-live-animals refdata structure. No other module should contain
+ * this knowledge.
  */
 
 // ---------------------------------------------------------------------------
@@ -14,12 +15,14 @@
 // ---------------------------------------------------------------------------
 
 const facts = {
-  purposeGroup: (notification) =>
-    notification?.partOne?.purpose?.purposeGroup ?? null,
+  purposeGroup: (notification) => notification?.purpose?.group ?? null,
 
   commodity: (notification) => {
-    const c = notification?.partOne?.commodities?.commodityComplement?.[0]
-    return c?.commodityID ? c : null
+    // Preserves the single-commodity routing semantic: routing flags
+    // are driven by the first commodity only. Multi-commodity routing
+    // is a separate, deferred piece of work.
+    const c = notification?.commodities?.[0]
+    return c?.id ? c : null
   }
 }
 
@@ -28,15 +31,15 @@ const facts = {
 // ---------------------------------------------------------------------------
 
 const buildRefdataKey = (commodity) => {
-  const code = commodity.commodityID
-  const species = commodity.speciesName ?? ''
+  const code = commodity.id
+  const species = commodity.species?.name ?? ''
   return `${code}|${species}`
 }
 
 const lookupRefdata = (table, commodity) => {
   const exactKey = buildRefdataKey(commodity)
   if (table[exactKey]) return table[exactKey]
-  const fallbackKey = `${commodity.commodityID}|`
+  const fallbackKey = `${commodity.id}|`
   return table[fallbackKey] ?? null
 }
 
@@ -132,7 +135,7 @@ const tests = {
 // Submission date path
 // ---------------------------------------------------------------------------
 
-const submissionDatePath = 'notification.partOne.submissionDate'
+const submissionDatePath = 'submittedAt'
 
 // ---------------------------------------------------------------------------
 // Exports

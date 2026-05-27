@@ -41,23 +41,17 @@ export const buildMinimalNotification = (
 
   const notification = {
     type: 'IMPv2',
-    partOne: {
-      purpose: {
-        purposeGroup
-      },
-      commodities: {
-        commodityComplement: [
-          {
-            commodityID,
-            speciesName: speciesName || undefined
-          }
-        ]
+    purpose: { group: purposeGroup },
+    commodities: [
+      {
+        id: commodityID,
+        species: { name: speciesName || undefined }
       }
-    }
+    ]
   }
 
   if (countryOfOrigin) {
-    notification.partOne.commodities.countryOfOrigin = countryOfOrigin
+    notification.origin = { country: countryOfOrigin }
   }
 
   return notification

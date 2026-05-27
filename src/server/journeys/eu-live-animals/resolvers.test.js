@@ -3,7 +3,7 @@
  *
  * These tests verify the shape of the journey's public contract that the
  * evaluation engine relies on:
- *   - `facts` extractors map IPAFFS notification → domain values
+ *   - `facts` extractors map a notification → domain values
  *   - `tests` predicates return `{ active: boolean, reason: string }`
  *   - `submissionDatePath` resolves against a real notification
  *
@@ -31,10 +31,8 @@ describe('resolvers export shape', () => {
 })
 
 describe('facts.purposeGroup', () => {
-  it('extracts purposeGroup from the IPAFFS path', () => {
-    const notification = {
-      partOne: { purpose: { purposeGroup: 'For Import' } }
-    }
+  it('extracts purposeGroup from purpose.group', () => {
+    const notification = { purpose: { group: 'For Import' } }
     expect(resolvers.facts.purposeGroup(notification)).toBe('For Import')
   })
 
@@ -44,29 +42,21 @@ describe('facts.purposeGroup', () => {
 })
 
 describe('facts.commodity', () => {
-  it('extracts the first commodityComplement when it has a commodityID', () => {
+  it('extracts the first commodity when it has an id', () => {
     const notification = {
-      partOne: {
-        commodities: {
-          commodityComplement: [
-            { commodityID: '102', speciesName: 'Bos taurus' }
-          ]
-        }
-      }
+      commodities: [{ id: '102', species: { name: 'Bos taurus' } }]
     }
     const result = resolvers.facts.commodity(notification)
-    expect(result).toEqual({ commodityID: '102', speciesName: 'Bos taurus' })
+    expect(result).toEqual({ id: '102', species: { name: 'Bos taurus' } })
   })
 
-  it('returns null when no commodityComplement is present', () => {
+  it('returns null when no commodities are present', () => {
     expect(resolvers.facts.commodity({})).toBe(null)
   })
 
-  it('returns null when commodityComplement[0] lacks commodityID', () => {
+  it('returns null when commodities[0] lacks id', () => {
     const notification = {
-      partOne: {
-        commodities: { commodityComplement: [{ speciesName: 'Bos taurus' }] }
-      }
+      commodities: [{ species: { name: 'Bos taurus' } }]
     }
     expect(resolvers.facts.commodity(notification)).toBe(null)
   })
@@ -74,7 +64,7 @@ describe('facts.commodity', () => {
 
 describe('tests return the { active, reason } contract', () => {
   it('every test returns an object with boolean active and string reason', () => {
-    const commodity = { commodityID: '102', speciesName: 'Bos taurus' }
+    const commodity = { id: '102', species: { name: 'Bos taurus' } }
     const purposeGroup = 'For Import'
 
     for (const [name, testFn] of Object.entries(resolvers.tests)) {
@@ -101,13 +91,13 @@ describe('tests.isTransit', () => {
 
 describe('tests.requiresIdentification', () => {
   it('is active for a commodity whose identifier set is not NONE (cattle)', () => {
-    const cattle = { commodityID: '102', speciesName: 'Bos taurus' }
+    const cattle = { id: '102', species: { name: 'Bos taurus' } }
     expect(resolvers.tests.requiresIdentification(cattle, refdata).active)
       .toBe(true)
   })
 
   it('is inactive when the commodity has no refdata entry', () => {
-    const unknown = { commodityID: '999999', speciesName: 'Nothing' }
+    const unknown = { id: '999999', species: { name: 'Nothing' } }
     const result = resolvers.tests.requiresIdentification(unknown, refdata)
     expect(result.active).toBe(false)
     expect(result.reason).toMatch(/no refdata content/)
@@ -116,7 +106,7 @@ describe('tests.requiresIdentification', () => {
 
 describe('routing-flag tests read the correct refdata field', () => {
   // cattle: cph_number=true, permanent_address=false, transporter_address=true
-  const cattle = { commodityID: '102', speciesName: 'Bos taurus' }
+  const cattle = { id: '102', species: { name: 'Bos taurus' } }
 
   it.each([
     ['requiresCphNumber', true],
@@ -127,7 +117,7 @@ describe('routing-flag tests read the correct refdata field', () => {
   })
 
   it('returns inactive with reason when the commodity has no routing entry', () => {
-    const unknown = { commodityID: '999999', speciesName: 'Nothing' }
+    const unknown = { id: '999999', species: { name: 'Nothing' } }
     const result = resolvers.tests.requiresCphNumber(unknown, refdata)
     expect(result.active).toBe(false)
     expect(result.reason).toMatch(/no refdata routing/)
@@ -136,9 +126,7 @@ describe('routing-flag tests read the correct refdata field', () => {
 
 describe('submissionDatePath', () => {
   it('resolves the submission date from a real notification shape', () => {
-    const notification = {
-      partOne: { submissionDate: '2026-04-07T10:00:00Z' }
-    }
+    const notification = { submittedAt: '2026-04-07T10:00:00Z' }
     expect(resolvePath(notification, resolvers.submissionDatePath)).toBe(
       '2026-04-07T10:00:00Z'
     )

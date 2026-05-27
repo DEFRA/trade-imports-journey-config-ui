@@ -132,30 +132,26 @@ describe('Scenario fixtures', () => {
   // -------------------------------------------------------------------------
 
   describe('import-mixed-livestock (multi-commodity)', () => {
-    test('should have 2 commodity complements', () => {
-      const complements =
-        importMixedLivestock.partOne.commodities.commodityComplement
-      expect(complements).toHaveLength(2)
+    test('should have 2 commodity entries', () => {
+      expect(importMixedLivestock.commodities).toHaveLength(2)
     })
 
-    test('should have 2 complement parameter sets', () => {
-      const paramSets =
-        importMixedLivestock.partOne.commodities.complementParameterSet
-      expect(paramSets).toHaveLength(2)
+    test('each commodity entry has its own parameters (no parallel array)', () => {
+      const [first, second] = importMixedLivestock.commodities
+      expect(first.parameters).toBeDefined()
+      expect(second.parameters).toBeDefined()
     })
 
     test('should use cattle as first commodity (drives routing)', () => {
-      const first =
-        importMixedLivestock.partOne.commodities.commodityComplement[0]
-      expect(first.commodityID).toBe('102')
-      expect(first.speciesName).toBe('Bos taurus')
+      const first = importMixedLivestock.commodities[0]
+      expect(first.id).toBe('102')
+      expect(first.species.name).toBe('Bos taurus')
     })
 
     test('should use goat as second commodity', () => {
-      const second =
-        importMixedLivestock.partOne.commodities.commodityComplement[1]
-      expect(second.commodityID).toBe('10420')
-      expect(second.speciesName).toBe('Capra hircus')
+      const second = importMixedLivestock.commodities[1]
+      expect(second.id).toBe('10420')
+      expect(second.species.name).toBe('Capra hircus')
     })
   })
 
@@ -192,9 +188,9 @@ describe('Scenario fixtures', () => {
     })
 
     test('every entry should have notification and label', () => {
-      for (const [key, entry] of Object.entries(scenarioMap)) {
+      for (const [_key, entry] of Object.entries(scenarioMap)) {
         expect(entry.notification).toBeDefined()
-        expect(entry.notification.partOne).toBeDefined()
+        expect(entry.notification.type).toBeDefined()
         expect(typeof entry.label).toBe('string')
         expect(entry.label.length).toBeGreaterThan(0)
       }

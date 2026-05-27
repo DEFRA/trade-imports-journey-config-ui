@@ -2,10 +2,16 @@ import { obligations, scenarios } from '../../journeys/eu-live-animals/index.js'
 
 /**
  * Extract value from notification using dot-notation path.
- * Handles array notation like "commodityComplement[]".
+ * For `foo[]` segments, ALWAYS takes the first array element.
+ *
+ * Distinct from `engine/path.js#resolvePath`: the engine scans every
+ * array element for any non-empty match (it's answering "is the
+ * obligation satisfied by ANY element?"). This helper is building a
+ * representative example fragment for the debug panel, so it needs a
+ * deterministic single-element pick. Do not consolidate.
  *
  * @param {Object} notification - Notification object
- * @param {string} path - Dot-notation path (e.g., "notification.partOne.purpose.purposeGroup")
+ * @param {string} path - Dot-notation path (e.g., "purpose.group")
  * @returns {*} - Value at path, or undefined if not found
  */
 const getValueAtPath = (notification, path) => {
@@ -31,7 +37,7 @@ const getValueAtPath = (notification, path) => {
 
 /**
  * Set value in object using dot-notation path, creating nested objects as needed.
- * Handles array notation like "commodityComplement[]".
+ * Handles array notation like "commodities[]".
  *
  * @param {Object} target - Target object to mutate
  * @param {string} path - Dot-notation path
@@ -102,9 +108,8 @@ export const generateObligationFragments = () => {
     }
 
     // Build minimal fragment by extracting values for all schema paths.
-    // Schema paths are rooted at "notification." (e.g., "notification.type")
-    // but we traverse starting from the notification object itself,
-    // so strip the "notification." prefix for both get and set.
+    // The defensive prefix-strip handles any path still carrying the
+    // legacy `notification.` prefix; new-shape paths have none.
     const fragment = {}
     const PREFIX = 'notification.'
 

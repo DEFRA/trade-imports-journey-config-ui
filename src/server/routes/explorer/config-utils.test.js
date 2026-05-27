@@ -49,43 +49,37 @@ describe('buildMinimalNotification', () => {
     const result = buildMinimalNotification('For Import', '0101210000|Horses')
 
     expect(result.type).toBe('IMPv2')
-    expect(result.partOne.purpose.purposeGroup).toBe('For Import')
-    expect(result.partOne.commodities.commodityComplement[0].commodityID).toBe(
-      '0101210000'
-    )
-    expect(result.partOne.commodities.commodityComplement[0].speciesName).toBe(
-      'Horses'
-    )
+    expect(result.purpose.group).toBe('For Import')
+    expect(result.commodities[0].id).toBe('0101210000')
+    expect(result.commodities[0].species.name).toBe('Horses')
   })
 
   test('sets speciesName to undefined when not in key', () => {
     const result = buildMinimalNotification('For Import', '0101210000|')
-    expect(
-      result.partOne.commodities.commodityComplement[0].speciesName
-    ).toBeUndefined()
+    expect(result.commodities[0].species.name).toBeUndefined()
   })
 
-  test('does not include countryOfOrigin when null', () => {
+  test('does not include origin when null', () => {
     const result = buildMinimalNotification('For Import', '0101210000|Horses')
-    expect(result.partOne.commodities.countryOfOrigin).toBeUndefined()
+    expect(result.origin).toBeUndefined()
   })
 
-  test('includes countryOfOrigin when provided', () => {
+  test('includes origin.country when provided', () => {
     const result = buildMinimalNotification(
       'For Import',
       '0101210000|Horses',
       'FR'
     )
-    expect(result.partOne.commodities.countryOfOrigin).toBe('FR')
+    expect(result.origin.country).toBe('FR')
   })
 
-  test('does not include countryOfOrigin when empty string', () => {
+  test('does not include origin when empty string', () => {
     const result = buildMinimalNotification(
       'For Import',
       '0101210000|Horses',
       ''
     )
-    expect(result.partOne.commodities.countryOfOrigin).toBeUndefined()
+    expect(result.origin).toBeUndefined()
   })
 })
 

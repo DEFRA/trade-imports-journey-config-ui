@@ -1,8 +1,10 @@
 /**
  * Curated scenario fixtures for the obligation explorer.
  *
- * Each scenario is a COMPLETE notification JSON that passes the evaluator
- * with `submittable: true`, `unsatisfied: 0`, `deferred: 0`.
+ * Each scenario is a COMPLETE notification JSON in the journey's
+ * notification shape (see `features/notification-shape/01-target-shape.md`)
+ * that passes the evaluator with `submittable: true`, `unsatisfied: 0`,
+ * `deferred: 0`.
  *
  * The 7 scenarios cover the full obligation graph:
  * - 4 routing flag combinations (none, transporter, CPH+transporter, permAddr+transporter)
@@ -13,53 +15,72 @@
  */
 
 // ---------------------------------------------------------------------------
-// Shared building blocks
+// Shared fragment builders (Party, Place, Address)
 // ---------------------------------------------------------------------------
 
 /**
- * Base address structure reused across scenarios.
- * @param {string} prefix - Name prefix for the entity
+ * Build a Party-shaped object (name + nested address). Used for
+ * consignor / consignee / importer / transporter / packer.
+ *
+ * @param {string} name - Trading name prefix; result is `${name} Ltd`
  * @param {string} country - ISO country code
  */
-const address = (prefix, country) => ({
-  companyName: `${prefix} Ltd`,
-  country
+const party = (name, country) => ({
+  name: `${name} Ltd`,
+  address: { country }
 })
 
 /**
- * Standard veterinary information block.
+ * Build a Place-shaped object (name + address). Used for the
+ * destination.
+ *
+ * @param {string} name - Facility name
+ * @param {object} addressFields - Fields of the Address fragment
  */
-const veterinaryInfo = {
-  veterinaryDocument: 'VET-DOC-12345',
-  veterinaryDocumentIssueDate: '2024-12-20',
-  establishmentsOfOrigin: [
-    {
-      approvalNumber: 'FR-01-123',
-      name: 'Origin Farm',
-      country: 'FR'
-    }
-  ],
-  accompanyingDocuments: [
-    {
-      documentType: 'Health Certificate',
-      documentReference: 'HC-2024-001',
-      documentIssueDate: '2024-12-20',
-      attachmentId: 'attach-001'
-    }
+const place = (name, addressFields) => ({
+  name,
+  address: addressFields
+})
+
+// ---------------------------------------------------------------------------
+// Documents (veterinary + accompanying)
+// ---------------------------------------------------------------------------
+
+const veterinaryDoc = {
+  reference: 'VET-DOC-12345',
+  issueDate: '2024-12-20',
+  establishments: [
+    { approvalNumber: 'FR-01-123', name: 'Origin Farm', country: 'FR' }
   ]
 }
 
-/**
- * Standard transport information block.
- */
+const accompanyingDocs = [
+  {
+    type: 'Health Certificate',
+    reference: 'HC-2024-001',
+    issueDate: '2024-12-20',
+    attachmentId: 'attach-001'
+  }
+]
+
+// ---------------------------------------------------------------------------
+// Transporter (Party with approvalNumber)
+// ---------------------------------------------------------------------------
+
 const transporterBlock = {
-  companyName: 'Test Transport Ltd',
-  country: 'FR',
+  name: 'Test Transport Ltd',
+  address: { country: 'FR' },
   approvalNumber: 'FR-TRANS-001'
 }
 
+// ---------------------------------------------------------------------------
+// Commodity entry builder
+// ---------------------------------------------------------------------------
+
 /**
- * Build a commodity complement entry with full taxonomy.
+ * Build a commodity entry with full species taxonomy.
+ * Returns a partial commodity — merge with `parameterSet(...)` to
+ * produce a complete entry with parameters + identifiers.
  */
 const commodity = ({
   id,
@@ -68,26 +89,26 @@ const commodity = ({
   type,
   cls,
   family,
-  nomination,
-  description,
-  count
+  nomination
 }) => ({
-  commodityID: id,
-  speciesName,
-  speciesTypeName: typeName,
-  speciesType: type,
-  speciesClass: cls,
-  speciesFamilyName: family,
-  speciesNomination: nomination,
-  commodityDescription: description,
-  animalsCertified: count
+  id,
+  species: {
+    name: speciesName,
+    nomination,
+    typeName,
+    type,
+    class: cls,
+    family
+  }
 })
 
 /**
- * Build a complement parameter set entry.
+ * Build the parameters + identifiers fragment for a commodity.
+ * Merge with a `commodity(...)` result via object spread.
+ *
  * @param {string} identifierData - Animal identifier (ear tag, microchip, etc.)
  * @param {number} count - Number of animals
- * @param {Object|null} permanentAddr - Optional permanent address
+ * @param {Object|null} permanentAddr - Optional permanent address (Address fragment)
  */
 const parameterSet = (identifierData, count, permanentAddr = null) => {
   const identifier = { data: identifierData }
@@ -95,13 +116,15 @@ const parameterSet = (identifierData, count, permanentAddr = null) => {
     identifier.permanentAddress = permanentAddr
   }
   return {
-    keyDataPair: [{ key: 'number_of_animals', data: String(count) }],
+    parameters: {
+      keyDataPair: [{ key: 'number_of_animals', data: String(count) }]
+    },
     identifiers: [identifier]
   }
 }
 
 // ---------------------------------------------------------------------------
-// Shared commodity definitions
+// Shared commodity definitions (species-only; merge with parameterSet)
 // ---------------------------------------------------------------------------
 
 const CATTLE = commodity({
@@ -111,9 +134,7 @@ const CATTLE = commodity({
   type: 'Cattle',
   cls: 'Mammals',
   family: 'Bovidae',
-  nomination: 'Domestic cattle',
-  description: 'Live cattle',
-  count: 10
+  nomination: 'Domestic cattle'
 })
 
 const SEMEN = commodity({
@@ -123,9 +144,7 @@ const SEMEN = commodity({
   type: 'Cattle',
   cls: 'Mammals',
   family: 'Bovidae',
-  nomination: 'Domestic cattle semen',
-  description: 'Bovine semen',
-  count: 100
+  nomination: 'Domestic cattle semen'
 })
 
 const OWLS = commodity({
@@ -135,9 +154,7 @@ const OWLS = commodity({
   type: 'Owls',
   cls: 'Aves',
   family: 'Strigidae',
-  nomination: 'Owls',
-  description: 'Live owls',
-  count: 2
+  nomination: 'Owls'
 })
 
 const CATS = commodity({
@@ -147,9 +164,7 @@ const CATS = commodity({
   type: 'Cats',
   cls: 'Mammals',
   family: 'Felidae',
-  nomination: 'Domestic cat',
-  description: 'Live domestic cats',
-  count: 3
+  nomination: 'Domestic cat'
 })
 
 const GOATS = commodity({
@@ -159,90 +174,72 @@ const GOATS = commodity({
   type: 'Goats',
   cls: 'Mammals',
   family: 'Bovidae',
-  nomination: 'Domestic goat',
-  description: 'Live domestic goats',
-  count: 5
+  nomination: 'Domestic goat'
 })
 
 // ---------------------------------------------------------------------------
-// Shared partOne base (everything except commodity-specific and purpose-specific)
+// Standard contacts (shared across scenarios)
 // ---------------------------------------------------------------------------
 
-const basePartOne = {
-  submissionDate: '2024-12-30T12:00:00Z',
-  commodities: {
-    countryOfOrigin: 'FR',
-    regionOfOrigin: 'Normandy',
-    totalGrossWeight: 5000,
-    numberOfPackages: 1
-  },
-  consignor: address('Test Consignor', 'FR'),
-  consignee: address('Test Consignee', 'GB'),
-  importer: address('Test Importer', 'GB'),
-  placeOfDestination: {
-    name: 'Test Farm',
-    addressLine1: '123 Test Lane',
-    city: 'Test City',
-    postalCode: 'TE1 1ST',
-    country: 'GB'
-  },
-  pointOfEntry: 'GBLHR1',
-  pointOfEntryControlPoint: 'GBLHR1',
-  arrivalDate: '2024-12-31T10:00:00Z',
-  estimatedArrivalDate: '2024-12-31',
-  meansOfTransport: {
-    type: 'Road',
-    document: 'ABC123'
-  },
-  veterinaryInformation: veterinaryInfo,
-  nominatedContacts: [
-    {
-      name: 'John Smith',
-      email: 'john.smith@example.com',
-      telephone: '+44 1234 567890'
-    }
-  ],
-  accompaniedByCommercialDocument: true,
-  commercialDocumentType: 'Invoice',
-  commodityIntendedFor: 'HUMAN_CONSUMPTION'
-}
+const nominatedContacts = [
+  {
+    name: 'John Smith',
+    email: 'john.smith@example.com',
+    telephone: '+44 1234 567890'
+  }
+]
 
-/**
- * Build a complete notification from scenario-specific parts.
- */
+// ---------------------------------------------------------------------------
+// buildNotification — assembles a complete notification from
+// scenario-specific parts. Optional fields are only set when their
+// input is truthy (R2 mitigation: avoid empty wrapper objects).
+// ---------------------------------------------------------------------------
+
 const buildNotification = ({
   purposeGroup,
-  internalMarketPurpose = 'Breeding',
-  commodityComplements,
-  complementParameterSets,
+  subPurpose = 'Breeding',
+  commodities,
   cphNumber = null,
   transporter = null,
   exitBIP = null,
   portOfExit = null
-}) => {
-  const purpose = { purposeGroup, internalMarketPurpose }
-  if (exitBIP) purpose.exitBIP = exitBIP
-
-  const partOne = {
-    ...basePartOne,
-    purpose,
-    commodities: {
-      ...basePartOne.commodities,
-      commodityComplement: commodityComplements,
-      complementParameterSet: complementParameterSets
-    }
-  }
-
-  if (transporter) partOne.transporter = transporter
-  if (cphNumber) partOne.cphNumber = cphNumber
-  if (portOfExit) partOne.portOfExit = portOfExit
-
-  return {
-    type: 'CVEDA',
-    status: 'SUBMITTED',
-    partOne
-  }
-}
+}) => ({
+  type: 'CVEDA',
+  submittedAt: '2024-12-30T12:00:00Z',
+  origin: {
+    country: 'FR',
+    region: 'Normandy'
+  },
+  purpose: {
+    group: purposeGroup,
+    subPurpose,
+    ...(exitBIP && { exitBIP })
+  },
+  commodities,
+  parties: {
+    consignor: party('Test Consignor', 'FR'),
+    consignee: party('Test Consignee', 'GB'),
+    importer: party('Test Importer', 'GB'),
+    ...(transporter && { transporter })
+  },
+  destination: place('Test Farm', {
+    line1: '123 Test Lane',
+    city: 'Test City',
+    postalCode: 'TE1 1ST',
+    country: 'GB'
+  }),
+  entry: {
+    bcp: 'GBLHR1',
+    arrivalDate: '2024-12-31T10:00:00Z',
+    ...(portOfExit && { portOfExit })
+  },
+  documents: {
+    veterinary: veterinaryDoc,
+    accompanying: accompanyingDocs
+  },
+  contacts: nominatedContacts,
+  ...(cphNumber && { consignment: { cph: cphNumber } })
+})
 
 // ---------------------------------------------------------------------------
 // Scenario 1: Import – Semen
@@ -252,8 +249,7 @@ const buildNotification = ({
 
 export const importSemen = buildNotification({
   purposeGroup: 'For Import',
-  commodityComplements: [SEMEN],
-  complementParameterSets: [parameterSet('SEMEN-BATCH-001', 100)]
+  commodities: [{ ...SEMEN, ...parameterSet('SEMEN-BATCH-001', 100) }]
 })
 
 // ---------------------------------------------------------------------------
@@ -264,8 +260,7 @@ export const importSemen = buildNotification({
 
 export const importOwls = buildNotification({
   purposeGroup: 'For Import',
-  commodityComplements: [OWLS],
-  complementParameterSets: [parameterSet('OWL-RING-A001', 2)],
+  commodities: [{ ...OWLS, ...parameterSet('OWL-RING-A001', 2) }],
   transporter: transporterBlock
 })
 
@@ -277,8 +272,7 @@ export const importOwls = buildNotification({
 
 export const importCattle = buildNotification({
   purposeGroup: 'For Import',
-  commodityComplements: [CATTLE],
-  complementParameterSets: [parameterSet('UK123456789012', 10)],
+  commodities: [{ ...CATTLE, ...parameterSet('UK123456789012', 10) }],
   cphNumber: '12/345/6789',
   transporter: transporterBlock
 })
@@ -291,14 +285,16 @@ export const importCattle = buildNotification({
 
 export const importCats = buildNotification({
   purposeGroup: 'For Import',
-  commodityComplements: [CATS],
-  complementParameterSets: [
-    parameterSet('MICROCHIP-CAT-001', 3, {
-      addressLine1: '42 Whiskers Lane',
-      city: 'Catford',
-      postalCode: 'CA1 1CT',
-      country: 'GB'
-    })
+  commodities: [
+    {
+      ...CATS,
+      ...parameterSet('MICROCHIP-CAT-001', 3, {
+        line1: '42 Whiskers Lane',
+        city: 'Catford',
+        postalCode: 'CA1 1CT',
+        country: 'GB'
+      })
+    }
   ],
   transporter: transporterBlock
 })
@@ -311,8 +307,7 @@ export const importCats = buildNotification({
 
 export const transhipmentSemen = buildNotification({
   purposeGroup: 'For Transhipment to',
-  commodityComplements: [SEMEN],
-  complementParameterSets: [parameterSet('SEMEN-BATCH-002', 100)],
+  commodities: [{ ...SEMEN, ...parameterSet('SEMEN-BATCH-002', 100) }],
   exitBIP: 'GBLHR1',
   portOfExit: 'GBLHR1'
 })
@@ -325,8 +320,7 @@ export const transhipmentSemen = buildNotification({
 
 export const transhipmentCattle = buildNotification({
   purposeGroup: 'For Transhipment to',
-  commodityComplements: [CATTLE],
-  complementParameterSets: [parameterSet('UK123456789012', 10)],
+  commodities: [{ ...CATTLE, ...parameterSet('UK123456789012', 10) }],
   cphNumber: '12/345/6789',
   transporter: transporterBlock,
   exitBIP: 'GBLHR1',
@@ -336,15 +330,14 @@ export const transhipmentCattle = buildNotification({
 // ---------------------------------------------------------------------------
 // Scenario 7: Import – Mixed Livestock (cattle + goat)
 // Routing: CPH + transporter (from first commodity)
-// Active: 19 obligations, 2 commodity complements
+// Active: 19 obligations, 2 commodities
 // ---------------------------------------------------------------------------
 
 export const importMixedLivestock = buildNotification({
   purposeGroup: 'For Import',
-  commodityComplements: [CATTLE, GOATS],
-  complementParameterSets: [
-    parameterSet('UK123456789012', 10),
-    parameterSet('UK987654321098', 5)
+  commodities: [
+    { ...CATTLE, ...parameterSet('UK123456789012', 10) },
+    { ...GOATS, ...parameterSet('UK987654321098', 5) }
   ],
   cphNumber: '12/345/6789',
   transporter: transporterBlock

@@ -311,9 +311,7 @@ describe('Explorer routes', () => {
         payload: {
           notification: {
             type: 'CVEDA',
-            partOne: {
-              purpose: { purposeGroup: 'For Import' }
-            }
+            purpose: { group: 'For Import' }
           }
         }
       })
@@ -364,9 +362,7 @@ describe('Explorer routes', () => {
         payload: {
           notification: {
             type: 'CVEDA',
-            partOne: {
-              purpose: { purposeGroup: 'For Import' }
-            }
+            purpose: { group: 'For Import' }
           }
         }
       })

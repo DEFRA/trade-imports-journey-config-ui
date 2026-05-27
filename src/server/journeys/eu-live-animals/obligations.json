@@ -6,15 +6,15 @@
       "id": "notification-type",
       "name": "Notification Type",
       "rationale": "Regulatory requirement to classify the import for routing to the correct inspection regime.",
-      "schemaPaths": ["notification.type"]
+      "schemaPaths": ["type"]
     },
     {
       "id": "consignment-origin",
       "name": "Consignment Origin",
       "rationale": "Traceability: country and region of origin determine applicable health rules and risk profile.",
       "schemaPaths": [
-        "notification.partOne.commodities.countryOfOrigin",
-        "notification.partOne.commodities.regionOfOrigin"
+        "origin.country",
+        "origin.region"
       ]
     },
     {
@@ -22,10 +22,10 @@
       "name": "Import Purpose",
       "rationale": "Determines regulatory pathway: different purposes (slaughter, breeding, transit) carry different inspection requirements.",
       "schemaPaths": [
-        "notification.partOne.purpose.purposeGroup",
-        "notification.partOne.purpose.internalMarketPurpose"
+        "purpose.group",
+        "purpose.subPurpose"
       ],
-      "note": "internalMarketPurpose has field-level visibility (dependsOn purpose) but the obligation itself is unconditional."
+      "note": "subPurpose has field-level visibility (dependsOn purpose) but the obligation itself is unconditional."
     },
     {
       "id": "transit-routing",
@@ -37,8 +37,8 @@
         "description": "Active when purposeGroup is 'For Transhipment to' or 'For Transit to 3rd Country'."
       },
       "schemaPaths": [
-        "notification.partOne.purpose.exitBIP",
-        "notification.partOne.portOfExit"
+        "purpose.exitBIP",
+        "entry.portOfExit"
       ],
       "note": "Purpose-conditional obligation (fact: purposeGroup, test: isTransit). The journey map should have visibility conditions on both exit-bcp and port-of-exit fields (exit-bcp already has dependsOn:purpose, port-of-exit is missing it)."
     },
@@ -47,7 +47,7 @@
       "name": "Commodity Selection",
       "rationale": "Identifies the commodity being imported. The commodity code is the key fact that drives all downstream variance.",
       "schemaPaths": [
-        "notification.partOne.commodities.commodityComplement[].commodityID"
+        "commodities[].id"
       ],
       "note": "Key fact: the commodity code selected here drives all commodity-conditional obligation activation via refdata."
     },
@@ -56,21 +56,21 @@
       "name": "Species Identification",
       "rationale": "Regulatory requirement to identify the exact species. Taxonomy and species options are intrinsic to the commodity code.",
       "schemaPaths": [
-        "notification.partOne.commodities.commodityComplement[].speciesTypeName",
-        "notification.partOne.commodities.commodityComplement[].speciesType",
-        "notification.partOne.commodities.commodityComplement[].speciesClass",
-        "notification.partOne.commodities.commodityComplement[].speciesFamilyName",
-        "notification.partOne.commodities.commodityComplement[].speciesNomination",
-        "notification.partOne.commodities.commodityComplement[].speciesName"
+        "commodities[].species.typeName",
+        "commodities[].species.type",
+        "commodities[].species.class",
+        "commodities[].species.family",
+        "commodities[].species.nomination",
+        "commodities[].species.name"
       ]
     },
     {
       "id": "commodity-complement-detail",
       "name": "Commodity Complement Detail",
-      "rationale": "Per-complement quantity data. Quantity type resolved per commodity from refdata.",
+      "rationale": "Per-commodity quantity data. Quantity type resolved per commodity from refdata.",
       "schemaPaths": [
-        "notification.partOne.commodities.commodityComplement[].speciesName",
-        "notification.partOne.commodities.complementParameterSet[].keyDataPair"
+        "commodities[].species.name",
+        "commodities[].parameters.keyDataPair"
       ]
     },
     {
@@ -83,7 +83,7 @@
         "description": "Active when the commodity's identifier set is not NONE."
       },
       "schemaPaths": [
-        "notification.partOne.commodities.complementParameterSet[].identifiers[].data"
+        "commodities[].identifiers[].data"
       ]
     },
     {
@@ -96,7 +96,7 @@
         "description": "Active for commodity codes where animalsCertifiedAs applies. Requires refdata extension."
       },
       "schemaPaths": [
-        "notification.partOne.commodities.animalsCertifiedAs"
+        "consignment.animalsCertifiedAs"
       ]
     },
     {
@@ -109,7 +109,7 @@
         "description": "Active for commodity codes where includeNonAblactedAnimals applies. Requires refdata extension."
       },
       "schemaPaths": [
-        "notification.partOne.commodities.includeNonAblactedAnimals"
+        "consignment.includeNonAblactedAnimals"
       ]
     },
     {
@@ -117,9 +117,9 @@
       "name": "Health Certification",
       "rationale": "Legal requirement: veterinary certificate proving animals meet GB import health standards.",
       "schemaPaths": [
-        "notification.partOne.veterinaryInformation.veterinaryDocument",
-        "notification.partOne.veterinaryInformation.veterinaryDocumentIssueDate",
-        "notification.partOne.veterinaryInformation.accompanyingDocuments[].attachmentId"
+        "documents.veterinary.reference",
+        "documents.veterinary.issueDate",
+        "documents.accompanying[].attachmentId"
       ]
     },
     {
@@ -127,7 +127,7 @@
       "name": "Establishments of Origin",
       "rationale": "Traceability: approved establishments where animals originated, for disease outbreak investigation.",
       "schemaPaths": [
-        "notification.partOne.veterinaryInformation.establishmentsOfOrigin[].approvalNumber"
+        "documents.veterinary.establishments[].approvalNumber"
       ]
     },
     {
@@ -135,35 +135,35 @@
       "name": "Accompanying Documents",
       "rationale": "Commercial and regulatory documents that must accompany the consignment.",
       "schemaPaths": [
-        "notification.partOne.veterinaryInformation.accompanyingDocuments[].documentType",
-        "notification.partOne.veterinaryInformation.accompanyingDocuments[].documentReference",
-        "notification.partOne.veterinaryInformation.accompanyingDocuments[].documentIssueDate",
-        "notification.partOne.veterinaryInformation.accompanyingDocuments[].attachmentId"
+        "documents.accompanying[].type",
+        "documents.accompanying[].reference",
+        "documents.accompanying[].issueDate",
+        "documents.accompanying[].attachmentId"
       ]
     },
     {
       "id": "consignor-identification",
       "name": "Consignor Identification",
       "rationale": "Supply chain traceability: identifies who is exporting the animals.",
-      "schemaPaths": ["notification.partOne.consignor"]
+      "schemaPaths": ["parties.consignor"]
     },
     {
       "id": "consignee-identification",
       "name": "Consignee Identification",
       "rationale": "Supply chain traceability: identifies who is receiving the consignment.",
-      "schemaPaths": ["notification.partOne.consignee"]
+      "schemaPaths": ["parties.consignee"]
     },
     {
       "id": "importer-identification",
       "name": "Importer Identification",
       "rationale": "Legal liability: identifies the legal importer responsible for compliance.",
-      "schemaPaths": ["notification.partOne.importer"]
+      "schemaPaths": ["parties.importer"]
     },
     {
       "id": "destination-identification",
       "name": "Destination Identification",
       "rationale": "Inspection and welfare: where animals will be unloaded and held for at least 48 hours.",
-      "schemaPaths": ["notification.partOne.placeOfDestination"]
+      "schemaPaths": ["destination"]
     },
     {
       "id": "permanent-address",
@@ -175,7 +175,7 @@
         "description": "Active when the commodity requires a permanent address."
       },
       "schemaPaths": [
-        "notification.partOne.commodities.complementParameterSet[].identifiers[].permanentAddress"
+        "commodities[].identifiers[].permanentAddress"
       ]
     },
     {
@@ -187,15 +187,15 @@
         "test": "requiresCphNumber",
         "description": "Active when the commodity requires a CPH number."
       },
-      "schemaPaths": ["notification.partOne.cphNumber"]
+      "schemaPaths": ["consignment.cph"]
     },
     {
       "id": "entry-and-arrival",
       "name": "Entry Point and Arrival",
       "rationale": "Operational: port of entry determines BCP for inspection. Arrival date triggers scheduling.",
       "schemaPaths": [
-        "notification.partOne.pointOfEntry",
-        "notification.partOne.arrivalDate"
+        "entry.bcp",
+        "entry.arrivalDate"
       ]
     },
     {
@@ -207,20 +207,20 @@
         "test": "requiresTransporter",
         "description": "Active when the commodity requires transporter identification."
       },
-      "schemaPaths": ["notification.partOne.transporter"]
+      "schemaPaths": ["parties.transporter"]
     },
     {
       "id": "contact-designation",
       "name": "Contact Designation",
       "rationale": "Operational: nominated contact for competent authority regarding this consignment.",
-      "schemaPaths": ["notification.partOne.nominatedContacts[]"]
+      "schemaPaths": ["contacts[]"]
     },
     {
       "id": "legal-declaration",
       "name": "Legal Declaration",
       "rationale": "Legal requirement: importer assumes responsibility for accuracy and compliance.",
       "schemaPaths": [],
-      "action": "Sets notification.partOne.submissionDate and changes notification.status to SUBMITTED."
+      "action": "Sets submittedAt and changes notification.status to SUBMITTED."
     }
   ]
 }
