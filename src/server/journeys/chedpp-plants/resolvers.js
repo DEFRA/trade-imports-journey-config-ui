@@ -1,26 +1,27 @@
 /**
  * CHEDPP (plants) journey resolvers.
  *
- * Schema-specific fact extractors and condition tests for the IPAFFS
- * notification structure (notification.partOne.* shape).
+ * Schema-specific fact extractors and condition tests for the
+ * chedpp-plants notification structure (see
+ * `features/notification-shape/01-target-shape.md`).
  *
- * These functions know how to navigate the IPAFFS notification schema
- * and the chedpp-plants refdata structure. No other module should
- * contain this knowledge.
+ * These functions know how to navigate the notification shape and the
+ * chedpp-plants refdata structure. No other module should contain
+ * this knowledge.
  */
-import { or } from '#server/engine/combinators.js'
-
 // ---------------------------------------------------------------------------
 // Fact extractors
 // ---------------------------------------------------------------------------
 
 const facts = {
-  purposeGroup: (notification) =>
-    notification?.partOne?.purpose?.purposeGroup ?? null,
+  purposeGroup: (notification) => notification?.purpose?.group ?? null,
 
   commodity: (notification) => {
-    const c = notification?.partOne?.commodities?.commodityComplement?.[0]
-    return c?.commodityID ? c : null
+    // Preserves the single-commodity routing semantic: routing flags
+    // are driven by the first commodity only. Multi-commodity routing
+    // is a separate, deferred piece of work.
+    const c = notification?.commodities?.[0]
+    return c?.id ? c : null
   }
 }
 
@@ -29,14 +30,15 @@ const facts = {
 // ---------------------------------------------------------------------------
 
 /**
- * Build refdata lookup key from a commodity complement.
+ * Build refdata lookup key from a commodity.
  *
  * CHEDPP uses commodityCode|eppoCode (parallel to EU live animals'
- * commodityID|speciesName). The eppoCode is the EPPO plant identifier.
+ * commodityID|speciesName). The eppoCode is the EPPO plant identifier
+ * and now lives under `commodity.species.eppoCode` per the new shape.
  */
 const buildRefdataKey = (commodity) => {
-  const code = commodity.commodityID
-  const eppo = commodity.eppoCode ?? ''
+  const code = commodity.id
+  const eppo = commodity.species?.eppoCode ?? ''
   return `${code}|${eppo}`
 }
 
@@ -51,7 +53,7 @@ const buildRefdataKey = (commodity) => {
 const lookupRefdata = (table, commodity) => {
   const exactKey = buildRefdataKey(commodity)
   if (table[exactKey]) return table[exactKey]
-  const fallbackKey = `${commodity.commodityID}|`
+  const fallbackKey = `${commodity.id}|`
   return table[fallbackKey] ?? null
 }
 
@@ -83,7 +85,6 @@ const isTranshipment = (purposeGroup, _refdata) => ({
 const tests = {
   isTransit,
   isTranshipment,
-  isTransitOrTranshipment: or(isTransit, isTranshipment),
 
   requiresGmsDeclaration: (commodity, refdata) => {
     const routing = lookupRefdata(refdata.routing, commodity)
@@ -157,7 +158,7 @@ const tests = {
 // Submission date path
 // ---------------------------------------------------------------------------
 
-const submissionDatePath = 'notification.partOne.submissionDate'
+const submissionDatePath = 'submittedAt'
 
 // ---------------------------------------------------------------------------
 // Exports
