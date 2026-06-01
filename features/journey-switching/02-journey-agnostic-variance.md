@@ -1,5 +1,11 @@
 # Story: Journey-agnostic commodity-config (refdata-view for both journeys)
 
+> **Prerequisite:** `00-normalise-plants-refdata.md` (this story reads
+> the normalised plants `{commodities, species, classes}` shape). Plays
+> well alongside `03-gms-correction-and-scenario-coverage.md`, which
+> keeps the resolver semantics aligned with the variance that the page
+> now displays.
+
 ## Goal
 
 Make the commodity-config view render for **any registered journey** —
@@ -15,9 +21,11 @@ page shows:
 
 - **dimension** — a *variance-annotated* value list (common/specific
   tagging + an explicit "excluded" list). Animals: Purpose, Identifiers.
-  Plants: Regulatory authority, Marketing standard, Validity period.
+  Plants: Regulatory authority, Marketing standard, Validity period,
+  Commodity group.
 - **detail** — a *labelled group of rows shown as-is*, no variance.
-  Animals: Quantity type, Routing Flags. Plants: Routing Flags.
+  Animals: Quantity type, Routing Flags. Plants: Commodity routing
+  flags, Quality classes, Varieties.
 
 ## Why
 
@@ -71,24 +79,32 @@ data point on the animals page today must still be present afterwards.
   (variance list), Identifier Types (variance list), Quantity Type (dl).
   The macro extraction (§5) collapses these into the two generic blocks
   plus a journey-neutral summary.
-- Refdata shapes (confirmed by probe, not assertion):
-  - **animals** `content[k]`: `purpose`, `identifiers`, `quantity`
-    (each a *name* dereferenced via `definitions`); `definitions`:
-    `purpose_sets`, `identifier_sets`, `quantity_types`; `routing[k]`:
-    `cph_number`, `permanent_address`, `transporter_address` (booleans).
-  - **plants** `content[k]`: `regulatory_authority`, `marketing_standard`,
-    `validity_period` — **flat scalars**, no `content → definitions`
-    indirection. `definitions.{varieties, groups, classes}` exist but are
-    **not referenced by content**. `routing[k]`: `has_gms`,
-    `has_varieties`, `requires_finished_or_propagated`,
-    `requires_test_and_trial`, `requires_billing` (booleans) +
-    `propagation` (a **string|null**, not a boolean).
-  - **Validated dimension signal** (probe over ~5,300 plants entries):
-    `regulatory_authority` → JOINT 4874 / HMI 447 (HMI "specific" at
-    8.4%); `marketing_standard` → GMS 5229 / SMS 92 (SMS "specific" at
-    1.7%); `validity_period` → 5 distinct values that genuinely vary
-    across commodities. All three carry real common/specific signal, so
-    all three are dimensions.
+- Refdata shapes:
+  - **animals** (unchanged): `content[k]`: `purpose`, `identifiers`,
+    `quantity` (each a *name* dereferenced via `definitions`);
+    `definitions`: `purpose_sets`, `identifier_sets`, `quantity_types`;
+    `routing[k]`: `cph_number`, `permanent_address`,
+    `transporter_address` (booleans).
+  - **plants** (post-Story 00 normalisation; see `plants-refdata-model.md`):
+    `commodities[code]` carries commodity-grain facts —
+    `group`, `requires_test_and_trial`,
+    `requires_finished_or_propagated`, `propagation`, `classes`.
+    `species[code|eppo]` carries species-grain —
+    `regulatory_authority`, `marketing_standard`, `validity_period`,
+    `varieties`. No `routing`/`content`/`definitions` keys; no stored
+    `has_gms`/`has_varieties`/`requires_billing`.
+  - **Validated dimension signal** (probe over ~5,300 plants species
+    entries): `regulatory_authority` → JOINT 4874 / HMI 447 (HMI
+    "specific" at 8.4%); `marketing_standard` → GMS 5229 / SMS 92 (SMS
+    "specific" at 1.7%); `validity_period` → 5 distinct values that vary
+    across commodities. `group` (commodity-grain) → 11 distinct values
+    across 482 codes (Vegetables dominant). All four carry real
+    common/specific signal — all four are dimensions.
+- **Dropdown source.** `config-utils#extractCommodityOptions` currently
+  reads `refdata.routing` keys (5,710 for plants in the old shape). The
+  normalised plants refdata has no `routing`, so the dropdown source
+  becomes a **per-journey concern** — see §4. Animals keeps the old
+  shape, so animals' dropdown source is unchanged.
 
 ## Specification
 
@@ -167,33 +183,69 @@ export const refdataView = (refdata) => {
   }
 }
 
-// chedpp-plants/refdata-view.js
+// chedpp-plants/refdata-view.js  — reads Story 00's normalised shape
 export const refdataView = (refdata) => {
-  const { content, routing } = refdata
-  const scalar = (field) => (k) => [content[k]?.[field]].filter(Boolean)
+  const { species, commodities } = refdata
+  const codeOf = (k) => k.split('|')[0]
+  const sp = (field) => (k) => [species[k]?.[field]].filter(Boolean)
+  const com = (field) => (k) => [commodities[codeOf(k)]?.[field]].filter(Boolean)
   return {
     dimensions: [
+      // species-grain
       { id: 'regulatory_authority', name: 'Regulatory authority',
-        valuesFor: scalar('regulatory_authority') },
+        valuesFor: sp('regulatory_authority') },
       { id: 'marketing_standard', name: 'Marketing standard',
-        valuesFor: scalar('marketing_standard') },
+        valuesFor: sp('marketing_standard') },
       { id: 'validity_period', name: 'Validity period',
-        valuesFor: scalar('validity_period') }
+        valuesFor: sp('validity_period') },
+      // commodity-grain (derived from the key's code segment)
+      { id: 'group', name: 'Commodity group',
+        valuesFor: com('group') }
     ],
     details: [
-      { id: 'routing', name: 'Routing Flags',
-        rowsFor: (k) => [
-          { label: 'GMS declaration', value: routing[k]?.has_gms ?? null },
-          { label: 'Registered varieties', value: routing[k]?.has_varieties ?? null },
-          { label: 'Finished or propagated', value: routing[k]?.requires_finished_or_propagated ?? null },
-          { label: 'Test and trial', value: routing[k]?.requires_test_and_trial ?? null },
-          { label: 'Propagation type', value: routing[k]?.propagation ?? null },
-          { label: 'Billing required', value: routing[k]?.requires_billing ?? null }
-        ] }
+      { id: 'commodity_flags', name: 'Commodity routing',
+        rowsFor: (k) => {
+          const c = commodities[codeOf(k)]
+          return [
+            { label: 'Test and trial', value: c?.requires_test_and_trial ?? null },
+            { label: 'Finished or propagated', value: c?.requires_finished_or_propagated ?? null },
+            { label: 'Propagation type', value: c?.propagation ?? null }
+          ]
+        } },
+      { id: 'classes', name: 'Quality classes',
+        rowsFor: (k) => {
+          const classes = commodities[codeOf(k)]?.classes ?? []
+          return classes.length === 0
+            ? [{ label: 'Classes', value: null }]
+            : classes.map((c, i) => ({ label: `Class ${i + 1}`, value: c }))
+        } },
+      { id: 'varieties', name: 'Varieties',
+        rowsFor: (k) => {
+          const vs = species[k]?.varieties ?? []
+          return vs.length === 0
+            ? [{ label: 'Varieties', value: null }]
+            : vs.map((v, i) => ({ label: `Variety ${i + 1}`, value: v }))
+        } }
     ]
   }
 }
 ```
+
+Notes on the plants descriptor:
+
+- **No `has_gms` / `has_varieties` / `requires_billing` shown.** Story 00
+  dropped them as stored fields (derived at read time); Story 03 removed
+  `has_gms` even from the derived view as misleading. Marketing-standard
+  presence is already visible via the `marketing_standard` dimension;
+  variety presence is visible via the `Varieties` detail.
+- **Mixed grains.** Three dimensions read `species[k]` (species-grain);
+  one (`group`) reads `commodities[codeOf(k)]` (commodity-grain). The
+  variance machinery is grain-agnostic — the descriptor encodes the
+  grain in `valuesFor`.
+- **PHSI-only commodities** have no `species[k]` row. Their species-grain
+  dimensions return `[]` (rendered as "empty included list" / all values
+  in `excluded`), and the commodity-grain dimension/details still render
+  from `commodities[code]`. This is the explicit-absence rule in action.
 
 The factory closes over `refdata`; the functions then take just a
 commodity key. The explorer reads the descriptor via
@@ -222,6 +274,19 @@ Delete the hardcoded purpose/identifier blocks. `classifyValue` /
   (`server.app.evaluationEngine.getJourney(journeyKey)`); **drop the
   direct eu-live-animals import**. `journeyKey` comes from
   `config.get('journey')` (story 01, §3).
+- **Dropdown source becomes journey-aware.** `extractCommodityOptions`
+  in `config-utils.js` currently reads `refdata.routing` keys — that
+  shape no longer exists for plants. The journey's `refdata-view.js`
+  exports a `commodityKeys(refdata) → string[]` function alongside
+  `refdataView`:
+  - Animals: `Object.keys(refdata.routing)` (unchanged behaviour).
+  - Plants: union of `Object.keys(refdata.species)` (5,321 species
+    keys) and the PHSI-only commodity codes from `Object.keys(refdata.commodities)`
+    that have no species rows (~389 commodity-only entries) — total
+    matches the 5,710 the old `routing` had, so the dropdown universe
+    is preserved.
+  `extractCommodityOptions` is rewritten to take this key list rather
+  than read `refdata.routing` directly.
 - `const { dimensions, details } = journey.refdataView(journey.refdata)`.
 - `const variance = computeVariance(journey.refdata, dimensions)` —
   **per-request** (was module-load). Removes the module-load animals
@@ -337,20 +402,29 @@ beyond their existing coverage.
   list and returns `byDimension` keyed by dimension **id**; no hardcoded
   purpose/identifier blocks remain.
 - [ ] Each journey exports `refdataView(refdata) → { dimensions, details }`
-  (animals: Purpose + Identifiers dimensions, Quantity type + Routing
-  Flags details; plants: Regulatory authority + Marketing standard +
-  Validity period dimensions, Routing Flags detail), re-exported from
-  `index.js`.
+  and `commodityKeys(refdata) → string[]`, re-exported from `index.js`:
+  - **animals:** Purpose + Identifiers dimensions; Quantity type + Routing
+    Flags details; `commodityKeys = Object.keys(refdata.routing)`.
+  - **plants:** Regulatory authority + Marketing standard + Validity
+    period + Commodity group dimensions; Commodity routing + Quality
+    classes + Varieties details; `commodityKeys` = union of species keys
+    and PHSI-only commodity codes.
 - [ ] `commodity-config-controller.js` resolves journey data via the
   facade; **no direct journey import remains**
   (`grep -rn "journeys/eu-live-animals\|journeys/chedpp-plants"
   src/server/routes/` → zero).
+- [ ] `extractCommodityOptions` takes the journey's commodity-key list
+  rather than reading `refdata.routing` directly.
 - [ ] `commodity-config.njk` renders via two macros (`dimensionBlock`,
   `detailBlock`) looping the descriptor's arrays; no hardcoded
   Purpose/Identifiers/Quantity/Routing markup remains.
 - [ ] **Quantity type is preserved** on the animals page (as a detail).
-- [ ] The Routing Flags detail iterates the journey's own flag keys
-  (3 animals / 6 plants), including the non-boolean plants `propagation`.
+- [ ] Plants' restored `classes` linkage is surfaced (Quality classes
+  detail) and `varieties` is surfaced (Varieties detail) — neither was
+  visible before the normalisation.
+- [ ] No `has_gms` / `has_varieties` / `requires_billing` appears in
+  the plants descriptor or template — those were dropped by Story 00
+  (and `has_gms` was misnamed; Story 03 owns the semantic correction).
 - [ ] Explicit absence: dimension `excluded` values and `null` detail
   rows both render visibly ("Not provided"), never silently omitted.
 - [ ] Animals commodity-config drops no information — verified for
@@ -392,10 +466,12 @@ npm run dev
 
 # Plants:
 JOURNEY=chedpp-plants npm run dev
-#   /explorer/commodity-config → pick a commodity → Regulatory authority,
-#   Marketing standard, Validity period dimensions render non-blank; Routing
-#   Flags detail shows 6 rows (propagation as text); nav item present (no
-#   "not available" notice).
+#   /explorer/commodity-config → pick a commodity (species or PHSI-only):
+#   Regulatory authority, Marketing standard, Validity period, Commodity
+#   group dimensions render; Commodity routing (test_and_trial /
+#   finished_or_propagated / propagation), Quality classes, and Varieties
+#   details render; PHSI-only entries show species-grain dimensions as
+#   "Not provided"; nav item present (no "not available" notice).
 ```
 
 ## What NOT to change
@@ -410,19 +486,26 @@ JOURNEY=chedpp-plants npm run dev
 - Don't add variance to the routing flags — they stay a detail (as-is),
   matching today's behaviour.
 
-## Relationship to story 01
+## Relationship to the other stories
 
-This story **supersedes** story 01's §7 commodity-config gate **and
-removes its gate tests** (the "not available" notice + nav-hidden
-assertions). Land order is flexible:
-
-- 01 then 02: 01 ships with the gate; 02 removes the gate and its tests.
-- 02 then 01: commodity-config is already journey-agnostic, so 01 drops
-  §7 entirely and never writes the gate tests.
-
-Either way the two stay separate: 01 is journey-selection plumbing
-(config + controllers + imports + nav); 02 is a view refactor
-(refdata-view descriptor + template macros). Different surfaces,
-different risks, different tests. Both still thread `journeyKey` +
-`showCommodityConfig` per story 01 §6 — after 02, `showCommodityConfig`
-is `true` for all journeys and can be retired.
+- **`00-normalise-plants-refdata.md` — hard prereq.** This story reads
+  the `{commodities, species, classes}` shape Story 00 produces. Cannot
+  land until Story 00 has.
+- **`03-gms-correction-and-scenario-coverage.md` — companion, either
+  order.** Story 03 corrects the resolver predicate and adds variance
+  scenarios; it does not change the refdata shape this story depends on.
+  Landing 03 first means the explorer immediately demonstrates the
+  corrected GMS variance; landing 02 first means the variance shows on
+  the page but `gms-declaration` itself is still computed on the buggy
+  predicate until 03 lands. Either is acceptable.
+- **`01-env-selected-journey.md` — supersedes its §7 gate.** This story
+  **supersedes** story 01's commodity-config gate **and removes its
+  gate tests** (the "not available" notice + nav-hidden assertions).
+  Land order between 01 and 02 is flexible:
+  - 01 then 02: 01 ships with the gate; 02 removes the gate and its tests.
+  - 02 then 01: commodity-config is already journey-agnostic, so 01 drops
+    §7 entirely and never writes the gate tests.
+  Either way 01 is journey-selection plumbing; 02 is the view refactor.
+  Both thread `journeyKey` + `showCommodityConfig` per story 01 §6 —
+  after 02, `showCommodityConfig` is `true` for all journeys and can be
+  retired.
