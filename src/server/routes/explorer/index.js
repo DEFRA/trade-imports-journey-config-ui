@@ -1,3 +1,4 @@
+import { config } from '#config/config.js'
 import { journeyController } from './journey-controller.js'
 import { debugController } from './debug-controller.js'
 import { evaluateController } from './api-controller.js'
@@ -21,6 +22,20 @@ export const explorer = {
   plugin: {
     name: 'explorer',
     register(server) {
+      // Fail fast if the configured JOURNEY is not registered with the engine.
+      // Journey *selection* is an explorer concern; the engine stays
+      // selection-agnostic. The evaluation-engine plugin registers before the
+      // router (and therefore before us), so server.app.evaluationEngine is
+      // already bound by the time we run.
+      const configured = config.get('journey')
+      const known = server.app.evaluationEngine.listJourneys()
+      if (!known.includes(configured)) {
+        throw new Error(
+          `Configured JOURNEY "${configured}" is not registered. ` +
+            `Known journeys: ${known.join(', ')}`
+        )
+      }
+
       server.route([
         {
           method: 'GET',

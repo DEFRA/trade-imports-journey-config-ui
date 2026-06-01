@@ -1,5 +1,3 @@
-import { obligations, scenarios } from '../../journeys/eu-live-animals/index.js'
-
 /**
  * Extract value from notification using dot-notation path.
  * For `foo[]` segments, ALWAYS takes the first array element.
@@ -81,19 +79,33 @@ const setValueAtPath = (target, path, value) => {
 
 /**
  * Generate minimal notification fragments for all obligations.
- * For each obligation, extracts the minimal JSON fragment from a representative scenario.
+ * For each obligation, extracts the minimal JSON fragment from a representative
+ * scenario (the first one in the scenarios map).
  *
+ * Journey-agnostic: takes its data as arguments so any journey's obligations +
+ * scenarios can be visualised.
+ *
+ * @param {Array<Object>} obligations - The journey's obligations
+ * @param {Object} scenarios - The journey's scenario map (id -> { notification, label })
  * @returns {Object} - Map of obligation ID to { fragment, note? }
  */
-export const generateObligationFragments = () => {
-  const fragments = {}
-
-  // Use import-cattle as the default scenario (most complete)
-  const defaultScenario = scenarios['import-cattle']?.notification
+export const generateObligationFragments = (obligations, scenarios) => {
+  // Use the first scenario as the representative example. A journey with
+  // no scenarios returns empty fragments — the debug page degrades to "no
+  // example available" rather than crashing.
+  const firstScenarioKey = Object.keys(scenarios)[0]
+  const defaultScenario = scenarios[firstScenarioKey]?.notification
 
   if (!defaultScenario) {
-    throw new Error('import-cattle scenario not found')
+    return Object.fromEntries(
+      obligations.map((ob) => [
+        ob.id,
+        { fragment: {}, note: 'No scenarios available for example fragment.' }
+      ])
+    )
   }
+
+  const fragments = {}
 
   for (const obligation of obligations) {
     const { id, schemaPaths } = obligation
@@ -130,7 +142,7 @@ export const generateObligationFragments = () => {
     if (isEmpty) {
       fragments[id] = {
         fragment: {},
-        note: `No matching data in import-cattle scenario for paths: ${schemaPaths.join(', ')}`
+        note: `No matching data in ${firstScenarioKey} scenario for paths: ${schemaPaths.join(', ')}`
       }
     } else {
       fragments[id] = {

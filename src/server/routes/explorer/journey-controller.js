@@ -1,14 +1,6 @@
-import { scenarios } from '../../journeys/eu-live-animals/index.js'
+import { config } from '#config/config.js'
 import { resolveScreens } from '#server/engine/resolve-screens.js'
-
-/**
- * Scenario options for the dropdown, derived from the scenario map.
- * Each scenario is a pre-built notification fixture designed to satisfy all obligations.
- */
-const SCENARIO_OPTIONS = Object.entries(scenarios).map(([value, { label }]) => ({
-  value,
-  label
-}))
+import { navContext } from './nav-context.js'
 
 /**
  * Group flat screen array by sectionId, preserving order.
@@ -34,19 +26,20 @@ const groupScreensBySection = (screens) => {
 }
 
 /**
- * Convert scenario options to GOV.UK select items format.
+ * Convert a journey's scenario map to GOV.UK select items.
  *
+ * @param {Object} scenarios - Journey scenario map (id -> { notification, label })
  * @param {string|null} selected - Currently selected scenario name
  * @returns {Array<Object>} Select items for govukSelect macro
  */
-const toScenarioSelectItems = (selected) => {
+const toScenarioSelectItems = (scenarios, selected) => {
   const items = [{ value: '', text: 'Empty (clear all)', selected: !selected }]
 
-  for (const scenario of SCENARIO_OPTIONS) {
+  for (const [value, { label }] of Object.entries(scenarios)) {
     items.push({
-      value: scenario.value,
-      text: scenario.label,
-      selected: scenario.value === selected
+      value,
+      text: label,
+      selected: value === selected
     })
   }
 
@@ -57,11 +50,14 @@ const toScenarioSelectItems = (selected) => {
  * GET /explorer handler (scenario-based journey configuration)
  *
  * Loads a scenario from query param (?scenario=X), session, or shows empty state.
- * Uses the evaluation engine via server.app.evaluationEngine.
+ * Uses the evaluation engine via server.app.evaluationEngine and resolves the
+ * configured journey's scenario data through the facade.
  */
 export const journeyController = {
   handler(request, h) {
     const { evaluationEngine } = request.server.app
+    const journeyKey = config.get('journey')
+    const { scenarios, journeyMap } = evaluationEngine.getJourney(journeyKey)
     const { scenario: scenarioParam } = request.query
 
     let notification = null
@@ -95,8 +91,7 @@ export const journeyController = {
     // Evaluate notification if present
     if (notification) {
       try {
-        const traced = evaluationEngine.evaluate('eu-live-animals', notification)
-        const { journeyMap } = evaluationEngine.getJourney('eu-live-animals')
+        const traced = evaluationEngine.evaluate(journeyKey, notification)
         const screens = resolveScreens(traced, journeyMap)
         sections = groupScreensBySection(screens)
         summary = traced.summary
@@ -105,7 +100,10 @@ export const journeyController = {
       }
     }
 
-    const scenarioSelectItems = toScenarioSelectItems(selectedScenario)
+    const scenarioSelectItems = toScenarioSelectItems(
+      scenarios,
+      selectedScenario
+    )
 
     return h.view('explorer/journey', {
       pageTitle: 'Journey Configuration',
@@ -114,7 +112,8 @@ export const journeyController = {
       scenarioSelectItems,
       selectedScenario,
       sections,
-      summary
+      summary,
+      ...navContext(journeyKey)
     })
   }
 }

@@ -16,6 +16,17 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
 
+      {% if notAvailable %}
+        <div class="govuk-notification-banner" role="region" aria-label="Information">
+          <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="commodity-config-not-available-title">Information</h2>
+          </div>
+          <div class="govuk-notification-banner__content">
+            <p class="govuk-body">{{ notice }}</p>
+          </div>
+        </div>
+      {% else %}
+
       {# Commodity selection form #}
       <form method="get" action="/explorer/commodity-config" id="commodity-form" class="govuk-!-margin-bottom-8">
         <div class="govuk-grid-row">
@@ -176,6 +187,8 @@
         </div>
 
       {% endif %}
+
+      {% endif %} {# notAvailable #}
 
     </div>
   </div>

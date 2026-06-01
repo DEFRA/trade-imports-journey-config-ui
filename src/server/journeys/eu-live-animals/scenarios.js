@@ -347,7 +347,16 @@ export const importMixedLivestock = buildNotification({
 // Lookup map keyed by URL-safe scenario name
 // ---------------------------------------------------------------------------
 
+// `import-cattle` is intentionally first: the debug page's
+// obligation-fragment generator uses the first scenario as its
+// representative example, and `import-cattle` exercises the richest
+// path (CPH + transporter + cattle commodity) — so most obligations
+// resolve to real fragments rather than empty notes.
 export const scenarioMap = {
+  'import-cattle': {
+    notification: importCattle,
+    label: 'Import – Cattle (+ CPH + transporter)'
+  },
   'import-semen': {
     notification: importSemen,
     label: 'Import – Semen (minimal path)'
@@ -355,10 +364,6 @@ export const scenarioMap = {
   'import-owls': {
     notification: importOwls,
     label: 'Import – Owls (+ transporter)'
-  },
-  'import-cattle': {
-    notification: importCattle,
-    label: 'Import – Cattle (+ CPH + transporter)'
   },
   'import-cats': {
     notification: importCats,

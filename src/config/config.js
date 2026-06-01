@@ -214,6 +214,12 @@ export const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  journey: {
+    doc: 'The journey this dev/demo instance serves.',
+    format: String,
+    default: 'eu-live-animals',
+    env: 'JOURNEY'
   }
 })
 

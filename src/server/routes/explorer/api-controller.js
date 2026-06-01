@@ -1,3 +1,4 @@
+import { config } from '#config/config.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 
 /**
@@ -12,6 +13,7 @@ import { statusCodes } from '../../common/constants/status-codes.js'
 export const evaluateController = {
   handler(request, h) {
     const { evaluationEngine } = request.server.app
+    const journeyKey = config.get('journey')
 
     try {
       const { notification } = request.payload || {}
@@ -20,7 +22,7 @@ export const evaluateController = {
       // Store in session for cross-page sharing
       request.yar.set('notification', notificationObj)
 
-      const result = evaluationEngine.evaluate('eu-live-animals', notificationObj)
+      const result = evaluationEngine.evaluate(journeyKey, notificationObj)
       return h.response(result).code(statusCodes.ok)
     } catch (error) {
       request.logger.error({ err: error }, 'Obligation evaluation failed')

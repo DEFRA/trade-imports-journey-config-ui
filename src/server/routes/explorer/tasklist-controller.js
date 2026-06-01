@@ -1,6 +1,8 @@
+import { config } from '#config/config.js'
 import { resolveScreens } from '#server/engine/resolve-screens.js'
 import { rollUpToSections } from '#server/engine/roll-up-to-sections.js'
 import { SCREEN_STATUS } from '#server/engine/types.js'
+import { navContext } from './nav-context.js'
 
 /**
  * Map screen status to GOV.UK task list tag configuration.
@@ -51,6 +53,7 @@ const toTaskListSections = (sections) =>
 export const tasklistController = {
   handler(request, h) {
     const { evaluationEngine } = request.server.app
+    const journeyKey = config.get('journey')
     const sessionNotification = request.yar.get('notification')
     const notification = sessionNotification || {}
     const presetName = sessionNotification ? 'Custom' : 'empty'
@@ -60,8 +63,8 @@ export const tasklistController = {
     let error = null
 
     try {
-      const traced = evaluationEngine.evaluate('eu-live-animals', notification)
-      const { journeyMap } = evaluationEngine.getJourney('eu-live-animals')
+      const traced = evaluationEngine.evaluate(journeyKey, notification)
+      const { journeyMap } = evaluationEngine.getJourney(journeyKey)
       const screens = resolveScreens(traced, journeyMap)
       sections = toTaskListSections(rollUpToSections(screens))
       submittable = traced.summary.submittable
@@ -78,7 +81,8 @@ export const tasklistController = {
       sections,
       submittable,
       presetName,
-      error
+      error,
+      ...navContext(journeyKey)
     })
   }
 }

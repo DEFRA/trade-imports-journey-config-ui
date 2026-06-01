@@ -1,3 +1,4 @@
+import { config } from '#config/config.js'
 import { refdata } from '../../journeys/eu-live-animals/index.js'
 import {
   computeVariance,
@@ -9,6 +10,7 @@ import {
   parseCommodityKey,
   toSelectItems
 } from './config-utils.js'
+import { navContext } from './nav-context.js'
 
 // Pre-compute variance statistics once on module load
 const variance = computeVariance(refdata)
@@ -55,14 +57,42 @@ const resolveConfig = (commodityKey) => {
 }
 
 /**
+ * Common view-context fields surfaced on every render.
+ *
+ * Page-level fields stay here; nav-partial fields defer to `navContext`
+ * so the journey gating literal lives in one place.
+ */
+const baseViewContext = (journeyKey) => ({
+  pageTitle: 'Commodity Configuration',
+  heading: 'Commodity Reference Data Configuration',
+  currentPage: 'commodity-config',
+  ...navContext(journeyKey)
+})
+
+/**
  * GET /explorer/commodity-config handler
  *
- * Renders the commodity configuration viewer page.
- * Shows routing flags, purpose options, identifiers, and quantity type
- * for a selected commodity, with visual indicators for common vs specific values.
+ * Renders the commodity configuration viewer page for the eu-live-animals
+ * journey. For any other configured journey, renders an explicit notice
+ * (interim gate — story 02 generalises this view).
  */
 export const commodityConfigController = {
   handler(request, h) {
+    const journeyKey = config.get('journey')
+
+    // §7 interim gate: commodity-config is animals-only until story 02
+    // generalises the view. Render an explicit notice for other journeys
+    // rather than the blank/broken variance output.
+    if (journeyKey !== 'eu-live-animals') {
+      return h.view('explorer/commodity-config', {
+        ...baseViewContext(journeyKey),
+        notAvailable: true,
+        notice:
+          'Commodity config is not available for this journey — ' +
+          'see the commodity-config interoperability investigation.'
+      })
+    }
+
     const commodityKey = request.query.commodity
 
     const commodityOptions = toSelectItems(
@@ -74,22 +104,18 @@ export const commodityConfigController = {
     // If no commodity selected, show page with just the dropdown
     if (!commodityKey) {
       return h.view('explorer/commodity-config', {
-        pageTitle: 'Commodity Configuration',
-        heading: 'Commodity Reference Data Configuration',
-        currentPage: 'commodity-config',
+        ...baseViewContext(journeyKey),
         commodityOptions,
         selectedCommodity: null
       })
     }
 
     // Resolve configuration for selected commodity
-    const config = resolveConfig(commodityKey)
+    const commodityConfig = resolveConfig(commodityKey)
 
-    if (!config) {
+    if (!commodityConfig) {
       return h.view('explorer/commodity-config', {
-        pageTitle: 'Commodity Configuration',
-        heading: 'Commodity Reference Data Configuration',
-        currentPage: 'commodity-config',
+        ...baseViewContext(journeyKey),
         commodityOptions,
         selectedCommodity: commodityKey,
         error: `No configuration found for commodity: ${commodityKey}`
@@ -101,12 +127,12 @@ export const commodityConfigController = {
 
     // Annotate values with variance metadata
     const annotatedPurposes = annotateValues(
-      config.purposeValues,
+      commodityConfig.purposeValues,
       variance.purposeFrequency,
       variance.totalCommodities
     )
     const annotatedIdentifiers = annotateValues(
-      config.identifierValues,
+      commodityConfig.identifierValues,
       variance.identifierFrequency,
       variance.totalCommodities
     )
@@ -114,15 +140,15 @@ export const commodityConfigController = {
     const routingFlagRows = [
       {
         label: 'CPH Number',
-        value: config.routing.cph_number
+        value: commodityConfig.routing.cph_number
       },
       {
         label: 'Permanent Address',
-        value: config.routing.permanent_address
+        value: commodityConfig.routing.permanent_address
       },
       {
         label: 'Transporter Address',
-        value: config.routing.transporter_address
+        value: commodityConfig.routing.transporter_address
       }
     ].map((flag) => [
       { text: flag.label },
@@ -136,35 +162,33 @@ export const commodityConfigController = {
     // Compute absent values (in superset but not in this commodity)
     const absentPurposes = computeAbsentValues(
       variance.purposeSuperset,
-      config.purposeValues,
+      commodityConfig.purposeValues,
       variance.purposeFrequency
     )
     const absentIdentifiers = computeAbsentValues(
       variance.identifierSuperset,
-      config.identifierValues,
+      commodityConfig.identifierValues,
       variance.identifierFrequency
     )
 
     return h.view('explorer/commodity-config', {
-      pageTitle: 'Commodity Configuration',
-      heading: 'Commodity Reference Data Configuration',
-      currentPage: 'commodity-config',
+      ...baseViewContext(journeyKey),
       commodityOptions,
       selectedCommodity: commodityKey,
       commodityID,
       speciesName: speciesName || '(no species specified)',
-      purposeSetName: config.purposeSetName,
-      purposeCount: config.purposeValues.length,
+      purposeSetName: commodityConfig.purposeSetName,
+      purposeCount: commodityConfig.purposeValues.length,
       purposeTotal: variance.purposeSuperset.size,
       purposes: annotatedPurposes,
       absentPurposes,
-      identifierSetName: config.identifierSetName,
-      identifierCount: config.identifierValues.length,
+      identifierSetName: commodityConfig.identifierSetName,
+      identifierCount: commodityConfig.identifierValues.length,
       identifierTotal: variance.identifierSuperset.size,
       identifiers: annotatedIdentifiers,
       absentIdentifiers,
       routingFlagRows,
-      quantityType: config.quantityType,
+      quantityType: commodityConfig.quantityType,
       totalCommodities: variance.totalCommodities
     })
   }

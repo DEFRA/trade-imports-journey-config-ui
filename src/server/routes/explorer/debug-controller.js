@@ -1,5 +1,6 @@
+import { config } from '#config/config.js'
 import { generateObligationFragments } from './obligation-fragments.js'
-import { obligations } from '../../journeys/eu-live-animals/index.js'
+import { navContext } from './nav-context.js'
 
 /**
  * GET /explorer/debug handler
@@ -12,13 +13,18 @@ import { obligations } from '../../journeys/eu-live-animals/index.js'
  * JSON editor.
  *
  * Also provides obligation fragments for the fragment explorer panel.
+ * Resolves the configured journey's obligations + scenarios via the engine
+ * facade so the debugger works for any registered journey.
  */
 export const debugController = {
   handler(request, h) {
+    const { evaluationEngine } = request.server.app
+    const journeyKey = config.get('journey')
+    const { obligations, scenarios } = evaluationEngine.getJourney(journeyKey)
     const sessionNotification = request.yar.get('notification') || null
 
     // Generate obligation fragments
-    const fragmentData = generateObligationFragments()
+    const fragmentData = generateObligationFragments(obligations, scenarios)
 
     // Build dropdown items for fragment explorer
     // NOTE: Nunjucks `+` is string concatenation, not array concat,
@@ -48,7 +54,8 @@ export const debugController = {
         ? JSON.stringify(sessionNotification, null, 2)
         : null,
       fragmentSelectItems,
-      fragmentsJson: JSON.stringify(fragments)
+      fragmentsJson: JSON.stringify(fragments),
+      ...navContext(journeyKey)
     })
   }
 }
