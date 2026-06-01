@@ -1,10 +1,9 @@
 # Story: Journey-agnostic commodity-config (refdata-view for both journeys)
 
-> **Prerequisite:** `00-normalise-plants-refdata.md` (this story reads
-> the normalised plants `{commodities, species, classes}` shape). Plays
-> well alongside `03-gms-correction-and-scenario-coverage.md`, which
-> keeps the resolver semantics aligned with the variance that the page
-> now displays.
+> **Prerequisite:** `03-gms-correction-and-scenario-coverage.md`
+> (this story reads the normalised plants `{commodities, species,
+> classes}` shape that 03's Phase A produces; 03 also corrects the
+> resolver semantics that the variance this page displays will reflect).
 
 ## Goal
 
@@ -85,7 +84,7 @@ data point on the animals page today must still be present afterwards.
     `definitions`: `purpose_sets`, `identifier_sets`, `quantity_types`;
     `routing[k]`: `cph_number`, `permanent_address`,
     `transporter_address` (booleans).
-  - **plants** (post-Story 00 normalisation; see `plants-refdata-model.md`):
+  - **plants** (post-Story 03 Phase A normalisation; see `plants-refdata-model.md`):
     `commodities[code]` carries commodity-grain facts —
     `group`, `requires_test_and_trial`,
     `requires_finished_or_propagated`, `propagation`, `classes`.
@@ -183,7 +182,7 @@ export const refdataView = (refdata) => {
   }
 }
 
-// chedpp-plants/refdata-view.js  — reads Story 00's normalised shape
+// chedpp-plants/refdata-view.js  — reads Story 03's normalised shape
 export const refdataView = (refdata) => {
   const { species, commodities } = refdata
   const codeOf = (k) => k.split('|')[0]
@@ -233,11 +232,12 @@ export const refdataView = (refdata) => {
 
 Notes on the plants descriptor:
 
-- **No `has_gms` / `has_varieties` / `requires_billing` shown.** Story 00
-  dropped them as stored fields (derived at read time); Story 03 removed
-  `has_gms` even from the derived view as misleading. Marketing-standard
-  presence is already visible via the `marketing_standard` dimension;
-  variety presence is visible via the `Varieties` detail.
+- **No `has_gms` / `has_varieties` / `requires_billing` shown.** Story 03
+  dropped them as stored fields (derived at read time in Phase A) and
+  removed `has_gms` even from the derived view as misleading in Phase B.
+  Marketing-standard presence is already visible via the
+  `marketing_standard` dimension; variety presence is visible via the
+  `Varieties` detail.
 - **Mixed grains.** Three dimensions read `species[k]` (species-grain);
   one (`group`) reads `commodities[codeOf(k)]` (commodity-grain). The
   variance machinery is grain-agnostic — the descriptor encodes the
@@ -423,8 +423,9 @@ beyond their existing coverage.
   detail) and `varieties` is surfaced (Varieties detail) — neither was
   visible before the normalisation.
 - [ ] No `has_gms` / `has_varieties` / `requires_billing` appears in
-  the plants descriptor or template — those were dropped by Story 00
-  (and `has_gms` was misnamed; Story 03 owns the semantic correction).
+  the plants descriptor or template — those were dropped by Story 03
+  (Phase A removed the stored fields; Phase B removed `has_gms`
+  entirely as misnamed).
 - [ ] Explicit absence: dimension `excluded` values and `null` detail
   rows both render visibly ("Not provided"), never silently omitted.
 - [ ] Animals commodity-config drops no information — verified for
@@ -488,16 +489,11 @@ JOURNEY=chedpp-plants npm run dev
 
 ## Relationship to the other stories
 
-- **`00-normalise-plants-refdata.md` — hard prereq.** This story reads
-  the `{commodities, species, classes}` shape Story 00 produces. Cannot
-  land until Story 00 has.
-- **`03-gms-correction-and-scenario-coverage.md` — companion, either
-  order.** Story 03 corrects the resolver predicate and adds variance
-  scenarios; it does not change the refdata shape this story depends on.
-  Landing 03 first means the explorer immediately demonstrates the
-  corrected GMS variance; landing 02 first means the variance shows on
-  the page but `gms-declaration` itself is still computed on the buggy
-  predicate until 03 lands. Either is acceptable.
+- **`03-gms-correction-and-scenario-coverage.md` — hard prereq.**
+  This story reads the `{commodities, species, classes}` shape that
+  03's Phase A produces. It also benefits from 03's Phase B corrected
+  predicate so the variance the page displays matches the activation
+  the engine computes. Cannot land until 03 has.
 - **`01-env-selected-journey.md` — supersedes its §7 gate.** This story
   **supersedes** story 01's commodity-config gate **and removes its
   gate tests** (the "not available" notice + nav-hidden assertions).

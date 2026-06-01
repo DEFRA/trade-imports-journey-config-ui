@@ -2,7 +2,8 @@
 
 This is a **reference document**, not a story. It captures the data
 model behind `src/server/journeys/chedpp-plants/refdata.json` so the
-normalisation story (`00-normalise-plants-refdata.md`) and the
+normalisation + GMS-correction story
+(`03-gms-correction-and-scenario-coverage.md`) and the
 commodity-config display (`02-journey-agnostic-variance.md`) have a
 shared, accurate mental model. It supersedes the earlier (mistaken)
 "the plants `definitions` block is dead data" reading.

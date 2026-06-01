@@ -113,13 +113,13 @@ source-code visibility predicate.
 
 ## Relationship to the other stories
 
-- **Independent of `00-normalise-plants-refdata.md` — conditionally.**
-  Story 00 preserves current behaviour exactly
+- **Independent of Story 03's Phase A (normalisation) — conditionally.**
+  Story 03's Phase A preserves current behaviour exactly
   (`has_gms = marketing_standard != null`) and does not wait on this, so
   they can run in parallel **provided** the correct rule is computable
   from fields the normalised `species` table retains
   (`regulatory_authority` + `marketing_standard`). If this investigation
-  finds the rule needs data Story 00 doesn't keep, that is a **feedback
+  finds the rule needs data Story 03's Phase A doesn't keep, that is a **feedback
   into the shape** — call it out, don't assume independence.
 - **Feeds** the eventual `has_gms` correction (decided here) and the
   read-time derivation in `plants-refdata-model.md`. If the recommendation
@@ -137,7 +137,7 @@ source-code visibility predicate.
   predicted outcomes.
 - [ ] A single recommended course of action (a/b/c) is stated, with the
   **per-scenario re-pin impact** for the seven committed scenarios.
-- [ ] Any shape feedback into Story 00 is explicitly flagged (or "none").
+- [ ] Any shape feedback into Story 03's Phase A is explicitly flagged (or "none").
 - [ ] Findings recorded in the `## Findings` section below.
 
 ## Findings
@@ -234,9 +234,9 @@ covered (none of the seven currently exercise it).
 - Replace the read-time derivation in `chedpp-plants/resolvers.js` with
   `gms = species?.regulatory_authority === 'HMI' && species?.marketing_standard === 'GMS'`,
   computed from the **normalised** `species[code|eppo]` table. Both
-  fields are retained by Story 00 → **no shape feedback to Story 00**.
+  fields are retained by Story 03's Phase A → **no shape feedback to Story 03's Phase A**.
 - Rename / inline the `has_gms` lookup-routing field; the flag's stored
-  meaning was already going away in Story 00 (derived).
+  meaning was already going away in Story 03's Phase A (derived).
 - Re-pin **`import-apples`** and **`import-peppers`** scenarios:
   `gms-declaration` moves from active-satisfied → inactive
   (`satisfied -1`, `inactive +1`).
@@ -249,7 +249,7 @@ covered (none of the seven currently exercise it).
   commodity. Multi-commodity any-species remains the separately-deferred
   routing concern.
 
-### 7. Shape feedback to Story 00
+### 7. Shape feedback to Story 03's Phase A
 
 **None.** The predicate is computable from `regulatory_authority` +
 `marketing_standard`, both kept in `species`. Independence holds.

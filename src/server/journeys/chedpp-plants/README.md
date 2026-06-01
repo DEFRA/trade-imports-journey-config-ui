@@ -81,10 +81,11 @@ work. See:
 - `features/journey-switching/gms-declaration-rule-investigation.md` —
   the verified IPAFFS rule (citations) + gap analysis + recommended
   course of action + the scenario re-pin impact.
-- `features/journey-switching/00-normalise-plants-refdata.md` —
-  Story 00; **behaviour-preserving** normalisation that retains
-  `regulatory_authority` + `marketing_standard` so the correction can
-  be implemented as a small follow-up.
+- `features/journey-switching/03-gms-correction-and-scenario-coverage.md` —
+  Story 03; Phase A normalises the refdata behaviour-preservingly
+  (retains `regulatory_authority` + `marketing_standard` for downstream
+  derivation), Phase B applies the corrected predicate and broadens the
+  scenarios.
 - `features/journey-switching/plants-refdata-model.md` — the data
   model these definitions live in.
 
