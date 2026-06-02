@@ -72,15 +72,18 @@ export const formatCommodityLabel = ({ commodityID, speciesName }) =>
     : `${commodityID} (no species)`
 
 /**
- * Extract commodity options from refdata for dropdown.
+ * Build commodity options from a list of commodity keys.
  *
- * Returns sorted list of commodities with display labels.
+ * Journey-aware: the journey adapter is responsible for deciding what
+ * counts as a commodity for the dropdown (animals → routing keys; plants
+ * → species keys + PHSI-only commodity-only entries). This helper just
+ * formats and sorts.
  *
- * @param {Object} refdata - Reference data with routing keys
- * @returns {Array<Object>} Commodity options for dropdown
+ * @param {string[]} commodityKeys - Keys (e.g. "code|eppo" or "code|")
+ * @returns {Array<Object>} Commodity options for the dropdown
  */
-export const extractCommodityOptions = (refdata) =>
-  Object.keys(refdata.routing)
+export const extractCommodityOptions = (commodityKeys) =>
+  commodityKeys
     .map((key) => {
       const parsed = parseCommodityKey(key)
       return { value: key, ...parsed, label: formatCommodityLabel(parsed) }

@@ -4,12 +4,13 @@ import { config } from '#config/config.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 
 /**
- * Behaviour & intent (Story 01 — env-selected journey):
+ * Behaviour & intent (Stories 01 + 02):
  *   With JOURNEY=chedpp-plants set in config, the explorer must serve the
  *   plants journey end-to-end: plants scenarios in the dropdown, plants
  *   screens in the rendered journey structure / task list, and zero
- *   leakage of animals-only content. Commodity-config is gated off (with
- *   an explicit notice) for non-animals.
+ *   leakage of animals-only content. Commodity-config is journey-agnostic
+ *   (Story 02 dropped Story 01's interim gate); the page renders the
+ *   plants refdata-view's dimensions + details for every plants commodity.
  *
  *   These tests are deliberately isolated from `index.test.js` (which
  *   covers the default-journey path) so the config flip is contained.
@@ -77,26 +78,95 @@ describe('Explorer with JOURNEY=chedpp-plants', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // T3 — Commodity-config interim gate
+  // Commodity-config is journey-agnostic now (Story 02) — the previous
+  // interim "not available" gate has been removed; the page renders
+  // properly for plants.
   // ---------------------------------------------------------------------------
 
-  test('GET /explorer/commodity-config renders the "not available" notice and the nav link is suppressed', async () => {
+  test('GET /explorer/commodity-config renders the plants page (all dimensions + details, no gate)', async () => {
+    // Use a known HMI+GMS species — it has all four plants dimensions
+    // populated plus commodity classes.
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/explorer/commodity-config'
+      url: '/explorer/commodity-config?commodity=0805108010|CIDAU'
     })
 
     expect(statusCode).toBe(statusCodes.ok)
-    expect(result).toEqual(
+
+    // Old gate must be gone.
+    expect(result).not.toEqual(
       expect.stringContaining(
         'Commodity config is not available for this journey'
       )
     )
-    // The nav link (and the commodity selection form) reference
-    // `/explorer/commodity-config` — under the gate they must not appear.
-    expect(result).not.toEqual(
+    // Nav link is present again.
+    expect(result).toEqual(
       expect.stringContaining('href="/explorer/commodity-config"')
     )
+
+    // All four plants dimensions appear as section headings.
+    expect(result).toContain('Regulatory authority')
+    expect(result).toContain('Marketing standard')
+    expect(result).toContain('Validity period')
+    expect(result).toContain('Commodity group')
+
+    // Three plants details appear.
+    expect(result).toContain('Commodity routing')
+    expect(result).toContain('Quality classes')
+    expect(result).toContain('Varieties')
+
+    // Species-grain dimension values surfaced for this HMI+GMS species.
+    expect(result).toContain('HMI')
+    expect(result).toContain('GMS')
+    // Commodity group surfaced (0805108010 → Fruit and nuts).
+    expect(result).toContain('Fruit and nuts')
+
+    // Animals-only labels must NOT leak.
+    expect(result).not.toContain('CPH Number')
+    expect(result).not.toContain('purpose_set_')
+  })
+
+  test('detail block formats value-by-type (Disabled / Not provided / text)', async () => {
+    // Apples 0808108090|MABSD: all commodity flags false, propagation
+    // null, has both varieties and classes — exercises three of the
+    // four render kinds in one request (Enabled is covered by the
+    // animals parity test).
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/explorer/commodity-config?commodity=0808108090|MABSD'
+    })
+
+    expect(statusCode).toBe(statusCodes.ok)
+    // Boolean false → "Disabled" tag.
+    expect(result).toContain('Disabled')
+    // null (propagation) → "Not provided".
+    expect(result).toContain('Not provided')
+    // Variety + class strings rendered as text.
+    expect(result).toContain('Braeburn')
+    expect(result).toContain('Extra Class')
+  })
+
+  test('GET /explorer/commodity-config (PHSI-only commodity) renders explicit absence for species-grain dimensions', async () => {
+    // PHSI-only commodity — represented by the `code|` fallback key
+    // format. Species-grain dimensions render explicit absence ("0 of
+    // N possible values" + excluded list); commodity-grain group +
+    // commodity details still render.
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/explorer/commodity-config?commodity=06042090|'
+    })
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect(result).toContain('Commodity Summary')
+    // Commodity-grain group dimension still rendered.
+    expect(result).toContain('Commodity group')
+    // Species-grain dimensions render "0 of N possible values" because
+    // the PHSI commodity has no species row → empty included list.
+    expect(result).toContain('0 of')
+    // And the excluded list still surfaces what *other* species have —
+    // e.g. JOINT is in the regulatory_authority superset, so it
+    // appears in the Excluded section here.
+    expect(result).toContain('JOINT')
   })
 
   // ---------------------------------------------------------------------------

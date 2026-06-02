@@ -98,15 +98,11 @@ describe('formatCommodityLabel', () => {
 })
 
 describe('extractCommodityOptions', () => {
-  test('extracts and sorts commodity options from refdata routing', () => {
-    const refdata = {
-      routing: {
-        '0101210000|Horses': { has_certified_as: true },
-        '0106190000|Bees': { has_certified_as: false }
-      }
-    }
-
-    const options = extractCommodityOptions(refdata)
+  test('extracts and sorts commodity options from a key list', () => {
+    const options = extractCommodityOptions([
+      '0101210000|Horses',
+      '0106190000|Bees'
+    ])
     expect(options).toHaveLength(2)
     expect(options[0].value).toBe('0101210000|Horses')
     expect(options[0].label).toBe('0101210000 – Horses')
@@ -114,14 +110,12 @@ describe('extractCommodityOptions', () => {
   })
 
   test('handles commodity without species name', () => {
-    const refdata = { routing: { '0101210000|': {} } }
-    const options = extractCommodityOptions(refdata)
+    const options = extractCommodityOptions(['0101210000|'])
     expect(options[0].label).toBe('0101210000 (no species)')
   })
 
   test('includes parsed commodityID and speciesName in each option', () => {
-    const refdata = { routing: { '102|Bos taurus': {} } }
-    const [option] = extractCommodityOptions(refdata)
+    const [option] = extractCommodityOptions(['102|Bos taurus'])
     expect(option.commodityID).toBe('102')
     expect(option.speciesName).toBe('Bos taurus')
   })

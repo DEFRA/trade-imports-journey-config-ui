@@ -1,0 +1,30 @@
+{# Detail block — labelled rows shown as-is, no variance.
+   Inputs:
+     dt — { id, name, rows: [{ label, value }] }
+   Each row.value is rendered by runtime type:
+     true        → green "Enabled" tag
+     false       → grey  "Disabled" tag
+     null / undefined / '' → grey "Not provided" tag (explicit absence — §6)
+     string / number (incl. 0) → text
+#}
+<div class="app-explorer-section">
+  <h2 class="govuk-heading-l">{{ dt.name }}</h2>
+  <dl class="govuk-summary-list">
+    {% for row in dt.rows %}
+      <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">{{ row.label }}</dt>
+        <dd class="govuk-summary-list__value">
+          {% if row.value === true %}
+            <strong class="govuk-tag govuk-tag--green">Enabled</strong>
+          {% elif row.value === false %}
+            <strong class="govuk-tag govuk-tag--grey">Disabled</strong>
+          {% elif row.value === null or not row.value is defined or row.value === '' %}
+            <strong class="govuk-tag govuk-tag--grey">Not provided</strong>
+          {% else %}
+            {{ row.value }}
+          {% endif %}
+        </dd>
+      </div>
+    {% endfor %}
+  </dl>
+</div>

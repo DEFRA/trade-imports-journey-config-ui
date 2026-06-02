@@ -38,6 +38,19 @@ export const validateJourney = (key, journey) => {
   if (typeof journey.resolvers?.submissionDatePath !== 'string') {
     throw new Error(`Journey "${key}": resolvers.submissionDatePath is missing`)
   }
+  // The explorer's commodity-config view reads these per journey
+  // (Story 02). Missing them shouldn't fail at first request — fail at
+  // boot, like the rest.
+  if (typeof journey.refdataView !== 'function') {
+    throw new Error(
+      `Journey "${key}": refdataView is missing or not a function`
+    )
+  }
+  if (typeof journey.commodityKeys !== 'function') {
+    throw new Error(
+      `Journey "${key}": commodityKeys is missing or not a function`
+    )
+  }
 }
 
 /**

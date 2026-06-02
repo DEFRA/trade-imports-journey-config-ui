@@ -6,128 +6,88 @@ import {
   computeAbsentValues
 } from './config-variance.js'
 
-describe('config-variance', () => {
-  // Minimal refdata structure for testing
-  const testRefdata = {
-    routing: {
-      '101|Equus caballus': {
-        cph_number: false,
-        permanent_address: false,
-        transporter_address: true
-      },
-      '102|Bos taurus': {
-        cph_number: true,
-        permanent_address: false,
-        transporter_address: true
-      },
-      '10410|Ovis Aries': {
-        cph_number: true,
-        permanent_address: false,
-        transporter_address: true
-      },
-      '1061900|Canis familiaris': {
-        cph_number: false,
-        permanent_address: true,
-        transporter_address: true
-      }
-    },
-    content: {
-      '101|Equus caballus': {
-        purpose: 'purpose_set_01',
-        identifiers: 'identifier_set_01',
-        quantity: 'numberOfAnimals'
-      },
-      '102|Bos taurus': {
-        purpose: 'purpose_set_02',
-        identifiers: 'identifier_set_02',
-        quantity: 'numberOfAnimals'
-      },
-      '10410|Ovis Aries': {
-        purpose: 'purpose_set_02',
-        identifiers: 'identifier_set_02',
-        quantity: 'numberOfAnimals'
-      },
-      '1061900|Canis familiaris': {
-        purpose: 'purpose_set_03',
-        identifiers: 'identifier_set_03',
-        quantity: 'numberOfAnimals'
-      }
-    },
-    definitions: {
-      purpose_sets: {
-        purpose_set_01: ['Breeding', 'Racing/Competition', 'Transit'],
-        purpose_set_02: ['Breeding', 'Fattening', 'Slaughter', 'Transit'],
-        purpose_set_03: ['Breeding', 'Commercial sale', 'Transit']
-      },
-      identifier_sets: {
-        identifier_set_01: ['Horse Name', 'Microchip', 'Passport'],
-        identifier_set_02: ['Ear tag', 'Passport'],
-        identifier_set_03: ['Microchip', 'Passport', 'Tattoo']
-      },
-      quantity_types: {
-        numberOfAnimals: {
-          id: 'number-of-animals',
-          label: 'Number of animals',
-          name: 'numberOfAnimals'
-        }
-      }
-    }
+// ---------------------------------------------------------------------------
+// Tiny hand-rolled refdata + descriptor — exercises computeVariance generically
+// without depending on any journey's refdata shape.
+// ---------------------------------------------------------------------------
+
+const testRefdata = {
+  byKey: {
+    'A|x': { fruits: ['apple', 'banana'], colours: ['red'] },
+    'A|y': { fruits: ['apple'], colours: ['red', 'blue'] },
+    'B|x': { fruits: ['banana', 'cherry'], colours: ['blue'] },
+    'B|y': { fruits: ['apple'], colours: ['red'] }
   }
+}
 
+const commodityKeys = Object.keys(testRefdata.byKey)
+
+const dimensions = [
+  {
+    id: 'fruits',
+    name: 'Fruits',
+    valuesFor: (k) => testRefdata.byKey[k]?.fruits ?? []
+  },
+  {
+    id: 'colours',
+    name: 'Colours',
+    valuesFor: (k) => testRefdata.byKey[k]?.colours ?? []
+  }
+]
+
+// ---------------------------------------------------------------------------
+
+describe('config-variance', () => {
   describe('computeVariance', () => {
-    it('computes purpose superset correctly', () => {
-      const variance = computeVariance(testRefdata)
-
-      expect(variance.purposeSuperset).toBeInstanceOf(Set)
-      expect(variance.purposeSuperset.size).toBe(6)
-      expect(variance.purposeSuperset.has('Breeding')).toBe(true)
-      expect(variance.purposeSuperset.has('Racing/Competition')).toBe(true)
-      expect(variance.purposeSuperset.has('Fattening')).toBe(true)
-      expect(variance.purposeSuperset.has('Transit')).toBe(true)
+    it('returns totalCommodities = key count', () => {
+      const v = computeVariance(dimensions, commodityKeys)
+      expect(v.totalCommodities).toBe(4)
     })
 
-    it('computes purpose frequency correctly', () => {
-      const variance = computeVariance(testRefdata)
-
-      // Breeding appears in all 3 sets (4 commodities total)
-      expect(variance.purposeFrequency.get('Breeding')).toBe(4)
-      // Transit appears in all 3 sets (4 commodities total)
-      expect(variance.purposeFrequency.get('Transit')).toBe(4)
-      // Racing/Competition appears only in purpose_set_01 (1 commodity)
-      expect(variance.purposeFrequency.get('Racing/Competition')).toBe(1)
-      // Fattening appears only in purpose_set_02 (2 commodities)
-      expect(variance.purposeFrequency.get('Fattening')).toBe(2)
+    it('keys byDimension by dimension id (not display name)', () => {
+      const v = computeVariance(dimensions, commodityKeys)
+      expect(Object.keys(v.byDimension).sort()).toEqual(['colours', 'fruits'])
     })
 
-    it('computes identifier superset correctly', () => {
-      const variance = computeVariance(testRefdata)
-
-      expect(variance.identifierSuperset).toBeInstanceOf(Set)
-      expect(variance.identifierSuperset.size).toBe(5)
-      expect(variance.identifierSuperset.has('Horse Name')).toBe(true)
-      expect(variance.identifierSuperset.has('Microchip')).toBe(true)
-      expect(variance.identifierSuperset.has('Passport')).toBe(true)
-      expect(variance.identifierSuperset.has('Ear tag')).toBe(true)
-      expect(variance.identifierSuperset.has('Tattoo')).toBe(true)
+    it('builds the superset per dimension', () => {
+      const v = computeVariance(dimensions, commodityKeys)
+      expect(Array.from(v.byDimension.fruits.superset).sort()).toEqual([
+        'apple',
+        'banana',
+        'cherry'
+      ])
+      expect(Array.from(v.byDimension.colours.superset).sort()).toEqual([
+        'blue',
+        'red'
+      ])
     })
 
-    it('computes identifier frequency correctly', () => {
-      const variance = computeVariance(testRefdata)
-
-      // Passport appears in all 3 sets (4 commodities total)
-      expect(variance.identifierFrequency.get('Passport')).toBe(4)
-      // Microchip appears in 2 sets (2 commodities: horses and dogs)
-      expect(variance.identifierFrequency.get('Microchip')).toBe(2)
-      // Ear tag appears only in identifier_set_02 (2 commodities)
-      expect(variance.identifierFrequency.get('Ear tag')).toBe(2)
-      // Horse Name appears only in identifier_set_01 (1 commodity)
-      expect(variance.identifierFrequency.get('Horse Name')).toBe(1)
+    it('builds the frequency per dimension (one increment per commodity that contains the value)', () => {
+      const v = computeVariance(dimensions, commodityKeys)
+      // apple appears in 3 of 4 commodities (A|x, A|y, B|y).
+      expect(v.byDimension.fruits.frequency.get('apple')).toBe(3)
+      expect(v.byDimension.fruits.frequency.get('banana')).toBe(2)
+      expect(v.byDimension.fruits.frequency.get('cherry')).toBe(1)
+      // red appears in 3 of 4 (A|x, A|y, B|y); blue in 2 (A|y, B|x).
+      expect(v.byDimension.colours.frequency.get('red')).toBe(3)
+      expect(v.byDimension.colours.frequency.get('blue')).toBe(2)
     })
 
-    it('computes total commodities correctly', () => {
-      const variance = computeVariance(testRefdata)
+    it('handles a dimension that returns [] for some commodities (no crash)', () => {
+      const withEmpty = [
+        ...dimensions,
+        { id: 'empties', name: 'Empties', valuesFor: () => [] }
+      ]
+      const v = computeVariance(withEmpty, commodityKeys)
+      expect(v.byDimension.empties.superset.size).toBe(0)
+      expect(v.byDimension.empties.frequency.size).toBe(0)
+    })
 
-      expect(variance.totalCommodities).toBe(4)
+    it('handles zero commodity keys gracefully', () => {
+      const v = computeVariance(dimensions, [])
+      expect(v.totalCommodities).toBe(0)
+      expect(v.byDimension.fruits.superset.size).toBe(0)
+      expect(v.byDimension.fruits.frequency.size).toBe(0)
     })
   })
 
@@ -149,107 +109,65 @@ describe('config-variance', () => {
   })
 
   describe('annotateValues', () => {
-    it('annotates purpose values with frequency and classification', () => {
-      const variance = computeVariance(testRefdata)
-      const purposeValues = testRefdata.definitions.purpose_sets.purpose_set_01
-
+    it('annotates values with frequency and classification', () => {
+      const v = computeVariance(dimensions, commodityKeys)
       const annotated = annotateValues(
-        purposeValues,
-        variance.purposeFrequency,
-        variance.totalCommodities
+        ['apple', 'banana', 'cherry'],
+        v.byDimension.fruits.frequency,
+        v.totalCommodities
       )
 
       expect(annotated).toHaveLength(3)
       expect(annotated[0]).toEqual({
-        value: 'Breeding',
-        frequency: 4,
-        classification: 'common'
+        value: 'apple',
+        frequency: 3,
+        classification: 'common' // 3/4 = 75% >= 30%
       })
       expect(annotated[1]).toEqual({
-        value: 'Racing/Competition',
-        frequency: 1,
-        classification: 'specific'
-      })
-      expect(annotated[2]).toEqual({
-        value: 'Transit',
-        frequency: 4,
-        classification: 'common'
-      })
-    })
-
-    it('annotates identifier values with frequency and classification', () => {
-      const variance = computeVariance(testRefdata)
-      const identifierValues =
-        testRefdata.definitions.identifier_sets.identifier_set_01
-
-      const annotated = annotateValues(
-        identifierValues,
-        variance.identifierFrequency,
-        variance.totalCommodities
-      )
-
-      expect(annotated).toHaveLength(3)
-      expect(annotated[0]).toEqual({
-        value: 'Horse Name',
-        frequency: 1,
-        classification: 'specific'
-      })
-      expect(annotated[1]).toEqual({
-        value: 'Microchip',
+        value: 'banana',
         frequency: 2,
-        classification: 'common' // 2/4 = 50% >= 30% threshold
+        classification: 'common' // 2/4 = 50% >= 30%
       })
       expect(annotated[2]).toEqual({
-        value: 'Passport',
-        frequency: 4,
-        classification: 'common'
+        value: 'cherry',
+        frequency: 1,
+        classification: 'specific' // 1/4 = 25% < 30%
       })
     })
   })
 
   describe('computeAbsentValues', () => {
     it('computes values present in superset but absent from included list', () => {
-      const variance = computeVariance(testRefdata)
-      const included = testRefdata.definitions.purpose_sets.purpose_set_01
-
+      const v = computeVariance(dimensions, commodityKeys)
+      // A|x has fruits [apple, banana]; superset is [apple, banana, cherry].
       const absent = computeAbsentValues(
-        variance.purposeSuperset,
-        included,
-        variance.purposeFrequency
+        v.byDimension.fruits.superset,
+        ['apple', 'banana'],
+        v.byDimension.fruits.frequency
       )
-
-      // purpose_set_01 has Breeding, Racing/Competition, Transit
-      // Superset also has Fattening, Slaughter, Commercial sale
-      expect(absent).toHaveLength(3)
-      const absentValues = absent.map((a) => a.value)
-      expect(absentValues).toContain('Fattening')
-      expect(absentValues).toContain('Slaughter')
-      expect(absentValues).toContain('Commercial sale')
+      expect(absent).toEqual([{ value: 'cherry', frequency: 1 }])
     })
 
     it('returns empty array when all superset values are included', () => {
       const superset = new Set(['A', 'B'])
-      const included = ['A', 'B']
-      const frequencyMap = new Map([['A', 3], ['B', 2]])
-
-      const absent = computeAbsentValues(superset, included, frequencyMap)
-
-      expect(absent).toHaveLength(0)
+      const frequency = new Map([
+        ['A', 3],
+        ['B', 2]
+      ])
+      expect(computeAbsentValues(superset, ['A', 'B'], frequency)).toHaveLength(
+        0
+      )
     })
 
-    it('includes frequency for each absent value', () => {
-      const variance = computeVariance(testRefdata)
-      const included = testRefdata.definitions.purpose_sets.purpose_set_01
-
+    it('attaches frequency to each absent value', () => {
+      const v = computeVariance(dimensions, commodityKeys)
       const absent = computeAbsentValues(
-        variance.purposeSuperset,
-        included,
-        variance.purposeFrequency
+        v.byDimension.fruits.superset,
+        ['apple'],
+        v.byDimension.fruits.frequency
       )
-
-      const fattening = absent.find((a) => a.value === 'Fattening')
-      expect(fattening.frequency).toBe(2)
+      const cherry = absent.find((a) => a.value === 'cherry')
+      expect(cherry.frequency).toBe(1)
     })
   })
-
 })

@@ -1,0 +1,38 @@
+{# Dimension block — variance-annotated value list.
+   Inputs:
+     d              — { id, name, source?, count, total, included[], excluded[] }
+     totalCommodities — for the per-value frequency display ("X of N commodities").
+#}
+<div class="app-explorer-section">
+  <h2 class="govuk-heading-l">{{ d.name }}</h2>
+  <p class="govuk-body">
+    {{ d.count }} of {{ d.total }} possible values
+    {%- if d.source %} ({{ d.source }}){% endif %}
+  </p>
+
+  <h3 class="govuk-heading-s govuk-!-margin-top-4">Included values</h3>
+  {% if d.included.length > 0 %}
+    <ul class="govuk-list">
+      {% for item in d.included %}
+        <li class="app-value-item{% if item.classification == 'specific' %} app-value-item--specific{% endif %}">
+          {{ item.value }}
+          {% if item.classification == 'specific' %}
+            <strong class="govuk-tag govuk-tag--blue app-value-tag">Commodity-specific</strong>
+            <span class="govuk-body-s app-value-frequency"> ({{ item.frequency }} of {{ totalCommodities }} commodities)</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="govuk-body-s app-absent-item">Not provided</p>
+  {% endif %}
+
+  {% if d.excluded.length > 0 %}
+    <h3 class="govuk-heading-s govuk-!-margin-top-6">Excluded values</h3>
+    <ul class="govuk-list app-absent-list">
+      {% for item in d.excluded %}
+        <li class="app-absent-item">{{ item.value }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>

@@ -435,5 +435,59 @@ describe('Explorer routes', () => {
       expect(result).toEqual(expect.stringContaining('Commodity Summary'))
       expect(result).toEqual(expect.stringContaining('Routing Flags'))
     })
+
+    // -------------------------------------------------------------------------
+    // Animals parity safeguard (Story 02): every data point the page surfaces
+    // for 102|Bos taurus today must remain present after the refactor.
+    // Layout/label-casing may change; data may not be lost.
+    // -------------------------------------------------------------------------
+
+    test('animals parity: every data point present for 102|Bos taurus', async () => {
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: '/explorer/commodity-config?commodity=102|Bos+taurus'
+      })
+
+      expect(statusCode).toBe(statusCodes.ok)
+
+      // Commodity summary fields
+      expect(result).toContain('102')
+      expect(result).toContain('Bos taurus')
+
+      // Purpose set name (set indirection visible to user) +
+      // every value in that set (refdata: purpose_set_04).
+      expect(result).toContain('purpose_set_04')
+      for (const v of [
+        'Breeding',
+        'Fattening',
+        'Production',
+        'Rejected or Returned consignment',
+        'Slaughter',
+        'Transit'
+      ]) {
+        expect(result).toContain(v)
+      }
+
+      // Identifier set name + values (refdata: identifier_set_13).
+      expect(result).toContain('identifier_set_13')
+      expect(result).toContain('Ear tag')
+      expect(result).toContain('Passport')
+
+      // Quantity type fields (label, field name, ID — all three must show).
+      expect(result).toContain('Number of animals')
+      expect(result).toContain('numberOfAnimals')
+      expect(result).toContain('number-of-animals')
+
+      // Routing-flag labels (the three animals flags).
+      expect(result).toContain('CPH Number')
+      expect(result).toContain('Permanent Address')
+      expect(result).toContain('Transporter Address')
+
+      // Routing-flag states: cph_number=true → Enabled,
+      // permanent_address=false → Disabled, transporter_address=true → Enabled.
+      // The page renders Enabled/Disabled tags somewhere — assert both appear.
+      expect(result).toContain('Enabled')
+      expect(result).toContain('Disabled')
+    })
   })
 })

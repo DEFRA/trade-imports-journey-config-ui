@@ -21,7 +21,9 @@ const baseAdapter = () => ({
     facts: {},
     tests: {},
     submissionDatePath: 'submittedAt'
-  }
+  },
+  refdataView: () => ({ dimensions: [], details: [] }),
+  commodityKeys: () => []
 })
 
 describe('validateJourney', () => {
@@ -91,6 +93,36 @@ describe('validateJourney', () => {
     adapter.resolvers.facts = null
     expect(() => validateJourney('bad', adapter)).toThrow(
       /resolvers\.facts is missing/
+    )
+  })
+
+  // ---------------------------------------------------------------------------
+  // Story 02: refdataView + commodityKeys must exist as functions —
+  // missing them shouldn't fail at first /explorer/commodity-config
+  // request; fail at boot.
+  // ---------------------------------------------------------------------------
+
+  test('throws when refdataView is missing', () => {
+    const adapter = baseAdapter()
+    delete adapter.refdataView
+    expect(() => validateJourney('bad', adapter)).toThrow(
+      /refdataView is missing or not a function/
+    )
+  })
+
+  test('throws when refdataView is not a function', () => {
+    const adapter = baseAdapter()
+    adapter.refdataView = {}
+    expect(() => validateJourney('bad', adapter)).toThrow(
+      /refdataView is missing or not a function/
+    )
+  })
+
+  test('throws when commodityKeys is missing', () => {
+    const adapter = baseAdapter()
+    delete adapter.commodityKeys
+    expect(() => validateJourney('bad', adapter)).toThrow(
+      /commodityKeys is missing or not a function/
     )
   })
 })

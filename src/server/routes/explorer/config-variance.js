@@ -1,60 +1,51 @@
 /**
- * Variance computation for commodity configuration refdata.
+ * Variance computation for commodity-config refdata views.
  *
- * Computes which values are common across all commodities vs specific to
- * particular commodity groups, enabling visual highlighting in the UI.
+ * Generic across journeys: the caller supplies an array of variance
+ * dimensions (each with an `id` and a `valuesFor(commodityKey)` function)
+ * plus the journey's refdata + commodity keys; this module accumulates
+ * frequency and superset for every dimension without knowing what
+ * "purpose" or "marketing standard" means.
+ *
+ * The classification (`common` / `specific`) and the per-commodity
+ * include/exclude helpers were already journey-agnostic and stay
+ * unchanged.
  */
 
 /**
- * Compute variance statistics across all commodities in refdata.
+ * Compute variance statistics for the supplied dimensions across all
+ * commodities. Each dimension closes over its own refdata, so this
+ * function only needs the dimension descriptors plus the key list.
  *
- * Returns frequency maps for purpose values, identifier values, and routing
- * flag majorities. These are used to visually distinguish common values from
- * commodity-specific ones.
- *
- * @param {Object} refdata - The eu-live-animals-refdata.json object
- * @returns {Object} Variance statistics
+ * @param {Array<{ id: string, valuesFor: (commodityKey: string) => string[] }>} dimensions
+ * @param {string[]} commodityKeys - The keys to iterate (the journey
+ *   decides what counts as a "commodity" — species keys, fallback
+ *   keys, etc.).
+ * @returns {{ totalCommodities: number, byDimension: Object<string, { superset: Set<string>, frequency: Map<string, number> }> }}
  */
-export const computeVariance = (refdata) => {
-  const { routing, content, definitions } = refdata
-  const commodityKeys = Object.keys(content)
-  const totalCommodities = commodityKeys.length
-
-  // Compute purpose superset and frequency
-  const purposeFrequency = new Map()
-  const purposeSuperset = new Set()
-
-  for (const key of commodityKeys) {
-    const purposeSetName = content[key].purpose
-    const purposeValues = definitions.purpose_sets[purposeSetName] || []
-
-    for (const value of purposeValues) {
-      purposeSuperset.add(value)
-      purposeFrequency.set(value, (purposeFrequency.get(value) || 0) + 1)
+export const computeVariance = (dimensions, commodityKeys) => {
+  const byDimension = {}
+  for (const dimension of dimensions) {
+    byDimension[dimension.id] = {
+      superset: new Set(),
+      frequency: new Map()
     }
   }
 
-  // Compute identifier superset and frequency
-  const identifierFrequency = new Map()
-  const identifierSuperset = new Set()
-
   for (const key of commodityKeys) {
-    const identifierSetName = content[key].identifiers
-    const identifierValues =
-      definitions.identifier_sets[identifierSetName] || []
-
-    for (const value of identifierValues) {
-      identifierSuperset.add(value)
-      identifierFrequency.set(value, (identifierFrequency.get(value) || 0) + 1)
+    for (const dimension of dimensions) {
+      const values = dimension.valuesFor(key)
+      const bucket = byDimension[dimension.id]
+      for (const value of values) {
+        bucket.superset.add(value)
+        bucket.frequency.set(value, (bucket.frequency.get(value) || 0) + 1)
+      }
     }
   }
 
   return {
-    purposeSuperset,
-    purposeFrequency,
-    identifierSuperset,
-    identifierFrequency,
-    totalCommodities
+    totalCommodities: commodityKeys.length,
+    byDimension
   }
 }
 
@@ -74,9 +65,8 @@ export const classifyValue = (frequency, total) => {
 }
 
 /**
- * Annotate a list of values with frequency and common/specific classification.
- *
- * Generic function used for both purpose values and identifier values.
+ * Annotate a list of values with frequency and common/specific
+ * classification. Generic — used per-dimension.
  *
  * @param {Array<string>} values - Values for this commodity
  * @param {Map<string, number>} frequencyMap - Value → commodity count
@@ -111,4 +101,3 @@ export const computeAbsentValues = (superset, included, frequencyMap) => {
       frequency: frequencyMap.get(value) || 0
     }))
 }
-
