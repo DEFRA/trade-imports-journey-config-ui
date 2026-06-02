@@ -4,23 +4,34 @@
  * Each scenario is a COMPLETE notification JSON in the journey's
  * notification shape (see `features/notification-shape/01-target-shape.md`)
  * that passes the evaluator with `submittable: true`, `unsatisfied: 0`,
- * `deferred: 0`.
+ * `deferred: 0` against the journey's resolvers + refdata.
  *
- * The 7 scenarios cover the full obligation graph:
- * - 1 minimal path (PHSI-only commodity, fallback key only)
- * - 1 GMS + varieties path (exact species key, HMI commodity)
- * - 1 GMS without varieties path (exact species key, JOINT authority)
- * - 1 propagation path (bulb commodity, fallback, finished-or-propagated + intended-use)
- * - 1 test-and-trial path (seeds, fallback)
- * - 1 transit path (transit-routing active)
- * - 1 transhipment path (transhipment-routing active)
+ * The 10 scenarios cover the obligation graph plus the full
+ * authority × marketing-standard variance:
+ *
+ *   import-phsi-ornamental — PHSI-only commodity (minimal path).
+ *   import-apples           — JOINT+SMS species WITH varieties + billing
+ *                             (apples MABSD; exercises variety/class).
+ *   import-peppers          — JOINT+SMS species, no varieties, billing.
+ *   import-bulbs            — bulb commodity (propagation +
+ *                             finished-or-propagated + intended-use).
+ *   import-seeds            — test-and-trial commodity.
+ *   transit-plants          — transit purpose (transit routing active).
+ *   transhipment-plants     — transhipment purpose.
+ *   import-hmi-gms          — HMI+GMS species (the only cell that
+ *                             fires the GMS declaration page).
+ *   import-hmi-sms          — HMI+SMS species (HMI inspection, no GMS).
+ *   import-joint-gms        — JOINT+GMS species (JOINT routing, no GMS).
  *
  * Refdata lookup paths:
- *   Scenarios 1, 4, 5, 6, 7 → fallback key (commodityCode|)
- *   Scenarios 2, 3            → exact species key (commodityCode|eppoCode)
+ *   import-phsi-ornamental / -bulbs / -seeds / transit / transhipment →
+ *     PHSI fallback (no `species[code|eppo]` row; resolver falls back
+ *     to `commodities[code]`).
+ *   import-apples / -peppers / -hmi-gms / -hmi-sms / -joint-gms →
+ *     exact species row (`species[code|eppo]`).
  *
  * All commodity codes are 10-digit TRACES format. EPPO codes are real
- * values from dbo_inspection_responsibility.csv.
+ * values from the refdata.
  */
 
 // ---------------------------------------------------------------------------
@@ -51,8 +62,13 @@ const party = (name, country) => ({
  * Build a commodity entry with species details.
  * Returns a partial commodity — merge with `parameterSet(...)` to
  * produce a complete entry with parameters.
+ *
+ * Named `buildCommodity` (not `commodity`) to keep the noun
+ * `commodity` reserved for the runtime fact extracted by
+ * `resolvers.facts.commodity` — same domain word, different
+ * meanings, kept disambiguated at the source.
  */
-const commodity = ({
+const buildCommodity = ({
   id,
   eppoCode,
   speciesName,
@@ -110,7 +126,7 @@ const accompanyingDocs = [
  * Pure PHSI species have no species-level entry in refdata routing —
  * falls back to commodity-level key (06042090|) with all flags false.
  */
-const PHSI_ORNAMENTAL = commodity({
+const PHSI_ORNAMENTAL = buildCommodity({
   id: '06042090',
   eppoCode: 'RSVSS',
   speciesName: 'Rosa (Rose)',
@@ -121,9 +137,10 @@ const PHSI_ORNAMENTAL = commodity({
 /**
  * Non-PHSI commodity with marketing standard AND registered varieties.
  * Apples (0808108090) with EPPO MABSD → exact species key hit.
- * Refdata: has_gms=true, has_varieties=true, requires_billing=true.
+ * Refdata species: regulatory_authority=JOINT, marketing_standard=SMS,
+ *                  validity_period=7, varieties present.
  */
-const APPLES = commodity({
+const APPLES = buildCommodity({
   id: '0808108090',
   eppoCode: 'MABSD',
   speciesName: 'Malus domestica',
@@ -134,9 +151,10 @@ const APPLES = commodity({
 /**
  * Non-PHSI commodity with marketing standard but NO varieties.
  * Sweet peppers (07096010) with EPPO CPSAN → exact species key hit.
- * Refdata: has_gms=true, has_varieties=false, requires_billing=true.
+ * Refdata species: regulatory_authority=JOINT, marketing_standard=SMS,
+ *                  validity_period=6, no varieties.
  */
-const PEPPERS = commodity({
+const PEPPERS = buildCommodity({
   id: '07096010',
   eppoCode: 'CPSAN',
   speciesName: 'Capsicum annuum',
@@ -150,7 +168,7 @@ const PEPPERS = commodity({
  * All species for this commodity are PHSI — falls back to commodity key
  * (06011010|).
  */
-const BULBS = commodity({
+const BULBS = buildCommodity({
   id: '06011010',
   eppoCode: 'HYAOR',
   speciesName: 'Hyacinthus orientalis',
@@ -164,12 +182,57 @@ const BULBS = commodity({
  * All species for this commodity are PHSI — falls back to commodity key
  * (1209999910|).
  */
-const SEEDS = commodity({
+const SEEDS = buildCommodity({
   id: '1209999910',
   eppoCode: 'AKTOR',
   speciesName: 'Actinidia (Kiwi seeds)',
   speciesId: 'AKTOR',
   nomination: 'Kiwi seeds'
+})
+
+// ---------------------------------------------------------------------------
+// Authority × marketing-standard variance scenarios.
+// These species are real refdata picks chosen to cover each cell of the
+// authority × standard variance (see the README + Story 03 Phase B).
+// All three are no-varieties to keep the GMS signal focused (the
+// variety/class page is a separate concern, exercised elsewhere).
+// ---------------------------------------------------------------------------
+
+/**
+ * HMI + GMS species (the canonical positive case for the GMS declaration
+ * page). 0805108010|CIDAU = Citrus aurantium (bitter orange) in
+ * "Fruit and nuts".
+ */
+const HMI_GMS = buildCommodity({
+  id: '0805108010',
+  eppoCode: 'CIDAU',
+  speciesName: 'Citrus aurantium',
+  speciesId: 'CIDAU',
+  nomination: 'Bitter orange'
+})
+
+/**
+ * HMI + SMS species — HMI inspection, but Specific Marketing Standards
+ * apply, so the GMS declaration page does NOT fire. 08059000|CIDAL.
+ */
+const HMI_SMS = buildCommodity({
+  id: '08059000',
+  eppoCode: 'CIDAL',
+  speciesName: 'Citrus deliciosa',
+  speciesId: 'CIDAL',
+  nomination: 'Mediterranean mandarin'
+})
+
+/**
+ * JOINT + GMS species — JOINT routing, so even with GMS the page does
+ * NOT fire (the JOINT custom-doc-code flow handles it). 0709999090|DATME.
+ */
+const JOINT_GMS = buildCommodity({
+  id: '0709999090',
+  eppoCode: 'DATME',
+  speciesName: 'Datura metel',
+  speciesId: 'DATME',
+  nomination: 'Other vegetable'
 })
 
 // ---------------------------------------------------------------------------
@@ -297,7 +360,11 @@ export const importPhsiOrnamental = buildNotification({
 })
 
 // ---------------------------------------------------------------------------
-// Scenario 2: Import – Apples (GMS + varieties + billing)
+// Scenario 2: Import – Apples (variety/class + JOINT+SMS + billing)
+//
+// Apples (0808108090|MABSD) is JOINT+SMS in the refdata, so the GMS
+// declaration page does NOT fire. The variety/class page DOES — apples
+// MABSD has registered varieties, so requiresVarietyClass is active.
 // ---------------------------------------------------------------------------
 
 export const importApples = buildNotification({
@@ -308,13 +375,12 @@ export const importApples = buildNotification({
         ...baseKeyDataPairs,
         { key: 'variety', data: 'Braeburn' },
         { key: 'class', data: 'Class I' },
-        { key: 'regulatory_authority', data: 'HMI' },
-        { key: 'marketing_standard', data: 'GMS' },
-        { key: 'validity_period', data: '2' }
+        { key: 'regulatory_authority', data: 'JOINT' },
+        { key: 'marketing_standard', data: 'SMS' },
+        { key: 'validity_period', data: '7' }
       ])
     }
   ],
-  gmsDeclarationAccepted: true,
   billing: billingBlock
 })
 
@@ -365,7 +431,9 @@ export const transitPlants = buildNotification({
 })
 
 // ---------------------------------------------------------------------------
-// Scenario 6: Import – Peppers (GMS without varieties + billing)
+// Scenario 6: Import – Peppers (JOINT+SMS, no varieties, billing)
+//
+// JOINT+SMS → GMS declaration page does NOT fire. No varieties either.
 // ---------------------------------------------------------------------------
 
 export const importPeppers = buildNotification({
@@ -380,7 +448,6 @@ export const importPeppers = buildNotification({
       ])
     }
   ],
-  gmsDeclarationAccepted: true,
   billing: billingBlock
 })
 
@@ -396,6 +463,68 @@ export const transhipmentPlants = buildNotification({
 })
 
 // ---------------------------------------------------------------------------
+// Scenario 8: Import – HMI+GMS (the only cell where the GMS declaration
+// page fires; canonical positive case).
+// ---------------------------------------------------------------------------
+
+export const importHmiGms = buildNotification({
+  commodities: [
+    {
+      ...HMI_GMS,
+      ...parameterSet([
+        ...baseKeyDataPairs,
+        { key: 'regulatory_authority', data: 'HMI' },
+        { key: 'marketing_standard', data: 'GMS' },
+        { key: 'validity_period', data: '2' }
+      ])
+    }
+  ],
+  gmsDeclarationAccepted: true,
+  billing: billingBlock
+})
+
+// ---------------------------------------------------------------------------
+// Scenario 9: Import – HMI+SMS (HMI inspection but Specific Marketing
+// Standards — GMS declaration does NOT fire).
+// ---------------------------------------------------------------------------
+
+export const importHmiSms = buildNotification({
+  commodities: [
+    {
+      ...HMI_SMS,
+      ...parameterSet([
+        ...baseKeyDataPairs,
+        { key: 'regulatory_authority', data: 'HMI' },
+        { key: 'marketing_standard', data: 'SMS' },
+        { key: 'validity_period', data: '5' }
+      ])
+    }
+  ],
+  billing: billingBlock
+})
+
+// ---------------------------------------------------------------------------
+// Scenario 10: Import – JOINT+GMS (JOINT routing — GMS declaration does
+// NOT fire despite the GMS marketing standard; routed via the JOINT
+// custom-doc-code flow in IPAFFS).
+// ---------------------------------------------------------------------------
+
+export const importJointGms = buildNotification({
+  commodities: [
+    {
+      ...JOINT_GMS,
+      ...parameterSet([
+        ...baseKeyDataPairs,
+        { key: 'regulatory_authority', data: 'JOINT' },
+        { key: 'marketing_standard', data: 'GMS' },
+        { key: 'validity_period', data: '2' }
+      ])
+    }
+  ],
+  billing: billingBlock
+})
+
+// ---------------------------------------------------------------------------
 // Lookup map keyed by URL-safe scenario name
 // ---------------------------------------------------------------------------
 
@@ -406,11 +535,11 @@ export const scenarioMap = {
   },
   'import-apples': {
     notification: importApples,
-    label: 'Import – Apples (GMS + varieties + billing, exact species key)'
+    label: 'Import – Apples (JOINT+SMS + varieties + billing, exact species key)'
   },
   'import-peppers': {
     notification: importPeppers,
-    label: 'Import – Peppers (GMS without varieties + billing, exact species key)'
+    label: 'Import – Peppers (JOINT+SMS, no varieties, billing, exact species key)'
   },
   'import-bulbs': {
     notification: importBulbs,
@@ -427,5 +556,17 @@ export const scenarioMap = {
   'transhipment-plants': {
     notification: transhipmentPlants,
     label: 'Transhipment – Plants (transhipment routing, fallback key)'
+  },
+  'import-hmi-gms': {
+    notification: importHmiGms,
+    label: 'Import – HMI+GMS (variance: GMS declaration active)'
+  },
+  'import-hmi-sms': {
+    notification: importHmiSms,
+    label: 'Import – HMI+SMS (variance: HMI inspection, no GMS declaration)'
+  },
+  'import-joint-gms': {
+    notification: importJointGms,
+    label: 'Import – JOINT+GMS (variance: JOINT routing, no GMS declaration)'
   }
 }

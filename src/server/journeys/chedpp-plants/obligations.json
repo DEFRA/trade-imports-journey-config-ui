@@ -206,7 +206,7 @@
       "schemaPaths": [
         "commodities[].parameters.keyDataPair"
       ],
-      "note": "Satisfied when keyDataPair contains entries with keys 'variety' and 'class'. The evaluator checks keyDataPair presence; the resolver gates activation via refdata has_varieties flag."
+      "note": "Satisfied when keyDataPair contains entries with keys 'variety' and 'class'. The evaluator checks keyDataPair presence; the resolver gates activation on the species' varieties list (derived at read time in resolvers.js#lookupRouting from species.varieties)."
     },
     {
       "id": "finished-or-propagated",

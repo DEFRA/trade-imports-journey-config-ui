@@ -3,12 +3,14 @@
  *
  * Schema-specific fact extractors and condition tests for the
  * chedpp-plants notification structure (see
- * `features/notification-shape/01-target-shape.md`).
+ * `features/notification-shape/01-target-shape.md`) and the normalised
+ * plants refdata (see `features/journey-switching/plants-refdata-model.md`).
  *
- * These functions know how to navigate the notification shape and the
- * chedpp-plants refdata structure. No other module should contain
- * this knowledge.
+ * These functions know how to navigate the notification shape AND the
+ * two-grain refdata structure (`commodities` + `species`). No other
+ * module should contain this knowledge.
  */
+
 // ---------------------------------------------------------------------------
 // Fact extractors
 // ---------------------------------------------------------------------------
@@ -32,9 +34,9 @@ const facts = {
 /**
  * Build refdata lookup key from a commodity.
  *
- * CHEDPP uses commodityCode|eppoCode (parallel to EU live animals'
- * commodityID|speciesName). The eppoCode is the EPPO plant identifier
- * and now lives under `commodity.species.eppoCode` per the new shape.
+ * CHEDPP uses commodityCode|eppoCode. The eppoCode is the EPPO plant
+ * identifier and lives under `commodity.species.eppoCode` per the
+ * notification shape.
  */
 const buildRefdataKey = (commodity) => {
   const code = commodity.id
@@ -43,19 +45,47 @@ const buildRefdataKey = (commodity) => {
 }
 
 /**
- * Look up a value in a refdata table by commodity.
+ * Read-time merge over the two-grain refdata: reconstruct the
+ * per-commodity routing object that the condition tests below consume.
  *
- * Tries the exact key (commodityCode|eppoCode) first.
- * Falls back to commodity-only key (commodityCode|) for flags
- * that don't vary by species — e.g. requiresFinishedOrPropagated,
- * requiresTestAndTrial, propagation.
+ * Species-grain fields (`varieties`) come from
+ * `refdata.species[code|eppo]` if present. Commodity-grain flags
+ * (`requires_test_and_trial`, `requires_finished_or_propagated`,
+ * `propagation`) come from `refdata.commodities[code]`.
+ *
+ * For PHSI-only commodities the species row is absent: the lookup falls
+ * back to the commodity entry only, with all species-derived booleans
+ * false.
+ *
+ * `has_varieties` and `requires_billing` are derived at read time.
+ * `requiresGmsDeclaration` reads the species record directly (see below):
+ * the predicate is `regulatory_authority === 'HMI' && marketing_standard
+ * === 'GMS'` per the verified IPAFFS rule — no stored flag.
+ *
+ * Returns null when neither a species nor a commodity entry exists.
  */
-const lookupRefdata = (table, commodity) => {
-  const exactKey = buildRefdataKey(commodity)
-  if (table[exactKey]) return table[exactKey]
-  const fallbackKey = `${commodity.id}|`
-  return table[fallbackKey] ?? null
+const lookupRouting = (refdata, commodity) => {
+  const code = commodity.id
+  const sp = refdata.species[buildRefdataKey(commodity)]
+  const com = refdata.commodities[code]
+  if (!sp && !com) return null
+  return {
+    has_varieties: (sp?.varieties?.length ?? 0) > 0,
+    requires_finished_or_propagated:
+      com?.requires_finished_or_propagated ?? false,
+    requires_test_and_trial: com?.requires_test_and_trial ?? false,
+    propagation: com?.propagation ?? null,
+    requires_billing: sp != null
+  }
 }
+
+/**
+ * Look up the species record directly (or null when absent).
+ * `requiresGmsDeclaration` reads it for `regulatory_authority` and
+ * `marketing_standard`.
+ */
+const lookupSpecies = (refdata, commodity) =>
+  refdata.species[buildRefdataKey(commodity)] ?? null
 
 // ---------------------------------------------------------------------------
 // Condition tests
@@ -87,19 +117,27 @@ const tests = {
   isTranshipment,
 
   requiresGmsDeclaration: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    // Verified IPAFFS predicate (see
+    // features/journey-switching/gms-declaration-rule-investigation.md):
+    // require the GMS declaration iff the species is HMI-inspected AND
+    // covered by the General Marketing Standards. Read straight from
+    // the species record — no stored flag.
+    const sp = lookupSpecies(refdata, commodity)
+    const active =
+      sp?.regulatory_authority === 'HMI' && sp?.marketing_standard === 'GMS'
     return {
-      active: routing.has_gms === true,
-      reason: routing.has_gms
-        ? 'commodity species requires GMS declaration (HMI + GMS marketing standard)'
-        : 'commodity species does not require GMS declaration'
+      active,
+      reason: active
+        ? 'HMI-inspected species with GMS marketing standard'
+        : 'species is not HMI+GMS (no GMS declaration required)'
     }
   },
 
   requiresVarietyClass: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    const routing = lookupRouting(refdata, commodity)
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     return {
       active: routing.has_varieties === true,
       reason: routing.has_varieties
@@ -109,8 +147,10 @@ const tests = {
   },
 
   requiresFinishedOrPropagated: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    const routing = lookupRouting(refdata, commodity)
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     return {
       active: routing.requires_finished_or_propagated === true,
       reason: routing.requires_finished_or_propagated
@@ -120,8 +160,10 @@ const tests = {
   },
 
   requiresTestAndTrial: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    const routing = lookupRouting(refdata, commodity)
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     return {
       active: routing.requires_test_and_trial === true,
       reason: routing.requires_test_and_trial
@@ -131,8 +173,10 @@ const tests = {
   },
 
   requiresIntendedUse: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    const routing = lookupRouting(refdata, commodity)
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     const hasPropagation = routing.propagation != null
     return {
       active: hasPropagation,
@@ -143,8 +187,10 @@ const tests = {
   },
 
   requiresBilling: (commodity, refdata) => {
-    const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    const routing = lookupRouting(refdata, commodity)
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     return {
       active: routing.requires_billing === true,
       reason: routing.requires_billing
@@ -170,7 +216,8 @@ export {
   facts,
   tests,
   buildRefdataKey,
-  lookupRefdata,
+  lookupRouting,
+  lookupSpecies,
   TRANSIT_PURPOSES,
   TRANSHIPMENT_PURPOSES
 }

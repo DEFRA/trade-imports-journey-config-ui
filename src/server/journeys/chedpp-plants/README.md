@@ -67,35 +67,39 @@ JOINT+GMS — route through a different document-code path
 `ipaffs-frontend-notification/service/src/utils/chedpp.js`), not the
 GMS declaration page.
 
-## Current implementation vs the correct rule
+## Implementation history
 
-The current adapter derives `has_gms = marketing_standard != null`,
-which fires for **all 5,321** marketing-bearing species — every row of
-the table above except PHSI. The correct predicate fires for **409**
-(HMI+GMS only) — a ~92 % over-trigger, almost entirely the JOINT
-majority.
+Pre-Story-03 the adapter's GMS-declaration predicate was the
+over-permissive `marketing_standard != null` derivation, which fired
+for **all 5,321** marketing-bearing species — every row of the table
+above except PHSI. Story 03 Phase B replaced it with the verified
+predicate `regulatory_authority === 'HMI' && marketing_standard ===
+'GMS'`, which fires for the **409** HMI+GMS pairs only (a ~92 %
+correction, almost entirely removing the JOINT majority). The flag is
+no longer stored — `requiresGmsDeclaration` reads the species record
+directly.
 
-The correction is deliberately out of scope for the data-normalisation
-work. See:
+See:
 
 - `features/journey-switching/gms-declaration-rule-investigation.md` —
-  the verified IPAFFS rule (citations) + gap analysis + recommended
-  course of action + the scenario re-pin impact.
+  the verified IPAFFS rule (citations) + gap analysis + scenario re-pin
+  impact.
 - `features/journey-switching/03-gms-correction-and-scenario-coverage.md` —
-  Story 03; Phase A normalises the refdata behaviour-preservingly
-  (retains `regulatory_authority` + `marketing_standard` for downstream
-  derivation), Phase B applies the corrected predicate and broadens the
-  scenarios.
-- `features/journey-switching/plants-refdata-model.md` — the data
-  model these definitions live in.
+  Story 03. Phase A normalised the refdata to its two-grain shape
+  behaviour-preservingly; Phase B applied the predicate correction and
+  added the three missing variance scenarios.
+- `features/journey-switching/plants-refdata-model.md` — the data model
+  these definitions live in.
 
 ## Scrutinising the scenarios
 
-There are seven committed scenarios in `scenarios.js`
-(`scenarioMap`): five PHSI fallback paths and two `JOINT+SMS`
-(`import-apples`, `import-peppers`). **None** currently exercises an
-`HMI+GMS` species, so the genuine positive-GMS path is not yet covered
-— closing that gap is part of the follow-up.
+There are ten committed scenarios in `scenarios.js` (`scenarioMap`):
+five PHSI fallback paths (`import-phsi-ornamental`, `import-bulbs`,
+`import-seeds`, `transit-plants`, `transhipment-plants`), two
+`JOINT+SMS` (`import-apples`, `import-peppers`), and three exercising
+the remaining variance cells (`import-hmi-gms` — the only one that
+fires GMS declaration, `import-hmi-sms`, `import-joint-gms`). Together
+they cover every cell of the authority × standard table above.
 
 Programmatic scrutiny today:
 

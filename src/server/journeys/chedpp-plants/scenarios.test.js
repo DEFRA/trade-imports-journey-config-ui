@@ -37,18 +37,24 @@ describe('chedpp-plants scenarios — submittable', () => {
 // ---------------------------------------------------------------------------
 
 describe('chedpp-plants scenarios — per-status counts (parity pins)', () => {
-  // Pinned from baseline captured immediately before Story 03 migration.
-  // Any drift here means the new shape is missing data the obligations
-  // expect, or conditional obligations are firing differently than
-  // before.
+  // Pins reflect Story 03:
+  //   Phase A (normalisation) preserved every count;
+  //   Phase B (corrected GMS predicate) flipped gms-declaration from
+  //   active → inactive for the two JOINT+SMS scenarios (apples,
+  //   peppers) — satisfied -1, inactive +1 for each.
+  //   Three new scenarios (one per missing variance cell) carry their
+  //   own pins.
   const parityTargets = [
     ['import-phsi-ornamental', 20, 8],
-    ['import-apples', 23, 5],
-    ['import-peppers', 22, 6],
+    ['import-apples', 22, 6], // was 23, 5 pre-Phase B
+    ['import-peppers', 21, 7], // was 22, 6 pre-Phase B
     ['import-bulbs', 22, 6],
     ['import-seeds', 21, 7],
     ['transit-plants', 21, 7],
-    ['transhipment-plants', 21, 7]
+    ['transhipment-plants', 21, 7],
+    ['import-hmi-gms', 22, 6], // gms-declaration ACTIVE (the only cell that fires it)
+    ['import-hmi-sms', 21, 7], // HMI but SMS — gms-declaration inactive
+    ['import-joint-gms', 21, 7] // JOINT routing — gms-declaration inactive
   ]
 
   test.each(parityTargets)(

@@ -9,19 +9,17 @@ const JOURNEYS = {
   'chedpp-plants': chedppPlants
 }
 
-const validateJourney = (key, journey) => {
+export const validateJourney = (key, journey) => {
   if (!Array.isArray(journey.obligations) || journey.obligations.length === 0) {
     throw new Error(
       `Journey "${key}": obligations must be a non-empty array`
     )
   }
-  if (
-    !journey.refdata?.routing ||
-    typeof journey.refdata.routing !== 'object'
-  ) {
-    throw new Error(
-      `Journey "${key}": refdata.routing is missing or not an object`
-    )
+  // Refdata shape is a journey concern (animals uses routing/content/
+  // definitions; plants uses commodities/species/classes). The plugin's
+  // job is just to assert that the journey supplies *something* sensible.
+  if (!journey.refdata || typeof journey.refdata !== 'object') {
+    throw new Error(`Journey "${key}": refdata is missing or not an object`)
   }
   if (
     !journey.journeyMap?.sections ||

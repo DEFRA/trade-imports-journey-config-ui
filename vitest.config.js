@@ -5,6 +5,11 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     clearMocks: true,
+    // `data-reconstruction/` holds the git-ignored one-shot migration
+    // tooling for Story 03 Phase A. Its tests use `node:assert` and
+    // are run directly via `node ...` — they are not part of the
+    // committed test suite.
+    exclude: [...configDefaults.exclude, 'data-reconstruction/**'],
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',

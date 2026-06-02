@@ -12,3 +12,8 @@ tsconfig.tsbuildinfo
 .env
 !/.tool-versions
 !/.envrc
+
+# Story 03 Phase A: one-shot migration tooling. Scripts + vendored source
+# snapshots + the flat-refdata oracle live here. Output is the committed
+# refdata.json — the rest is intentionally not reproducible from the repo.
+data-reconstruction/
