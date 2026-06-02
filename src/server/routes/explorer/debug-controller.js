@@ -1,4 +1,3 @@
-import { config } from '#config/config.js'
 import { generateObligationFragments } from './obligation-fragments.js'
 import { navContext } from './nav-context.js'
 
@@ -19,7 +18,8 @@ import { navContext } from './nav-context.js'
 export const debugController = {
   handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const journeyKey = config.get('journey')
+    const nav = navContext(request)
+    const { journeyKey } = nav
     const { obligations, scenarios } = evaluationEngine.getJourney(journeyKey)
     const sessionNotification = request.yar.get('notification') || null
 
@@ -55,7 +55,7 @@ export const debugController = {
         : null,
       fragmentSelectItems,
       fragmentsJson: JSON.stringify(fragments),
-      ...navContext(journeyKey)
+      ...nav
     })
   }
 }

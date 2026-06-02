@@ -1,4 +1,3 @@
-import { config } from '#config/config.js'
 import { resolveScreens } from '#server/engine/resolve-screens.js'
 import { navContext } from './nav-context.js'
 
@@ -56,7 +55,8 @@ const toScenarioSelectItems = (scenarios, selected) => {
 export const journeyController = {
   handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const journeyKey = config.get('journey')
+    const nav = navContext(request)
+    const { journeyKey } = nav
     const { scenarios, journeyMap } = evaluationEngine.getJourney(journeyKey)
     const { scenario: scenarioParam } = request.query
 
@@ -113,7 +113,7 @@ export const journeyController = {
       selectedScenario,
       sections,
       summary,
-      ...navContext(journeyKey)
+      ...nav
     })
   }
 }

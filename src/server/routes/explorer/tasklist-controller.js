@@ -1,4 +1,3 @@
-import { config } from '#config/config.js'
 import { resolveScreens } from '#server/engine/resolve-screens.js'
 import { rollUpToSections } from '#server/engine/roll-up-to-sections.js'
 import { SCREEN_STATUS } from '#server/engine/types.js'
@@ -53,7 +52,8 @@ const toTaskListSections = (sections) =>
 export const tasklistController = {
   handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const journeyKey = config.get('journey')
+    const nav = navContext(request)
+    const { journeyKey } = nav
     const sessionNotification = request.yar.get('notification')
     const notification = sessionNotification || {}
     const presetName = sessionNotification ? 'Custom' : 'empty'
@@ -82,7 +82,7 @@ export const tasklistController = {
       submittable,
       presetName,
       error,
-      ...navContext(journeyKey)
+      ...nav
     })
   }
 }

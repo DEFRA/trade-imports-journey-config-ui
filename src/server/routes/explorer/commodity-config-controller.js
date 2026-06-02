@@ -1,4 +1,3 @@
-import { config } from '#config/config.js'
 import {
   computeVariance,
   annotateValues,
@@ -11,11 +10,11 @@ import {
 } from './config-utils.js'
 import { navContext } from './nav-context.js'
 
-const baseViewContext = (journeyKey) => ({
+const baseViewContext = (nav) => ({
   pageTitle: 'Commodity Configuration',
   heading: 'Commodity Reference Data Configuration',
   currentPage: 'commodity-config',
-  ...navContext(journeyKey)
+  ...nav
 })
 
 /**
@@ -48,7 +47,8 @@ const buildDimensionView = (dimension, commodityKey, variance) => {
 export const commodityConfigController = {
   handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const journeyKey = config.get('journey')
+    const nav = navContext(request)
+    const { journeyKey } = nav
     const journey = evaluationEngine.getJourney(journeyKey)
     const { refdata, refdataView, commodityKeys } = journey
     const { dimensions, details } = refdataView(refdata)
@@ -63,7 +63,7 @@ export const commodityConfigController = {
 
     if (!selectedKey) {
       return h.view('explorer/commodity-config', {
-        ...baseViewContext(journeyKey),
+        ...baseViewContext(nav),
         commodityOptions,
         selectedCommodity: null
       })
@@ -85,7 +85,7 @@ export const commodityConfigController = {
     const { commodityID, speciesName } = parseCommodityKey(selectedKey)
 
     return h.view('explorer/commodity-config', {
-      ...baseViewContext(journeyKey),
+      ...baseViewContext(nav),
       commodityOptions,
       selectedCommodity: selectedKey,
       commodityID,

@@ -4,6 +4,7 @@ import { debugController } from './debug-controller.js'
 import { evaluateController } from './api-controller.js'
 import { tasklistController } from './tasklist-controller.js'
 import { commodityConfigController } from './commodity-config-controller.js'
+import { journeyPickerController } from './journey-picker-controller.js'
 
 /**
  * Explorer plugin
@@ -61,6 +62,11 @@ export const explorer = {
           method: 'POST',
           path: '/explorer/debug/evaluate',
           ...evaluateController
+        },
+        {
+          method: 'POST',
+          path: '/explorer/journey',
+          ...journeyPickerController
         }
       ])
     }

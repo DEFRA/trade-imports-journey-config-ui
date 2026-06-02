@@ -1,5 +1,5 @@
-import { config } from '#config/config.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
+import { currentJourneyKey } from './nav-context.js'
 
 /**
  * POST /explorer/debug/evaluate handler
@@ -13,7 +13,7 @@ import { statusCodes } from '../../common/constants/status-codes.js'
 export const evaluateController = {
   handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const journeyKey = config.get('journey')
+    const journeyKey = currentJourneyKey(request)
 
     try {
       const { notification } = request.payload || {}

@@ -107,8 +107,13 @@ Programmatic scrutiny today:
 TZ=UTC npx vitest run src/server/journeys/chedpp-plants/scenarios.test.js
 ```
 
-Visual scrutiny in the explorer requires
-`features/journey-switching/01-env-selected-journey.md` to land first
-(the explorer is presently hardcoded to `eu-live-animals`); after that,
-`JOURNEY=chedpp-plants npm run dev` exposes these scenarios under
-`/explorer`, `/explorer/tasklist`, `/explorer/debug`.
+Visual scrutiny in the explorer: from any explorer page (`/explorer`,
+`/explorer/tasklist`, `/explorer/debug`, `/explorer/commodity-config`)
+use the **journey picker** in the nav to switch to `chedpp-plants` —
+the scenario dropdown reloads with the plant scenarios. The picker
+writes the journey into the session and zeros the current
+notification, so animals state can't bleed across the switch.
+
+`JOURNEY=chedpp-plants npm run dev` remains the boot default (and the
+CI / unattended source of truth); it makes plants the journey for any
+request that doesn't already carry a session value.

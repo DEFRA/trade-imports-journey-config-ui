@@ -1,20 +1,43 @@
 /**
- * Shared view-context fragment for the explorer nav partial
- * (`partials/explorer-nav.njk`).
+ * Journey-key resolution + view-context fragment for the explorer nav.
  *
- * The partial reads `journeyKey` for the "Journey: <key>" indicator.
- * Every view controller that renders an explorer page passes through
- * here so the gating literal would live in one place if we ever
- * re-introduced a per-journey nav gate.
+ * Two responsibilities:
  *
- * Story 02 made commodity-config journey-agnostic, so the
- * `showCommodityConfig` flag the previous Story 01 carried has been
- * retired. The helper stays so controllers keep a single threading
- * call.
+ *   1. `currentJourneyKey(request)` — single source for "what journey
+ *      is this request being served as?". Session value wins when set
+ *      and registered; otherwise we fall back to the boot default
+ *      (`config.get('journey')`). The fallback guards against a stale
+ *      session pointing at an unregistered journey — instead of
+ *      crashing on `getJourney`, the page renders the default.
  *
- * @param {string} journeyKey - The configured journey identifier
- * @returns {{ journeyKey: string }}
+ *   2. `navContext(request)` — view-context fragment containing both
+ *      `journeyKey` (the resolved key) and `journeyOptions` (the
+ *      select-items for the picker partial). Every view controller
+ *      spreads this into its `h.view(...)` context so the picker shows
+ *      up on every explorer page.
+ *
+ * The boot default still comes from the `JOURNEY` env var via
+ * convict — it remains the source of truth for CI and unattended
+ * runs; the picker is the in-browser override.
  */
-export const navContext = (journeyKey) => ({
-  journeyKey
-})
+import { config } from '#config/config.js'
+
+export const currentJourneyKey = (request) => {
+  const session = request.yar.get('journey')
+  const known = request.server.app.evaluationEngine.listJourneys()
+  if (session && known.includes(session)) return session
+  return config.get('journey')
+}
+
+export const navContext = (request) => {
+  const journeyKey = currentJourneyKey(request)
+  const known = request.server.app.evaluationEngine.listJourneys()
+  return {
+    journeyKey,
+    journeyOptions: known.map((key) => ({
+      value: key,
+      text: key, // raw key — display labels are out of scope per Story 01
+      selected: key === journeyKey
+    }))
+  }
+}

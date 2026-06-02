@@ -1,8 +1,6 @@
 {# Explorer navigation — shared across all explorer pages #}
 <nav class="govuk-!-margin-bottom-6" aria-label="Explorer pages">
-  {% if journeyKey %}
-    <p class="govuk-body-s govuk-!-margin-bottom-2"><strong>Journey:</strong> {{ journeyKey }}</p>
-  {% endif %}
+  {% include "partials/journey-picker.njk" %}
   <ul class="app-explorer-nav">
     <li><a class="govuk-link{% if currentPage == 'journey' %} govuk-link--no-underline govuk-!-font-weight-bold{% endif %}" href="/explorer">Journey Configuration</a></li>
     <li><a class="govuk-link{% if currentPage == 'tasklist' %} govuk-link--no-underline govuk-!-font-weight-bold{% endif %}" href="/explorer/tasklist">Task List</a></li>
