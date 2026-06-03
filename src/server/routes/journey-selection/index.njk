@@ -8,11 +8,12 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <div class="govuk-body" data-testid="app-page-body">
-        <p>
-        </p>
-      </div>
+      <p class="govuk-body">
+        Switch the active journey. Changing journey clears any loaded
+        notification — animals state can't bleed into a plants render
+        and vice versa.
+      </p>
+      {% include "partials/journey-picker.njk" %}
     </div>
   </div>
-
 {% endblock %}

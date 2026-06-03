@@ -67,8 +67,8 @@ describe('context and cache', () => {
             },
             {
               current: false,
-              text: 'About',
-              href: '/about'
+              text: 'Journey Selection',
+              href: '/journey-selection'
             }
           ],
           serviceName: 'trade-imports-journey-config-ui',
@@ -156,8 +156,8 @@ describe('context and cache', () => {
             },
             {
               current: false,
-              text: 'About',
-              href: '/about'
+              text: 'Journey Selection',
+              href: '/journey-selection'
             }
           ],
           serviceName: 'trade-imports-journey-config-ui',

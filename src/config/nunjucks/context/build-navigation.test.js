@@ -16,8 +16,8 @@ describe('#buildNavigation', () => {
       },
       {
         current: false,
-        text: 'About',
-        href: '/about'
+        text: 'Journey Selection',
+        href: '/journey-selection'
       }
     ])
   })
@@ -31,8 +31,8 @@ describe('#buildNavigation', () => {
       },
       {
         current: false,
-        text: 'About',
-        href: '/about'
+        text: 'Journey Selection',
+        href: '/journey-selection'
       }
     ])
   })

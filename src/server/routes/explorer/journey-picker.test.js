@@ -3,7 +3,7 @@ import { createServer } from '../../server.js'
 import { statusCodes } from '../../common/constants/status-codes.js'
 
 /**
- * Behaviour & intent (Story 04 §Tests):
+ * Behaviour & intent (Stories 04 + 05):
  *
  *   POST /explorer/journey is the user-facing journey switch. It must:
  *   (1) validate the target against listJourneys();
@@ -11,11 +11,12 @@ import { statusCodes } from '../../common/constants/status-codes.js'
  *       on success (so animals state can't bleed into plants);
  *   (3) always redirect to /explorer (never the referer — closes an
  *       open-redirect path on a session-mutating route);
- *   (4) reject unknown or missing targets with 400.
+ *   (4) reject unknown or missing targets with 400;
+ *   (5) zero notification even on a same-journey POST (Story 05 §3).
  *
- *   And the picker partial must appear on every explorer page —
- *   regression guard against a controller forgetting to thread the
- *   nav-context fields.
+ *   And (Story 05): the picker form lives on /journey-selection; every
+ *   explorer page renders an active-journey text indicator so users
+ *   know which journey is loaded without the picker on the page.
  */
 
 describe('POST /explorer/journey (runtime picker)', () => {
@@ -64,9 +65,9 @@ describe('POST /explorer/journey (runtime picker)', () => {
     expect(statusCode).toBe(statusCodes.ok)
     // Plants scenarios appear in the dropdown after the switch.
     expect(result).toEqual(expect.stringContaining('Import – Apples'))
-    // Picker option for chedpp-plants is marked selected.
-    expect(result).toMatch(
-      /<option[^>]*value="chedpp-plants"[^>]*selected/
+    // Indicator reflects the new active journey.
+    expect(result).toEqual(
+      expect.stringContaining('Journey: <strong>chedpp-plants</strong>')
     )
   })
 
@@ -83,14 +84,15 @@ describe('POST /explorer/journey (runtime picker)', () => {
     const badResponse = await postJourney('not-a-journey', cookie)
     expect(badResponse.statusCode).toBe(statusCodes.badRequest)
 
-    // Session journey wasn't clobbered — GET /explorer still shows animals.
+    // Session journey wasn't clobbered — indicator on /explorer still
+    // reports animals.
     const { result } = await server.inject({
       method: 'GET',
       url: '/explorer',
       headers: cookie ? { cookie } : {}
     })
-    expect(result).toMatch(
-      /<option[^>]*value="eu-live-animals"[^>]*selected/
+    expect(result).toEqual(
+      expect.stringContaining('Journey: <strong>eu-live-animals</strong>')
     )
   })
 
@@ -165,7 +167,68 @@ describe('POST /explorer/journey (runtime picker)', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // Picker is reachable from every explorer page
+  // Same-journey POST also zeroes notification (Story 05 §3)
+  // ---------------------------------------------------------------------------
+
+  test('same-journey POST also clears yar.notification', async () => {
+    // Load animals scenario — populates yar.notification with cattle.
+    const journeyResponse = await server.inject({
+      method: 'GET',
+      url: '/explorer?scenario=import-cattle'
+    })
+    const cookie = extractCookie(journeyResponse)
+
+    // The debug page wraps the loaded notification in a
+    // `data-initial-notification="..."` attribute that's only
+    // emitted when `initialNotification` is truthy. That attribute
+    // is the clean signal — `Bos taurus` substring is unreliable
+    // here because it also appears in scenario-derived obligation
+    // fragments, regardless of session state.
+    const beforeDebug = await server.inject({
+      method: 'GET',
+      url: '/explorer/debug',
+      headers: cookie ? { cookie } : {}
+    })
+    expect(beforeDebug.result).toEqual(
+      expect.stringContaining('data-initial-notification=')
+    )
+
+    // POST the SAME journey (no actual switch) — handler still zeroes.
+    const sameJourneyPost = await postJourney('eu-live-animals', cookie)
+    expect(sameJourneyPost.statusCode).toBe(302)
+    const switchedCookie = extractCookie(sameJourneyPost) ?? cookie
+
+    const afterDebug = await server.inject({
+      method: 'GET',
+      url: '/explorer/debug',
+      headers: switchedCookie ? { cookie: switchedCookie } : {}
+    })
+
+    expect(afterDebug.statusCode).toBe(statusCodes.ok)
+    // Attribute is gone because initialNotification is now null.
+    expect(afterDebug.result).not.toEqual(
+      expect.stringContaining('data-initial-notification=')
+    )
+  })
+
+  // ---------------------------------------------------------------------------
+  // Picker lives on the Journey Selection page (Story 05 §2)
+  // ---------------------------------------------------------------------------
+
+  test('picker form is present on /journey-selection', async () => {
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/journey-selection'
+    })
+
+    expect(statusCode).toBe(statusCodes.ok)
+    expect(result).toEqual(
+      expect.stringContaining('action="/explorer/journey"')
+    )
+  })
+
+  // ---------------------------------------------------------------------------
+  // Picker is NOT on explorer pages; indicator IS (Story 05 §3)
   // ---------------------------------------------------------------------------
 
   test.each([
@@ -173,14 +236,25 @@ describe('POST /explorer/journey (runtime picker)', () => {
     '/explorer/tasklist',
     '/explorer/debug',
     '/explorer/commodity-config'
-  ])('picker form is present on %s', async (path) => {
+  ])('explorer page %s shows the journey indicator and no picker form', async (path) => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
       url: path
     })
 
     expect(statusCode).toBe(statusCodes.ok)
+    // Default journey (no session) is eu-live-animals. The literal
+    // markup substring catches the specific regression a controller
+    // that forgets to spread navContext would create — the indicator
+    // would render as empty `<strong></strong>` and this assertion
+    // fails.
     expect(result).toEqual(
+      expect.stringContaining(
+        'Journey: <strong>eu-live-animals</strong>'
+      )
+    )
+    // The picker form must NOT appear on explorer pages anymore.
+    expect(result).not.toEqual(
       expect.stringContaining('action="/explorer/journey"')
     )
   })

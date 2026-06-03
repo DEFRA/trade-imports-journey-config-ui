@@ -55,8 +55,13 @@ describe('Explorer with JOURNEY=chedpp-plants', () => {
     expect(result).toEqual(expect.stringContaining('Import – Apples'))
     // Animals-only screen name must NOT leak through
     expect(result).not.toEqual(expect.stringContaining('CPH number'))
-    // Nav indicator shows the active journey
-    expect(result).toEqual(expect.stringContaining('chedpp-plants'))
+    // Nav indicator shows the active journey — tightened from loose
+    // 'chedpp-plants' substring (Story 05): use the full indicator
+    // markup so markup drift forces a test update rather than
+    // silently re-passing on an incidental match.
+    expect(result).toEqual(
+      expect.stringContaining('Journey: <strong>chedpp-plants</strong>')
+    )
   })
 
   test('GET /explorer/tasklist renders plants task list when session holds a plants scenario', async () => {

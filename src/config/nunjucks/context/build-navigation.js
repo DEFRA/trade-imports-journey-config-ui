@@ -6,9 +6,9 @@ export function buildNavigation(request) {
       current: request?.path === '/'
     },
     {
-      text: 'About',
-      href: '/about',
-      current: request?.path === '/about'
+      text: 'Journey Selection',
+      href: '/journey-selection',
+      current: request?.path === '/journey-selection'
     }
   ]
 }
