@@ -20,44 +20,6 @@ export const parseCommodityKey = (commodityKey) => {
 }
 
 /**
- * Build a minimal notification from purpose group, commodity key, and optional country.
- *
- * The minimal notification includes only the data needed for obligation evaluation:
- * - purposeGroup (drives transit/import conditional logic)
- * - commodity (drives species-specific routing flags)
- * - countryOfOrigin (drives consignment-origin obligation)
- *
- * @param {string} purposeGroup - Purpose group value (e.g., "For Import")
- * @param {string} commodityKey - Commodity key in format "commodityID|speciesName"
- * @param {string|null} [countryOfOrigin] - ISO 3166-1 alpha-2 country code
- * @returns {Object} Minimal notification structure
- */
-export const buildMinimalNotification = (
-  purposeGroup,
-  commodityKey,
-  countryOfOrigin = null
-) => {
-  const { commodityID, speciesName } = parseCommodityKey(commodityKey)
-
-  const notification = {
-    type: 'IMPv2',
-    purpose: { group: purposeGroup },
-    commodities: [
-      {
-        id: commodityID,
-        species: { name: speciesName || undefined }
-      }
-    ]
-  }
-
-  if (countryOfOrigin) {
-    notification.origin = { country: countryOfOrigin }
-  }
-
-  return notification
-}
-
-/**
  * Format a parsed commodity key as a human-readable label.
  *
  * Single source of truth for how commodities appear in dropdowns,

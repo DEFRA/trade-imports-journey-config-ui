@@ -9,6 +9,7 @@ import {
   toSelectItems
 } from './config-utils.js'
 import { navContext } from './nav-context.js'
+import { computePageVariance } from './page-variance.js'
 
 const baseViewContext = (nav) => ({
   pageTitle: 'Commodity Configuration',
@@ -16,6 +17,12 @@ const baseViewContext = (nav) => ({
   currentPage: 'commodity-config',
   ...nav
 })
+
+// Detail ids that describe commodity-level routing fields. These are
+// surfaced as part of the commodity summary at the top of the page,
+// not down in the regular details block. Each registered journey
+// names its routing detail; the set is small and stable.
+const ROUTING_DETAIL_IDS = new Set(['commodity_flags', 'routing'])
 
 /**
  * Build the per-dimension view shown on the page: included values
@@ -82,7 +89,18 @@ export const commodityConfigController = {
       rows: dt.rowsFor(selectedKey)
     }))
 
+    // The routing detail describes commodity-level facts that read
+    // naturally next to the summary. The remaining details (varieties,
+    // classes, quantity type, etc.) sit further down with the
+    // variance-annotated dimensions.
+    const routingDetail =
+      detailViews.find((d) => ROUTING_DETAIL_IDS.has(d.id)) ?? null
+    const otherDetails = detailViews.filter(
+      (d) => !ROUTING_DETAIL_IDS.has(d.id)
+    )
+
     const { commodityID, speciesName } = parseCommodityKey(selectedKey)
+    const pageVariance = computePageVariance(journey, journeyKey, selectedKey)
 
     return h.view('explorer/commodity-config', {
       ...baseViewContext(nav),
@@ -92,7 +110,9 @@ export const commodityConfigController = {
       speciesName: speciesName || '(no species)',
       totalCommodities: variance.totalCommodities,
       dimensionViews,
-      detailViews
+      routingDetail,
+      otherDetails,
+      pageVariance
     })
   }
 }

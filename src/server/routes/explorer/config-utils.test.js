@@ -2,7 +2,6 @@ import { describe, test, expect } from 'vitest'
 import {
   parseCommodityKey,
   formatCommodityLabel,
-  buildMinimalNotification,
   extractCommodityOptions,
   toSelectItems
 } from './config-utils.js'
@@ -41,45 +40,6 @@ describe('parseCommodityKey', () => {
       commodityID: '0101',
       speciesName: 'Bos-taurus (Holstein)'
     })
-  })
-})
-
-describe('buildMinimalNotification', () => {
-  test('builds notification with purpose and commodity', () => {
-    const result = buildMinimalNotification('For Import', '0101210000|Horses')
-
-    expect(result.type).toBe('IMPv2')
-    expect(result.purpose.group).toBe('For Import')
-    expect(result.commodities[0].id).toBe('0101210000')
-    expect(result.commodities[0].species.name).toBe('Horses')
-  })
-
-  test('sets speciesName to undefined when not in key', () => {
-    const result = buildMinimalNotification('For Import', '0101210000|')
-    expect(result.commodities[0].species.name).toBeUndefined()
-  })
-
-  test('does not include origin when null', () => {
-    const result = buildMinimalNotification('For Import', '0101210000|Horses')
-    expect(result.origin).toBeUndefined()
-  })
-
-  test('includes origin.country when provided', () => {
-    const result = buildMinimalNotification(
-      'For Import',
-      '0101210000|Horses',
-      'FR'
-    )
-    expect(result.origin.country).toBe('FR')
-  })
-
-  test('does not include origin when empty string', () => {
-    const result = buildMinimalNotification(
-      'For Import',
-      '0101210000|Horses',
-      ''
-    )
-    expect(result.origin).toBeUndefined()
   })
 })
 

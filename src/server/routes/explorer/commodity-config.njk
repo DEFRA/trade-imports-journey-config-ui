@@ -39,7 +39,7 @@
       {# Configuration display (only if commodity selected) #}
       {% if selectedCommodity %}
 
-        {# Journey-neutral commodity summary #}
+        {# Journey-neutral commodity summary + routing detail #}
         <div class="app-explorer-section">
           <h2 class="govuk-heading-l">Commodity Summary</h2>
           <dl class="govuk-summary-list">
@@ -54,13 +54,66 @@
           </dl>
         </div>
 
+        {# Commodity-level routing fields + the derived "Pages this
+           commodity drives" panel travel together. The routing detail
+           shows the raw refdata; the panel shows what those fields
+           cause to happen in the journey. Both sit under the summary
+           because they describe the commodity itself. #}
+        {% if routingDetail %}
+          {{ detailBlock(routingDetail) }}
+        {% endif %}
+
+        {% if pageVariance and pageVariance.length %}
+          <h2 class="govuk-heading-m">Pages this commodity drives</h2>
+          <p class="govuk-body govuk-hint">
+            The routing data immediately above shows raw fields stored in
+            the refdata for this commodity. The Yes/No values below are
+            <strong>computed at render time</strong> by running the journey's
+            resolver predicates against those fields (plus species-level
+            data) - they are not stored as flags. Each row corresponds to
+            a page in the journey whose presence depends on commodity or
+            species data. For animals the predicate is usually a direct
+            boolean read of one routing flag; for plants it is usually a
+            compound predicate combining several species fields.
+          </p>
+
+          <table class="govuk-table">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th class="govuk-table__header" scope="col">Page</th>
+                <th class="govuk-table__header" scope="col">Triggered by this commodity?</th>
+                <th class="govuk-table__header" scope="col">Driver(s)</th>
+              </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+              {% for s in pageVariance %}
+                <tr class="govuk-table__row">
+                  <td class="govuk-table__cell">{{ s.screenName }}</td>
+                  <td class="govuk-table__cell">
+                    {% if s.activates %}
+                      <strong class="govuk-tag govuk-tag--green">Yes</strong>
+                    {% else %}
+                      <strong class="govuk-tag govuk-tag--grey">No</strong>
+                    {% endif %}
+                  </td>
+                  <td class="govuk-table__cell govuk-body-s">
+                    {% for d in s.drivers %}
+                      <div>{{ d.name }}: {{ d.reason }}</div>
+                    {% endfor %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+
         {# Variance-annotated dimensions #}
         {% for d in dimensionViews %}
           {{ dimensionBlock(d, totalCommodities) }}
         {% endfor %}
 
-        {# Per-commodity details (as-is, no variance) #}
-        {% for dt in detailViews %}
+        {# Remaining per-commodity details (as-is, no variance) #}
+        {% for dt in otherDetails %}
           {{ detailBlock(dt) }}
         {% endfor %}
 

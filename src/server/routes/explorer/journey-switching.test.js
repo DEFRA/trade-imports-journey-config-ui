@@ -129,6 +129,16 @@ describe('Explorer with JOURNEY=chedpp-plants', () => {
     // Animals-only labels must NOT leak.
     expect(result).not.toContain('CPH Number')
     expect(result).not.toContain('purpose_set_')
+
+    // Story 06: derived "Pages this commodity drives" panel renders
+    // with the GMS declaration row marked Yes. The panel sits
+    // immediately under the Commodity routing detail; the hint
+    // paragraph references that proximity.
+    expect(result).toContain('Pages this commodity drives')
+    expect(result).toContain('The routing data immediately above')
+    expect(result).toContain('computed at render time')
+    expect(result).toContain('GMS declaration')
+    expect(result).toContain('HMI-inspected species with GMS marketing standard')
   })
 
   test('detail block formats value-by-type (Disabled / Not provided / text)', async () => {
