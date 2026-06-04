@@ -31,6 +31,10 @@
 
 .app-value-tag {
   margin-left: 8px;
+  // Keep "Commodity-specific" on one line. The hyphen would otherwise
+  // become a wrap point when the parent narrows; pushing the
+  // frequency text to the right reads better than splitting the tag.
+  white-space: nowrap;
 }
 
 .app-value-frequency {
