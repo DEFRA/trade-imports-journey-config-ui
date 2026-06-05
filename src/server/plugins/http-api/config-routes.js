@@ -9,6 +9,7 @@ import {
   commodityDetailResponse,
   errorResponse
 } from './schemas.js'
+import { withJourney, notFound } from './route-helpers.js'
 
 // validateJourney (evaluation-engine plugin) guarantees journey.journeyMap
 // with journeyMap.sections (array) and journey.obligations (non-empty array)
@@ -28,28 +29,6 @@ export const listJourneySummaries = (engine) => ({
     .listJourneys()
     .map((key) => projectJourneySummary(key, engine.getJourney(key)))
 })
-
-// Returns the journey adapter for `key`, or null if not registered.
-// Avoids the try/catch dance around the facade's throw-on-unknown.
-const lookupJourney = (engine, key) =>
-  engine.listJourneys().includes(key) ? engine.getJourney(key) : null
-
-// 404 with the standard error envelope. Centralised so every handler
-// renders the same shape.
-const notFound = (h, message) =>
-  h
-    .response({ error: 'Not Found', message })
-    .code(statusCodes.notFound)
-
-// All six per-journey routes share the same opening dance: read
-// {key} from params, resolve the journey or 404. Extracting it leaves
-// each handler with only its journey-specific work.
-const withJourney = (request, h, work) => {
-  const { key } = request.params
-  const journey = lookupJourney(request.server.app.evaluationEngine, key)
-  if (!journey) return notFound(h, `Unknown journey: "${key}"`)
-  return work(journey, request, h)
-}
 
 // Compose the composite refdata key the journey closures expect.
 // Without species, the species-agnostic key `${code}|` covers both

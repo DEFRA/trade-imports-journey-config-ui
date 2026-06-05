@@ -48,6 +48,22 @@ export const SECTION_STATUS = Object.freeze({
   CANNOT_START_YET: 'cannotStartYet'
 })
 
+/**
+ * Per-step kind emitted by `evaluateWithTrace`. Surfaced on the
+ * `/api/engine/.../evaluate?withTrace=true` response; the HTTP API's
+ * Joi schema validates `trace.steps[].step` against this exact enum
+ * so a new engine step type cannot ship without a corresponding API
+ * contract update.
+ */
+export const TRACE_STEP = Object.freeze({
+  EXTRACT_FACT: 'extract-fact',
+  APPLY_TEST: 'apply-test',
+  DEFERRED: 'deferred',
+  INACTIVE: 'inactive',
+  SATISFACTION_CHECK: 'satisfaction-check',
+  ACTION_CHECK: 'action-check'
+})
+
 // ---------------------------------------------------------------------------
 // Status enum types
 // ---------------------------------------------------------------------------
@@ -55,6 +71,7 @@ export const SECTION_STATUS = Object.freeze({
 /** @typedef {'satisfied' | 'unsatisfied' | 'deferred' | 'inactive'} ObligationStatus */
 /** @typedef {'complete' | 'incomplete' | 'cannotStartYet' | 'notApplicable'} ScreenStatus */
 /** @typedef {'complete' | 'incomplete' | 'cannotStartYet'} SectionStatus */
+/** @typedef {'extract-fact' | 'apply-test' | 'deferred' | 'inactive' | 'satisfaction-check' | 'action-check'} TraceStep */
 
 // ---------------------------------------------------------------------------
 // Obligation contract (input)

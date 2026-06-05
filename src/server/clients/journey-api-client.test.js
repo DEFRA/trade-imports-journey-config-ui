@@ -304,3 +304,98 @@ describe('createJourneyApiClient — getCommodityDetail', () => {
     )
   })
 })
+
+describe('createJourneyApiClient — evaluate', () => {
+  it('POSTs the raw notification to /api/engine/journeys/{key}/evaluate with no query', async () => {
+    okJson({ obligations: [], summary: { total: 0, submittable: true } })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    const notif = { origin: { country: 'NL' } }
+    await client.evaluate('eu-live-animals', notif)
+
+    const req = lastRequest()
+    expect(req.url).toBe('http://x/api/engine/journeys/eu-live-animals/evaluate')
+    expect(req.method).toBe('POST')
+  })
+
+  it('appends ?withTrace=true when called with { withTrace: true }', async () => {
+    okJson({ obligations: [], summary: {} })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.evaluate('eu-live-animals', {}, { withTrace: true })
+    expect(lastRequest().url).toBe(
+      'http://x/api/engine/journeys/eu-live-animals/evaluate?withTrace=true'
+    )
+  })
+
+  it('returns the parsed EvaluationResult body', async () => {
+    const expected = {
+      obligations: [{ id: 'x', status: 'satisfied' }],
+      summary: { total: 1, submittable: true }
+    }
+    okJson(expected)
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    const result = await client.evaluate('eu-live-animals', {})
+    expect(result).toEqual(expected)
+  })
+
+  it('surfaces non-2xx as ApiError', async () => {
+    errorJson(500, { error: 'Boom', message: 'broken' })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await expect(client.evaluate('eu-live-animals', {})).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 500
+    })
+  })
+})
+
+describe('createJourneyApiClient — getScreens', () => {
+  it('POSTs raw notification and returns { screens } unwrapped to array', async () => {
+    okJson({ screens: [{ screenId: 'a' }] })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    const screens = await client.getScreens('eu-live-animals', {})
+    expect(lastRequest().url).toBe(
+      'http://x/api/engine/journeys/eu-live-animals/screens'
+    )
+    expect(screens).toEqual([{ screenId: 'a' }])
+  })
+})
+
+describe('createJourneyApiClient — getSections', () => {
+  it('POSTs raw notification and returns the full { sections, summary } envelope', async () => {
+    const body = {
+      sections: [{ sectionId: 's', status: 'incomplete' }],
+      summary: { total: 1 }
+    }
+    okJson(body)
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    const result = await client.getSections('eu-live-animals', {})
+    expect(lastRequest().url).toBe(
+      'http://x/api/engine/journeys/eu-live-animals/sections'
+    )
+    expect(result).toEqual(body)
+  })
+})
+
+describe('createJourneyApiClient — putSessionNotification', () => {
+  it('PUTs the raw notification body to /ui/session/notification', async () => {
+    // The Response constructor disallows a body on 204 — return 200
+    // with empty body; the client's 204 branch is exercised by the
+    // server-side test in src/server/routes/ui-state/.
+    fetchMocker.mockResponseOnce('', { status: 200 })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.putSessionNotification({ a: 1 })
+    expect(lastRequest().url).toBe('http://x/ui/session/notification')
+    expect(lastRequest().method).toBe('PUT')
+  })
+
+  it('surfaces non-2xx as ApiError', async () => {
+    fetchMocker.mockResponseOnce(JSON.stringify({ error: 'Bad' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json' }
+    })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await expect(client.putSessionNotification({})).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 400
+    })
+  })
+})

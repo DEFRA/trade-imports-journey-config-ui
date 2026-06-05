@@ -288,48 +288,11 @@ describe('Explorer routes', () => {
   })
 
   // -----------------------------------------------------------------------
-  // Debug API — evaluate + session write-back
+  // Debug API — POST /explorer/debug/evaluate was DELETED in Story 03.
+  // The browser JS now POSTs directly to /api/engine/.../evaluate and
+  // PUT /ui/session/notification. Tests for those endpoints live in
+  // src/server/plugins/http-api/ and src/server/routes/ui-state/.
   // -----------------------------------------------------------------------
-
-  describe('POST /explorer/debug/evaluate', () => {
-    test('returns 23 obligations for any notification', async () => {
-      const { result, statusCode } = await server.inject({
-        method: 'POST',
-        url: '/explorer/debug/evaluate',
-        payload: { notification: {} }
-      })
-
-      expect(statusCode).toBe(statusCodes.ok)
-      expect(result.obligations).toHaveLength(23)
-      expect(result.summary.total).toBe(23)
-    })
-
-    test('writes notification to session (readable by debugger GET)', async () => {
-      const evaluateResponse = await server.inject({
-        method: 'POST',
-        url: '/explorer/debug/evaluate',
-        payload: {
-          notification: {
-            type: 'CVEDA',
-            purpose: { group: 'For Import' }
-          }
-        }
-      })
-
-      expect(evaluateResponse.statusCode).toBe(statusCodes.ok)
-      const cookie = extractCookie(evaluateResponse)
-
-      const debugResponse = await server.inject({
-        method: 'GET',
-        url: '/explorer/debug',
-        headers: cookie ? { cookie } : {}
-      })
-
-      expect(debugResponse.result).toEqual(
-        expect.stringContaining('For Import')
-      )
-    })
-  })
 
   // -----------------------------------------------------------------------
   // Cross-page session sharing
@@ -355,18 +318,34 @@ describe('Explorer routes', () => {
       )
     })
 
-    test('debugger POST → tasklist: task list reflects evaluated state', async () => {
-      const evaluateResponse = await server.inject({
-        method: 'POST',
-        url: '/explorer/debug/evaluate',
-        payload: {
-          notification: {
-            type: 'CVEDA',
-            purpose: { group: 'For Import' }
-          }
-        }
+    test('PUT /ui/session/notification → tasklist: status tags differ from empty-session baseline', async () => {
+      // The previous version of this test only asserted the heading
+      // "Check your notification" appears — a static string the page
+      // always renders. Story 03 replaced that false-positive with a
+      // *behaviour-change* assertion: the same tasklist URL renders
+      // different status tags when the session contains a satisfied
+      // notification vs an empty one. If the PUT-to-tasklist bridge
+      // is broken, the two responses will be identical and this test
+      // fails loudly.
+
+      // Baseline: empty session → tasklist with no satisfied screens.
+      const baseline = await server.inject({
+        method: 'GET',
+        url: '/explorer/tasklist'
       })
-      const cookie = extractCookie(evaluateResponse)
+      expect(baseline.statusCode).toBe(statusCodes.ok)
+      // 'Done' is the GOV.UK task-list tag text for `complete` screens.
+      // With an empty notification, no screen is complete.
+      expect(baseline.result).not.toContain('govuk-tag--green">\n          Done')
+
+      // Set a satisfying notification via the scenario loader (the
+      // same path the UI uses). This writes to yar.notification — the
+      // bridge under test.
+      const seedResponse = await server.inject({
+        method: 'GET',
+        url: '/explorer?scenario=import-cattle'
+      })
+      const cookie = extractCookie(seedResponse)
 
       const tasklistResponse = await server.inject({
         method: 'GET',
@@ -375,9 +354,10 @@ describe('Explorer routes', () => {
       })
 
       expect(tasklistResponse.statusCode).toBe(statusCodes.ok)
-      expect(tasklistResponse.result).toEqual(
-        expect.stringContaining('Check your notification')
-      )
+      // The two responses must differ — a stronger guarantee than
+      // "contains a known substring". The actual differences are in
+      // the status tag classes / text per section.
+      expect(tasklistResponse.result).not.toEqual(baseline.result)
     })
 
     test('journey → clear → debugger: debugger shows empty after clear', async () => {

@@ -133,32 +133,38 @@ const formatJSON = (data, spaces = 2) => {
   return JSON.stringify(data, null, spaces) + '\n'
 }
 
-/**
- * Build request payload for evaluation endpoint
- * @param {Object} notificationData - Parsed notification object
- * @returns {Object} - { notification: notificationData }
- */
-const buildEvaluationPayload = (notificationData) => {
-  return { notification: notificationData }
-}
-
 // ---------------------------------------------------------------------------
 // Data Fetching
 // ---------------------------------------------------------------------------
 
+// Active journey key read from the page's `data-journey-key` attribute.
+// Set in initializeEditor() before any handler that fetches from the
+// engine API. Closure-captured here so evaluateNotification and
+// persistNotification don't need to thread it through every call.
+let journeyKey = null
+
 /**
- * POST /explorer/debug/evaluate with notification JSON
+ * POST /api/engine/journeys/{key}/evaluate?withTrace=true
+ *
+ * Story 03 rewrite: the browser calls the public engine API directly
+ * (raw notification body, no envelope) and session persistence is its
+ * own explicit call (see persistNotification). The previous
+ * /explorer/debug/evaluate proxy is gone.
+ *
  * @param {Object} notification - Parsed notification object
- * @returns {Promise<Object>} - { summary, obligations, trace }
+ * @returns {Promise<Object>} - { summary, obligations, [trace] }
  * @throws {Error} - Network, validation, or parsing errors
  */
 const evaluateNotification = async (notification) => {
   try {
-    const response = await fetch('/explorer/debug/evaluate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(buildEvaluationPayload(notification))
-    })
+    const response = await fetch(
+      `/api/engine/journeys/${encodeURIComponent(journeyKey)}/evaluate?withTrace=true`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notification)
+      }
+    )
 
     if (!response.ok) {
       throw new Error(`Evaluation failed: ${response.status} ${response.statusText}`)
@@ -178,6 +184,28 @@ const evaluateNotification = async (notification) => {
       throw new Error('Network error: Unable to evaluate notification. Check your connection.')
     }
     throw error
+  }
+}
+
+/**
+ * PUT /ui/session/notification — persist the notification in the UI
+ * session ("in-memory database" of the SDUI demo). Fired explicitly
+ * on Save & Evaluate so /explorer/tasklist and /explorer can read
+ * the same notification on next page render.
+ *
+ * @param {Object} notification - Parsed notification object
+ * @returns {Promise<boolean>} - true if persisted, false otherwise
+ */
+const persistNotification = async (notification) => {
+  try {
+    const response = await fetch('/ui/session/notification', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(notification)
+    })
+    return response.ok
+  } catch {
+    return false
   }
 }
 
@@ -381,7 +409,17 @@ const attachEventHandlers = () => {
   const textarea = document.getElementById('editor-textarea')
   const saveButton = document.getElementById('save-evaluate-button')
 
-  // Shared evaluation logic
+  // Shared evaluation logic.
+  //
+  // Live preview (debounced typing): engine call only — no PUT. The
+  // session is only updated on an explicit "Save & Evaluate" so the
+  // tasklist/explorer cross-page bridge fires when the user means it.
+  //
+  // Save & Evaluate (button + Ctrl+Enter): sequential PUT-then-POST.
+  // The PUT persists the notification; only on PUT success do we
+  // proceed to evaluate. A PUT failure aborts and surfaces "Save
+  // failed" — we never render obligations against a notification that
+  // didn't make it to the session.
   const evaluate = async ({ showFeedback = false } = {}) => {
     const parsed = parseJSON(textarea.value)
 
@@ -392,6 +430,14 @@ const attachEventHandlers = () => {
     }
 
     clearParseError()
+
+    if (showFeedback) {
+      const persisted = await persistNotification(parsed.data)
+      if (!persisted) {
+        showSaveStatus('Save failed', true)
+        return
+      }
+    }
 
     try {
       await evaluateAndNotify(parsed.data)
@@ -451,6 +497,18 @@ const initializeEditor = async () => {
   }
 
   try {
+    // Story 03: read the active journey key from the page's
+    // data-journey-key attribute. The debug-controller renders this
+    // from `currentJourneyKey(request)`. Without this the engine API
+    // call has no journey to address.
+    const journeyKeyEl = document.querySelector('[data-journey-key]')
+    journeyKey = journeyKeyEl?.dataset.journeyKey ?? null
+    if (!journeyKey) {
+      throw new Error(
+        'debug page missing data-journey-key attribute — cannot address engine API'
+      )
+    }
+
     // Render collapsible JSON editor
     renderCollapsibleEditor()
 

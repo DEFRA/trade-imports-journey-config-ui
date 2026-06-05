@@ -11,7 +11,7 @@
   {% include "partials/explorer-nav.njk" %}
 
   {# Full-width collapsible JSON editor #}
-  <div class="govuk-grid-row" {% if initialNotification %}data-initial-notification="{{ initialNotification | escape }}"{% endif %} data-fragments="{{ fragmentsJson | escape }}">
+  <div class="govuk-grid-row" data-journey-key="{{ journeyKey }}" {% if initialNotification %}data-initial-notification="{{ initialNotification | escape }}"{% endif %} data-fragments="{{ fragmentsJson | escape }}">
     <div class="govuk-grid-column-full" id="editor-panel">
       {# JSON textarea rendered here by JS inside a <details> #}
     </div>

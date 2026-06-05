@@ -258,4 +258,39 @@ describe('POST /explorer/journey (runtime picker)', () => {
       expect.stringContaining('action="/explorer/journey"')
     )
   })
+
+  // ---------------------------------------------------------------------------
+  // Story 03: journey-key round-trip
+  // ---------------------------------------------------------------------------
+
+  test('after switching to plants, /explorer/debug carries data-journey-key="chedpp-plants" and the engine API returns plants-specific obligations', async () => {
+    const switchResponse = await postJourney('chedpp-plants')
+    const cookie = extractCookie(switchResponse)
+
+    // (1) The debug page surfaces the active journey to the browser JS
+    // via the data-journey-key attribute. Without this, the engine
+    // fetch wouldn't know which journey to address.
+    const debugResponse = await server.inject({
+      method: 'GET',
+      url: '/explorer/debug',
+      headers: cookie ? { cookie } : {}
+    })
+    expect(debugResponse.statusCode).toBe(statusCodes.ok)
+    expect(debugResponse.result).toEqual(
+      expect.stringContaining('data-journey-key="chedpp-plants"')
+    )
+
+    // (2) The engine API on the active journey returns a plants-specific
+    // obligation id that doesn't exist for animals. This proves the
+    // round-trip wired the right journey end-to-end.
+    const evalResponse = await server.inject({
+      method: 'POST',
+      url: '/api/engine/journeys/chedpp-plants/evaluate',
+      payload: {},
+      headers: { 'content-type': 'application/json' }
+    })
+    expect(evalResponse.statusCode).toBe(statusCodes.ok)
+    const ids = evalResponse.result.obligations.map((o) => o.id)
+    expect(ids).toContain('transhipment-routing')
+  })
 })

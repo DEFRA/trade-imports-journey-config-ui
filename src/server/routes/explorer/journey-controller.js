@@ -1,28 +1,11 @@
-import { resolveScreens } from '#server/engine/resolve-screens.js'
+import { clientForRequest } from '#server/clients/journey-api-client.js'
 import { navContext } from './nav-context.js'
 
-/**
- * Group flat screen array by sectionId, preserving order.
- *
- * @param {Array<Object>} screens - Output from resolveScreens
- * @returns {Array<Object>} Sections with screens array
- */
-const groupScreensBySection = (screens) => {
-  const sectionMap = new Map()
-
-  for (const screen of screens) {
-    if (!sectionMap.has(screen.sectionId)) {
-      sectionMap.set(screen.sectionId, {
-        sectionId: screen.sectionId,
-        sectionName: screen.sectionName,
-        screens: []
-      })
-    }
-    sectionMap.get(screen.sectionId).screens.push(screen)
-  }
-
-  return Array.from(sectionMap.values())
-}
+// Story 03 replaced an in-process resolveScreens + groupScreensBySection
+// pipeline with a single client.getSections call. The HTTP path returns
+// the already-rolled-up sections (notApplicable screens dropped per
+// rollUpToSections semantics), so the local grouper became dead code
+// and was removed.
 
 /**
  * Convert a journey's scenario map to GOV.UK select items.
@@ -54,10 +37,11 @@ const toScenarioSelectItems = (scenarios, selected) => {
  */
 export const journeyController = {
   async handler(request, h) {
-    const { evaluationEngine } = request.server.app
     const nav = await navContext(request)
     const { journeyKey } = nav
-    const { scenarios, journeyMap } = evaluationEngine.getJourney(journeyKey)
+    const client = clientForRequest(request)
+    const journey = await client.getJourney(journeyKey)
+    const { scenarios } = journey
     const { scenario: scenarioParam } = request.query
 
     let notification = null
@@ -91,10 +75,9 @@ export const journeyController = {
     // Evaluate notification if present
     if (notification) {
       try {
-        const traced = evaluationEngine.evaluate(journeyKey, notification)
-        const screens = resolveScreens(traced, journeyMap)
-        sections = groupScreensBySection(screens)
-        summary = traced.summary
+        const result = await client.getSections(journeyKey, notification)
+        sections = result.sections
+        summary = result.summary
       } catch (err) {
         request.logger.error({ err }, 'Journey evaluation failed')
       }

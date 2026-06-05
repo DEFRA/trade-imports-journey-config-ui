@@ -36,6 +36,11 @@ const stripLeadingSlash = (s) => (s.startsWith('/') ? s.slice(1) : s)
 const resolveUrl = (baseUrl, path) =>
   new URL(stripLeadingSlash(path), ensureTrailingSlash(baseUrl)).toString()
 
+const jsonHeaders = (traceId) => ({
+  ...buildHeaders(traceId),
+  'content-type': 'application/json'
+})
+
 const fetchJson = async (baseUrl, path, { traceId } = {}) => {
   const url = resolveUrl(baseUrl, path)
   const response = await fetch(url, { headers: buildHeaders(traceId) })
@@ -44,6 +49,27 @@ const fetchJson = async (baseUrl, path, { traceId } = {}) => {
   }
   return parseBody(response)
 }
+
+const sendJson = async (method, baseUrl, path, body, { traceId } = {}) => {
+  const url = resolveUrl(baseUrl, path)
+  const response = await fetch(url, {
+    method,
+    headers: jsonHeaders(traceId),
+    body: JSON.stringify(body ?? {})
+  })
+  if (!response.ok) {
+    throw new ApiError(response.status, method, url, await parseBody(response))
+  }
+  // 204 No Content (used by PUT /ui/session/notification) — no body to parse.
+  if (response.status === 204) return undefined
+  return parseBody(response)
+}
+
+const postJson = (baseUrl, path, body, opts) =>
+  sendJson('POST', baseUrl, path, body, opts)
+
+const putJson = (baseUrl, path, body, opts) =>
+  sendJson('PUT', baseUrl, path, body, opts)
 
 const assertBaseUrl = (baseUrl) => {
   if (!baseUrl) {
@@ -113,6 +139,41 @@ export const createJourneyApiClient = ({
         ? `${journeyBase(key)}/commodities/${encodeSegment(code)}/species/${encodeSegment(species)}`
         : `${journeyBase(key)}/commodities/${encodeSegment(code)}`
       return get(path)
+    },
+
+    async evaluate(key, notification, { withTrace = false } = {}) {
+      const qs = withTrace ? '?withTrace=true' : ''
+      return postJson(
+        baseUrl,
+        `/api/engine/journeys/${encodeSegment(key)}/evaluate${qs}`,
+        notification,
+        { traceId }
+      )
+    },
+
+    async getScreens(key, notification) {
+      const { screens } = await postJson(
+        baseUrl,
+        `/api/engine/journeys/${encodeSegment(key)}/screens`,
+        notification,
+        { traceId }
+      )
+      return screens ?? []
+    },
+
+    async getSections(key, notification) {
+      return postJson(
+        baseUrl,
+        `/api/engine/journeys/${encodeSegment(key)}/sections`,
+        notification,
+        { traceId }
+      )
+    },
+
+    async putSessionNotification(notification) {
+      return putJson(baseUrl, '/ui/session/notification', notification, {
+        traceId
+      })
     }
   }
 }

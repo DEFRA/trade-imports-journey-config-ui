@@ -1,4 +1,5 @@
 import { generateObligationFragments } from './obligation-fragments.js'
+import { clientForRequest } from '#server/clients/journey-api-client.js'
 import { navContext } from './nav-context.js'
 
 /**
@@ -17,10 +18,10 @@ import { navContext } from './nav-context.js'
  */
 export const debugController = {
   async handler(request, h) {
-    const { evaluationEngine } = request.server.app
     const nav = await navContext(request)
     const { journeyKey } = nav
-    const { obligations, scenarios } = evaluationEngine.getJourney(journeyKey)
+    const client = clientForRequest(request)
+    const { obligations, scenarios } = await client.getJourney(journeyKey)
     const sessionNotification = request.yar.get('notification') || null
 
     // Generate obligation fragments
@@ -50,6 +51,11 @@ export const debugController = {
       pageTitle: 'Evaluation Debugger',
       heading: 'Evaluation Debugger',
       currentPage: 'debug',
+      // Surface the active journey key so the browser JS can POST to
+      // the right /api/engine/journeys/{key}/evaluate endpoint without
+      // round-tripping through navContext. Story 03 §8 reads this from
+      // the page's `data-journey-key` attribute.
+      journeyKey,
       initialNotification: sessionNotification
         ? JSON.stringify(sessionNotification, null, 2)
         : null,

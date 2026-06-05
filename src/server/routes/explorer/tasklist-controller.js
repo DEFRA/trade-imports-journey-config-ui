@@ -1,6 +1,5 @@
-import { resolveScreens } from '#server/engine/resolve-screens.js'
-import { rollUpToSections } from '#server/engine/roll-up-to-sections.js'
 import { SCREEN_STATUS } from '#server/engine/types.js'
+import { clientForRequest } from '#server/clients/journey-api-client.js'
 import { navContext } from './nav-context.js'
 
 /**
@@ -51,9 +50,9 @@ const toTaskListSections = (sections) =>
  */
 export const tasklistController = {
   async handler(request, h) {
-    const { evaluationEngine } = request.server.app
     const nav = await navContext(request)
     const { journeyKey } = nav
+    const client = clientForRequest(request)
     const sessionNotification = request.yar.get('notification')
     const notification = sessionNotification || {}
     const presetName = sessionNotification ? 'Custom' : 'empty'
@@ -63,11 +62,9 @@ export const tasklistController = {
     let error = null
 
     try {
-      const traced = evaluationEngine.evaluate(journeyKey, notification)
-      const { journeyMap } = evaluationEngine.getJourney(journeyKey)
-      const screens = resolveScreens(traced, journeyMap)
-      sections = toTaskListSections(rollUpToSections(screens))
-      submittable = traced.summary.submittable
+      const result = await client.getSections(journeyKey, notification)
+      sections = toTaskListSections(result.sections)
+      submittable = result.summary.submittable
     } catch (err) {
       request.logger.error({ err }, 'Task list evaluation failed')
       error =

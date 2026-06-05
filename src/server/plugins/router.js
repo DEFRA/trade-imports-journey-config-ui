@@ -3,6 +3,7 @@ import { journeySelection } from '../routes/journey-selection/index.js'
 import { explorer } from '../routes/explorer/index.js'
 import { health } from '../routes/health/index.js'
 import { httpApi } from './http-api/plugin.js'
+import { uiState } from '../routes/ui-state/index.js'
 import { serveStaticFiles } from './serve-static-files.js'
 import { config } from '#config/config.js'
 
@@ -14,7 +15,13 @@ export const router = {
       await server.register([health])
 
       // Application specific routes, add your own routes here
-      await server.register([home, journeySelection, explorer, httpApi])
+      await server.register([
+        home,
+        journeySelection,
+        explorer,
+        httpApi,
+        uiState
+      ])
 
       // Static assets
       if (!config.get('isProduction') && !config.get('isTest')) {

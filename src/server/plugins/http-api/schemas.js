@@ -1,5 +1,12 @@
 import Joi from 'joi'
 
+import {
+  OBLIGATION_STATUS,
+  SCREEN_STATUS,
+  SECTION_STATUS,
+  TRACE_STEP
+} from '#server/engine/types.js'
+
 export const journeyListResponse = Joi.object({
   journeys: Joi.array()
     .items(
@@ -94,3 +101,136 @@ export const commodityDetailResponse = Joi.object()
     content: { purpose: 'purpose_set_01', identifiers: 'identifier_set_01' },
     identifierSet: ['EARTAG']
   })
+
+// Engine response schemas — strict on load-bearing keys (drift-catching
+// canary for both the API contract and the browser JS that consumes it);
+// permissive (.unknown(true)) on enrichment. The status enums derive
+// from `engine/types.js` so they cannot drift from the engine.
+
+const summarySchema = Joi.object({
+  satisfied: Joi.number().integer().min(0).required(),
+  unsatisfied: Joi.number().integer().min(0).required(),
+  deferred: Joi.number().integer().min(0).required(),
+  inactive: Joi.number().integer().min(0).required(),
+  total: Joi.number().integer().min(0).required(),
+  submittable: Joi.boolean().required()
+}).label('Summary')
+
+const traceStepSchema = Joi.object({
+  step: Joi.string()
+    .valid(...Object.values(TRACE_STEP))
+    .required()
+})
+  .unknown(true)
+  .label('TraceStep')
+
+const traceSchema = Joi.object({
+  steps: Joi.array().items(traceStepSchema).required()
+})
+  .unknown(true)
+  .label('Trace')
+
+const obligationSchema = Joi.object({
+  id: Joi.string().required(),
+  status: Joi.string()
+    .valid(...Object.values(OBLIGATION_STATUS))
+    .required(),
+  missingPaths: Joi.array().items(Joi.string()),
+  reason: Joi.string(),
+  trace: traceSchema
+})
+  .unknown(true)
+  .label('Obligation')
+
+// The notification body is journey-specific. We don't validate its
+// shape at the HTTP boundary — the engine's resolvers consume what
+// they need and ignore the rest. Empty {} is valid and exercises the
+// "everything unsatisfied" baseline.
+export const notificationSchema = Joi.object()
+  .unknown(true)
+  .label('Notification')
+  .example({})
+
+export const evaluationResultResponse = Joi.object({
+  obligations: Joi.array().items(obligationSchema).required(),
+  summary: summarySchema.required()
+})
+  .label('EvaluationResult')
+  .example({
+    obligations: [{ id: 'consignment-origin', status: 'unsatisfied' }],
+    summary: {
+      satisfied: 0,
+      unsatisfied: 23,
+      deferred: 0,
+      inactive: 0,
+      total: 23,
+      submittable: false
+    }
+  })
+
+const screenSchema = Joi.object({
+  screenId: Joi.string().required(),
+  screenName: Joi.string().required(),
+  sectionId: Joi.string().required(),
+  sectionName: Joi.string().required(),
+  status: Joi.string()
+    .valid(...Object.values(SCREEN_STATUS))
+    .required(),
+  fields: Joi.array().required()
+})
+  .unknown(true)
+  .label('Screen')
+
+export const screensResponse = Joi.object({
+  screens: Joi.array().items(screenSchema).required()
+})
+  .label('ScreensResponse')
+  .example({
+    screens: [
+      {
+        screenId: 'origin-screen',
+        screenName: 'Region of origin',
+        sectionId: 'origin-section',
+        sectionName: 'Origin',
+        status: 'incomplete',
+        fields: []
+      }
+    ]
+  })
+
+const sectionSchema = Joi.object({
+  sectionId: Joi.string().required(),
+  sectionName: Joi.string().required(),
+  status: Joi.string()
+    .valid(...Object.values(SECTION_STATUS))
+    .required(),
+  screens: Joi.array().items(screenSchema).required()
+})
+  .unknown(true)
+  .label('Section')
+
+export const sectionsResponse = Joi.object({
+  sections: Joi.array().items(sectionSchema).required(),
+  summary: summarySchema.required()
+})
+  .label('SectionsResponse')
+  .example({
+    sections: [
+      {
+        sectionId: 'origin-section',
+        sectionName: 'Origin',
+        status: 'incomplete',
+        screens: []
+      }
+    ],
+    summary: {
+      satisfied: 0,
+      unsatisfied: 23,
+      deferred: 0,
+      inactive: 0,
+      total: 23,
+      submittable: false
+    }
+  })
+
+export const emptyResponse = Joi.any().label('EmptyResponse')
