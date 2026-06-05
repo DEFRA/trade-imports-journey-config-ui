@@ -53,17 +53,66 @@ const assertBaseUrl = (baseUrl) => {
   }
 }
 
+const encodeSegment = (value) => encodeURIComponent(value)
+
+const journeyBase = (key) => `/api/config/journeys/${encodeSegment(key)}`
+
+const hasValue = (v) => typeof v === 'string' && v.trim().length > 0
+
+const buildRefdataViewQuery = ({ commodity, species } = {}) => {
+  // Client-side mirror of the server's Joi `.with('species', 'commodity')`
+  // constraint. Throwing here gives a clear stack trace instead of an
+  // opaque 400 from the server.
+  if (hasValue(species) && !hasValue(commodity)) {
+    throw new Error(
+      'getRefdataView: species requires commodity to also be set'
+    )
+  }
+  const params = new URLSearchParams()
+  if (hasValue(commodity)) params.set('commodity', commodity)
+  if (hasValue(species)) params.set('species', species)
+  const qs = params.toString()
+  return qs ? `?${qs}` : ''
+}
+
 export const createJourneyApiClient = ({
   baseUrl = config.get('apiBaseUrl'),
   traceId
 } = {}) => {
   assertBaseUrl(baseUrl)
+  const get = (path) => fetchJson(baseUrl, path, { traceId })
+
   return {
     async listJourneys() {
-      const { journeys } = await fetchJson(baseUrl, '/api/config/journeys', {
-        traceId
-      })
+      const { journeys } = await get('/api/config/journeys')
       return journeys ?? []
+    },
+
+    async getJourney(key) {
+      return get(journeyBase(key))
+    },
+
+    async getJourneyRefdata(key) {
+      return get(`${journeyBase(key)}/refdata`)
+    },
+
+    async getRefdataView(key, opts) {
+      return get(`${journeyBase(key)}/refdata-view${buildRefdataViewQuery(opts)}`)
+    },
+
+    async getCommodities(key) {
+      const { commodities } = await get(`${journeyBase(key)}/commodities`)
+      return commodities ?? []
+    },
+
+    async getCommodityDetail(key, code, species) {
+      if (!hasValue(code)) {
+        throw new Error('getCommodityDetail: code is required')
+      }
+      const path = hasValue(species)
+        ? `${journeyBase(key)}/commodities/${encodeSegment(code)}/species/${encodeSegment(species)}`
+        : `${journeyBase(key)}/commodities/${encodeSegment(code)}`
+      return get(path)
     }
   }
 }
@@ -73,3 +122,12 @@ export const clientForRequest = (request) =>
     baseUrl: request.server?.info?.uri,
     traceId: request.headers?.[traceHeaderName()]
   })
+
+/**
+ * Normalise a journey-list entry to its bare key string. The HTTP
+ * `listJourneys` returns summary objects (`{ key, name, ... }`); the
+ * in-process fallback returns bare key strings. Callers that just want
+ * the keys can `journeys.map(extractJourneyKey)` regardless of source.
+ */
+export const extractJourneyKey = (entry) =>
+  typeof entry === 'string' ? entry : (entry?.key ?? '')

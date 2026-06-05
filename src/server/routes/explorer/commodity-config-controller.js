@@ -10,6 +10,7 @@ import {
 } from './config-utils.js'
 import { navContext } from './nav-context.js'
 import { computePageVariance } from './page-variance.js'
+import { clientForRequest } from '#server/clients/journey-api-client.js'
 
 const baseViewContext = (nav) => ({
   pageTitle: 'Commodity Configuration',
@@ -52,14 +53,25 @@ const buildDimensionView = (dimension, commodityKey, variance) => {
  *   - details    (labelled rows shown as-is, type-formatted in the template)
  */
 export const commodityConfigController = {
-  handler(request, h) {
+  async handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const nav = navContext(request)
+    const client = clientForRequest(request)
+    const nav = await navContext(request)
     const { journeyKey } = nav
+
+    // Mixed paths — deliberate. HTTP is exercised for the user-visible
+    // "what does this commodity drive?" demo affordances (dropdown list
+    // and per-commodity driver). The cross-commodity variance + page-
+    // variance computations stay in-process because they aggregate over
+    // every commodity at once and no HTTP endpoint exposes that
+    // aggregation today. A future story can lift them.
     const journey = evaluationEngine.getJourney(journeyKey)
-    const { refdata, refdataView, commodityKeys } = journey
+    const { refdata, refdataView } = journey
     const { dimensions, details } = refdataView(refdata)
-    const keys = commodityKeys(refdata)
+
+    // HTTP: dropdown population — proves the API path serves the same
+    // list the in-process commodityKeys does.
+    const keys = await client.getCommodities(journeyKey)
 
     const selectedKey = request.query.commodity ?? null
     const commodityOptions = toSelectItems(
@@ -102,6 +114,25 @@ export const commodityConfigController = {
     const { commodityID, speciesName } = parseCommodityKey(selectedKey)
     const pageVariance = computePageVariance(journey, journeyKey, selectedKey)
 
+    // HTTP: per-commodity driver — Story 02's new demo affordance.
+    // Skip the fetch when commodityID is empty (a malformed
+    // ?commodity= query): the client guard would throw, and we'd log
+    // a warning on every such request — noisy for a deterministic
+    // client-side validation miss. The page still renders without
+    // the driver panel.
+    let commodityDriver = null
+    if (commodityID) {
+      commodityDriver = await client
+        .getCommodityDetail(journeyKey, commodityID, speciesName || undefined)
+        .catch((error) => {
+          request.logger.warn(
+            { err: error, journeyKey, commodityID, speciesName },
+            'commodity-config: per-commodity driver fetch failed; rendering without it'
+          )
+          return null
+        })
+    }
+
     return h.view('explorer/commodity-config', {
       ...baseViewContext(nav),
       commodityOptions,
@@ -112,7 +143,8 @@ export const commodityConfigController = {
       dimensionViews,
       routingDetail,
       otherDetails,
-      pageVariance
+      pageVariance,
+      commodityDriver
     })
   }
 }

@@ -53,9 +53,9 @@ const toScenarioSelectItems = (scenarios, selected) => {
  * configured journey's scenario data through the facade.
  */
 export const journeyController = {
-  handler(request, h) {
+  async handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const nav = navContext(request)
+    const nav = await navContext(request)
     const { journeyKey } = nav
     const { scenarios, journeyMap } = evaluationEngine.getJourney(journeyKey)
     const { scenario: scenarioParam } = request.query

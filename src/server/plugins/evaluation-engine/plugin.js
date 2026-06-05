@@ -51,6 +51,19 @@ export const validateJourney = (key, journey) => {
       `Journey "${key}": commodityKeys is missing or not a function`
     )
   }
+  if (typeof journey.commodityDetail !== 'function') {
+    throw new Error(
+      `Journey "${key}": commodityDetail is missing or not a function`
+    )
+  }
+  // The journey-detail endpoint (Story 02) returns scenarios as part of
+  // the API contract. Require it at boot so a malformed journey fails
+  // there, not at request time via Joi response-schema rejection.
+  if (!journey.scenarios || typeof journey.scenarios !== 'object') {
+    throw new Error(
+      `Journey "${key}": scenarios is missing or not an object`
+    )
+  }
 }
 
 /**

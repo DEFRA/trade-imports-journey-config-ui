@@ -1,3 +1,5 @@
+import { mapKeysDeep } from '../_shared/snake-to-camel.js'
+
 /**
  * Refdata-view descriptor for the eu-live-animals journey.
  *
@@ -72,3 +74,57 @@ export const refdataView = (refdata) => {
  * source has always been `Object.keys(refdata.routing)`.
  */
 export const commodityKeys = (refdata) => Object.keys(refdata.routing)
+
+/**
+ * Per-commodity driver for the API surface (D17 + D18).
+ *
+ * `commodityDetail(refdata, code)` — species-agnostic lookup against
+ * the `${code}|` row in routing and content.
+ * `commodityDetail(refdata, code, species)` — species-specific lookup
+ * with transparent fallback to the species-agnostic row when the
+ * specific row is missing in BOTH routing and content.
+ *
+ * Returns `null` when both routing and content miss (route handler
+ * translates to 404). Partial hits — only routing OR only content
+ * present — return a composite with the missing half as `null`,
+ * surfacing real data mismatches rather than hiding them.
+ *
+ * Response keys are camelCase (D18) via {@link mapKeysDeep}. The
+ * `identifierSet` field is the resolved array from
+ * `refdata.definitions.identifier_sets`; `null` when the content's
+ * identifier name doesn't resolve.
+ */
+export const commodityDetail = (refdata, code, species) => {
+  const hasSpecies = typeof species === 'string' && species.length > 0
+  const specificKey = hasSpecies ? `${code}|${species}` : null
+  const agnosticKey = `${code}|`
+
+  // Pick the lookup key JOINTLY across routing and content so the two
+  // tables never disagree on grain. If species was requested AND at
+  // least one of routing/content has the specific row, use the specific
+  // key everywhere; otherwise both tables resolve against the species-
+  // agnostic key. This keeps partial-hit composites honest: missing
+  // halves are visibly null rather than silently filled from the
+  // wrong grain.
+  const specificPresent =
+    specificKey !== null &&
+    (refdata.routing[specificKey] !== undefined ||
+      refdata.content[specificKey] !== undefined)
+  const key = specificPresent ? specificKey : agnosticKey
+
+  const routingRow = refdata.routing[key]
+  const contentRow = refdata.content[key]
+
+  if (routingRow === undefined && contentRow === undefined) return null
+
+  const identifierName = contentRow?.identifiers
+  const identifierSet = identifierName
+    ? (refdata.definitions?.identifier_sets?.[identifierName] ?? null)
+    : null
+
+  return {
+    routingFlags: routingRow === undefined ? null : mapKeysDeep(routingRow),
+    content: contentRow === undefined ? null : mapKeysDeep(contentRow),
+    identifierSet
+  }
+}

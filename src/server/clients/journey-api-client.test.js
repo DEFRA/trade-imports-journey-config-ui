@@ -190,3 +190,117 @@ describe('clientForRequest', () => {
     })
   })
 })
+
+describe('createJourneyApiClient — getJourney', () => {
+  it('GETs /api/config/journeys/{key} and returns the response body', async () => {
+    okJson({ key: 'eu-live-animals', obligations: [], journeyMap: {}, scenarios: {} })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    const journey = await client.getJourney('eu-live-animals')
+
+    expect(lastRequest().url).toBe('http://x/api/config/journeys/eu-live-animals')
+    expect(journey).toMatchObject({ key: 'eu-live-animals' })
+  })
+
+  it('encodeURIComponent-s the key segment', async () => {
+    okJson({ key: 'weird/key', obligations: [], journeyMap: {}, scenarios: {} })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.getJourney('weird/key')
+    expect(lastRequest().url).toBe('http://x/api/config/journeys/weird%2Fkey')
+  })
+})
+
+describe('createJourneyApiClient — getJourneyRefdata', () => {
+  it('GETs /api/config/journeys/{key}/refdata', async () => {
+    okJson({ routing: {}, content: {} })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    const refdata = await client.getJourneyRefdata('eu-live-animals')
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/eu-live-animals/refdata'
+    )
+    expect(refdata).toMatchObject({ routing: {} })
+  })
+})
+
+describe('createJourneyApiClient — getRefdataView', () => {
+  it('omits the query string entirely when no options are provided', async () => {
+    okJson({ dimensions: [], details: [] })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.getRefdataView('eu-live-animals')
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/eu-live-animals/refdata-view'
+    )
+  })
+
+  it('encodes commodity and species into the query string', async () => {
+    okJson({ dimensions: [], details: [] })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.getRefdataView('eu-live-animals', {
+      commodity: '1063100',
+      species: 'Bos taurus'
+    })
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/eu-live-animals/refdata-view?commodity=1063100&species=Bos+taurus'
+    )
+  })
+
+  it('throws when species is provided without commodity (client-side guard mirrors server)', async () => {
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await expect(() =>
+      client.getRefdataView('eu-live-animals', { species: 'Strigiformes' })
+    ).rejects.toThrow(/species requires commodity/)
+  })
+})
+
+describe('createJourneyApiClient — getCommodities', () => {
+  it('GETs /api/config/journeys/{key}/commodities and returns the array', async () => {
+    okJson({ commodities: ['102|', '1063100|Strigiformes'] })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    const list = await client.getCommodities('eu-live-animals')
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/eu-live-animals/commodities'
+    )
+    expect(list).toEqual(['102|', '1063100|Strigiformes'])
+  })
+})
+
+describe('createJourneyApiClient — getCommodityDetail', () => {
+  it('omits the /species/{species} segment when species is undefined', async () => {
+    okJson({ group: 'Fruit and nuts' })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.getCommodityDetail('chedpp-plants', '0808108090')
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/chedpp-plants/commodities/0808108090'
+    )
+  })
+
+  it.each([null, ''])(
+    'omits the /species segment when species is %p',
+    async (species) => {
+      okJson({ group: 'Fruit and nuts' })
+      const client = createJourneyApiClient({ baseUrl: 'http://x' })
+      await client.getCommodityDetail('chedpp-plants', '0808108090', species)
+      expect(lastRequest().url).toBe(
+        'http://x/api/config/journeys/chedpp-plants/commodities/0808108090'
+      )
+    }
+  )
+
+  it('appends /species/{encoded} when species is provided', async () => {
+    okJson({ regulatoryAuthority: 'JOINT' })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.getCommodityDetail('eu-live-animals', '1063100', 'Bos taurus')
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/eu-live-animals/commodities/1063100/species/Bos%20taurus'
+    )
+  })
+
+  it('throws when code is missing or empty', async () => {
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await expect(() => client.getCommodityDetail('eu-live-animals')).rejects.toThrow(
+      /code is required/
+    )
+    await expect(() => client.getCommodityDetail('eu-live-animals', '')).rejects.toThrow(
+      /code is required/
+    )
+  })
+})

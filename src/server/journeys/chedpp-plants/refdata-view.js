@@ -1,3 +1,5 @@
+import { mapKeysDeep } from '../_shared/snake-to-camel.js'
+
 /**
  * Refdata-view descriptor for the chedpp-plants journey.
  *
@@ -121,4 +123,30 @@ export const commodityKeys = (refdata) => {
     .filter((code) => !commodityCodesWithSpecies.has(code))
     .map((code) => `${code}|`)
   return [...speciesKeys, ...phsiOnly]
+}
+
+/**
+ * Per-commodity driver for the API surface (D17 + D18).
+ *
+ * `commodityDetail(refdata, code)` — commodity-level lookup against
+ * `refdata.commodities[code]`. Returns null if the code is missing.
+ * Returned shape (camelCased): `{ group, requiresTestAndTrial,
+ * requiresFinishedOrPropagated, propagation, classes }`.
+ *
+ * `commodityDetail(refdata, code, species)` — species-level lookup
+ * against `refdata.species[`${code}|${species}`]`. Returns null if
+ * the species row is missing. **No fallback** to the commodity row
+ * (D17 — cross-grain bleed is forbidden). Returned shape (camelCased):
+ * `{ regulatoryAuthority, marketingStandard, validityPeriod, varieties }`.
+ *
+ * Returns `null` on miss; route handler translates to 404.
+ */
+export const commodityDetail = (refdata, code, species) => {
+  const hasSpecies = typeof species === 'string' && species.length > 0
+  if (hasSpecies) {
+    const row = refdata.species[`${code}|${species}`]
+    return row === undefined ? null : mapKeysDeep(row)
+  }
+  const row = refdata.commodities[code]
+  return row === undefined ? null : mapKeysDeep(row)
 }

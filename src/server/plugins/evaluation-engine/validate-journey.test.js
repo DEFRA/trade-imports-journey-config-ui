@@ -23,7 +23,9 @@ const baseAdapter = () => ({
     submissionDatePath: 'submittedAt'
   },
   refdataView: () => ({ dimensions: [], details: [] }),
-  commodityKeys: () => []
+  commodityKeys: () => [],
+  commodityDetail: () => null,
+  scenarios: {}
 })
 
 describe('validateJourney', () => {
@@ -123,6 +125,38 @@ describe('validateJourney', () => {
     delete adapter.commodityKeys
     expect(() => validateJourney('bad', adapter)).toThrow(
       /commodityKeys is missing or not a function/
+    )
+  })
+
+  test('throws when commodityDetail is missing', () => {
+    const adapter = baseAdapter()
+    delete adapter.commodityDetail
+    expect(() => validateJourney('bad', adapter)).toThrow(
+      /commodityDetail is missing or not a function/
+    )
+  })
+
+  test('throws when commodityDetail is not a function', () => {
+    const adapter = baseAdapter()
+    adapter.commodityDetail = {}
+    expect(() => validateJourney('bad', adapter)).toThrow(
+      /commodityDetail is missing or not a function/
+    )
+  })
+
+  test('throws when scenarios is missing', () => {
+    const adapter = baseAdapter()
+    delete adapter.scenarios
+    expect(() => validateJourney('bad', adapter)).toThrow(
+      /scenarios is missing or not an object/
+    )
+  })
+
+  test('throws when scenarios is not an object', () => {
+    const adapter = baseAdapter()
+    adapter.scenarios = 'not-an-object'
+    expect(() => validateJourney('bad', adapter)).toThrow(
+      /scenarios is missing or not an object/
     )
   })
 })

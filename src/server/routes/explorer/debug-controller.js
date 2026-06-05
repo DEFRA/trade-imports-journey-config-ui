@@ -16,9 +16,9 @@ import { navContext } from './nav-context.js'
  * facade so the debugger works for any registered journey.
  */
 export const debugController = {
-  handler(request, h) {
+  async handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const nav = navContext(request)
+    const nav = await navContext(request)
     const { journeyKey } = nav
     const { obligations, scenarios } = evaluationEngine.getJourney(journeyKey)
     const sessionNotification = request.yar.get('notification') || null

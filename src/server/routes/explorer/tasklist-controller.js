@@ -50,9 +50,9 @@ const toTaskListSections = (sections) =>
  * Uses the evaluation engine via server.app.evaluationEngine.
  */
 export const tasklistController = {
-  handler(request, h) {
+  async handler(request, h) {
     const { evaluationEngine } = request.server.app
-    const nav = navContext(request)
+    const nav = await navContext(request)
     const { journeyKey } = nav
     const sessionNotification = request.yar.get('notification')
     const notification = sessionNotification || {}

@@ -13,4 +13,4 @@ export const refdata = loadJSON('refdata.json')
 export const journeyMap = loadJSON('journey.json')
 export { scenarioMap as scenarios } from './scenarios.js'
 export { resolvers } from './resolvers.js'
-export { refdataView, commodityKeys } from './refdata-view.js'
+export { refdataView, commodityKeys, commodityDetail } from './refdata-view.js'
