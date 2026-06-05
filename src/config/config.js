@@ -35,6 +35,12 @@ export const config = convict({
     default: 3000,
     env: 'PORT'
   },
+  apiBaseUrl: {
+    doc: 'Base URL for loopback HTTP calls to /api/* and /ui/* namespaces. Empty default is replaced with `server.info.uri` after server.start() in production; in tests, vitest globalSetup populates the API_BASE_URL env var directly so convict picks it up at module load.',
+    format: String,
+    default: '',
+    env: 'API_BASE_URL'
+  },
   staticCacheTimeout: {
     doc: 'Static cache timeout in milliseconds',
     format: Number,

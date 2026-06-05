@@ -1,6 +1,9 @@
 import path from 'path'
 import hapi from '@hapi/hapi'
 import Scooter from '@hapi/scooter'
+import Inert from '@hapi/inert'
+import Vision from '@hapi/vision'
+import HapiSwagger from 'hapi-swagger'
 
 import { router } from './plugins/router.js'
 import { evaluationEngine } from './plugins/evaluation-engine/plugin.js'
@@ -62,10 +65,30 @@ export async function createServer() {
     secureContext,
     pulse,
     sessionCache,
+    Inert, // Inert + Vision must register before HapiSwagger; both are also relied on by the static-files plugin (Inert) and Nunjucks rendering (Vision via nunjucksConfig).
+    Vision,
     nunjucksConfig,
     Scooter,
     contentSecurityPolicy,
     evaluationEngine, // Must register before router so routes can access server.app.evaluationEngine
+    {
+      plugin: HapiSwagger,
+      options: {
+        info: {
+          title: 'Journey Configuration & Evaluation',
+          version: '0.1.0',
+          description:
+            'Two HTTP namespaces over the journey-evaluation engine: /api/config/* (read-only journey configuration) and /api/engine/* (pure compute). Plus /ui/session/* for UI state ("the in-memory database" of the SDUI demo). See features/http-api/design.md for the full design.'
+        },
+        tags: [
+          { name: 'config', description: 'Read-only journey configuration' },
+          { name: 'engine', description: 'Evaluate notifications against journeys' },
+          { name: 'ui-state', description: 'UI session state (the "in-memory database" of the SDUI demo)' }
+        ],
+        grouping: 'tags',
+        documentationPath: '/documentation'
+      }
+    },
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 

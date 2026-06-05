@@ -1,9 +1,8 @@
-import inert from '@hapi/inert'
-
 import { home } from '../routes/home/index.js'
 import { journeySelection } from '../routes/journey-selection/index.js'
 import { explorer } from '../routes/explorer/index.js'
 import { health } from '../routes/health/index.js'
+import { httpApi } from './http-api/plugin.js'
 import { serveStaticFiles } from './serve-static-files.js'
 import { config } from '#config/config.js'
 
@@ -11,13 +10,11 @@ export const router = {
   plugin: {
     name: 'router',
     async register(server) {
-      await server.register([inert])
-
       // Health-check route. Used by platform to check if service is running, do not remove!
       await server.register([health])
 
       // Application specific routes, add your own routes here
-      await server.register([home, journeySelection, explorer])
+      await server.register([home, journeySelection, explorer, httpApi])
 
       // Static assets
       if (!config.get('isProduction') && !config.get('isTest')) {

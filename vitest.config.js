@@ -5,6 +5,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     clearMocks: true,
+    globalSetup: ['./test-helpers/setup.js'],
     // `data-reconstruction/` holds the git-ignored one-shot migration
     // tooling for Story 03 Phase A. Its tests use `node:assert` and
     // are run directly via `node ...` — they are not part of the
