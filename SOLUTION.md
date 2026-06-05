@@ -4,9 +4,9 @@ A vision for collapsing form configuration, journey logic, and reference data in
 
 ## The vision
 
-Field config was designed for a sound goal: let microservices tailor their own journeys, pages, and page content without bespoke frontends, so that one notification frontend could serve thousands of certificate-type and commodity-code combinations. The design failed and the implementation made it worse — [Appendix A](#appendix-a-why-field-config-is-an-antipattern) catalogues the ten observable problems. The goal itself was right.
+Field config was designed for a sound goal: let microservices tailor their own journeys, pages, and page content without bespoke frontends, so that one notification frontend could serve thousands of certificate-type and commodity-code combinations. The design failed and the implementation made it worse - [Appendix A](#appendix-a-why-field-config-is-an-antipattern) catalogues the ten observable problems. The goal itself was right.
 
-The short version of the failure: configs are 97–99% identical across CHED types; 47,491 components embed JavaScript strings as field values; handler code injects override configs the CHED-A configuration knows nothing about; nothing is versioned. Policy complexity that should have been expressed as rules over a small static structure was flattened into thousands of denormalised JSON copies, while the genuinely dynamic parts (overrides, routing, runtime patches) leaked back into code anyway. The system has the costs of both approaches and the integrity guarantees of neither.
+The short version of the failure: configs are 97-99% identical across CHED types; 47,491 components embed JavaScript strings as field values; handler code injects override configs the CHED-A configuration knows nothing about; nothing is versioned. Policy complexity that should have been expressed as rules over a small static structure was flattened into thousands of denormalised JSON copies, while the genuinely dynamic parts (overrides, routing, runtime patches) leaked back into code anyway. The system has the costs of both approaches and the integrity guarantees of neither.
 
 This service is an attempt to deliver on the original goal, properly. Three outcomes name what "properly" means:
 
@@ -22,7 +22,7 @@ Four pictures carry the whole design. Everything below this section is elaborati
 
 ### Picture 1: the collapse
 
-Today's scattered sources — field-config defaults, the commodity-code microservice, other reference-data services, handler code holding journey logic and ad-hoc overrides — condense into a single shape per journey: a **journey adapter**. The adapter drives the two kinds of variance a journey exhibits.
+Today's scattered sources - field-config defaults, the commodity-code microservice, other reference-data services, handler code holding journey logic and ad-hoc overrides - condense into a single shape per journey: a **journey adapter**. The adapter drives the two kinds of variance a journey exhibits.
 
 ```mermaid
 flowchart LR
@@ -44,11 +44,11 @@ flowchart LR
     ja --drives--> cv
 ```
 
-> **Hold in mind:** one journey, one place to read. Two kinds of question — *which pages?* and *which fields on a page?* — answered from the same configuration.
+> **Hold in mind:** one journey, one place to read. Two kinds of question - *which pages?* and *which fields on a page?* - answered from the same configuration.
 
 ### Picture 2: the inter-relation
 
-A journey adapter on its own is JSON. The second idea is that this configuration can be **inter-related to understand the journey**: an obligation engine — a pure-function library — treats the adapter's obligations, conditions, and reference data as inter-related facts and turns them into journey understanding.
+A journey adapter on its own is JSON. The second idea is that this configuration can be **inter-related to understand the journey**: an obligation engine - a pure-function library - treats the adapter's obligations, conditions, and reference data as inter-related facts and turns them into journey understanding.
 
 ```mermaid
 flowchart LR
@@ -63,7 +63,7 @@ flowchart LR
 
 For a given notification, the engine answers: which obligations are satisfied; which screens are complete, cannot-start-yet, or do not apply; whether the notification is submittable. That output is the only thing a renderer needs.
 
-> **Hold in mind:** the configuration doesn't just render forms — it can be *reasoned over*. The same engine call that gates submission produces the data the task-list view consumes, so drift between what is shown and what is accepted is structurally impossible.
+> **Hold in mind:** the configuration doesn't just render forms - it can be *reasoned over*. The same engine call that gates submission produces the data the task-list view consumes, so drift between what is shown and what is accepted is structurally impossible.
 
 ### Picture 3: the evaluation dataflow
 
@@ -118,7 +118,7 @@ flowchart TB
     engine -->|"returns EvaluationResult, Screen[], Section[]"| ui
 ```
 
-> **Hold in mind:** the contract between the slices is exactly the engine's input and output — nothing else passes between them. All three run in one process today; the seams are logical, not physical.
+> **Hold in mind:** the contract between the slices is exactly the engine's input and output - nothing else passes between them. All three run in one process today; the seams are logical, not physical.
 
 ## The concepts
 
@@ -128,14 +128,14 @@ The vocabulary, in words. No code yet.
 
 **Obligation.** A declarative requirement: a statement of what the notification must contain, with a rationale. An obligation asks a **question** of a notification ("is this data present?"). An obligation may carry a **condition** that decides whether the question applies at all.
 
-**Condition, fact, test.** A condition names two things: a *fact* — an extractor that reads a value off the notification — and a *test* — a predicate that decides, from that value and the journey's reference data, whether the condition is active. Both are named by string in the JSON and resolved against the journey's resolver code at evaluation time. The id-string indirection is deliberate: the JSON files stay declarative; behaviour lives in code where it can be tested.
+**Condition, fact, test.** A condition names two things: a *fact* - an extractor that reads a value off the notification - and a *test* - a predicate that decides, from that value and the journey's reference data, whether the condition is active. Both are named by string in the JSON and resolved against the journey's resolver code at evaluation time. The id-string indirection is deliberate: the JSON files stay declarative; behaviour lives in code where it can be tested.
 
-**Refdata.** Journey-private lookup tables. The engine treats refdata opaquely — it passes the data to the resolver functions and does nothing else with it. Two consequences follow: the kernel cannot read refdata (it has no way to know what a journey's table columns mean; only the journey's tests do), and refdata is journey-private (two journeys cannot accidentally couple through shared refdata — cross-journey state is structurally impossible).
+**Refdata.** Journey-private lookup tables. The engine treats refdata opaquely - it passes the data to the resolver functions and does nothing else with it. Two consequences follow: the kernel cannot read refdata (it has no way to know what a journey's table columns mean; only the journey's tests do), and refdata is journey-private (two journeys cannot accidentally couple through shared refdata - cross-journey state is structurally impossible).
 
 **The two kinds of variance.** Both are expressed as obligations with optional conditions:
 
-- **Page variance** — which pages appear in the journey. The CHEDPP GMS-declaration page exists in the configuration but fires only when at least one species on the notification has HMI regulatory authority and GMS marketing standard. The CHED-A CPH-number page exists but fires only for high-risk-EU consignments.
-- **Page content variance** — which fields appear on a page that is already present. The animals journey shows "permanent address" only for species stored at a fixed place; plants shows the variety-and-class selection only when both varieties and quality classes are populated.
+- **Page variance** - which pages appear in the journey. The CHEDPP GMS-declaration page exists in the configuration but fires only when at least one species on the notification has HMI regulatory authority and GMS marketing standard. The CHED-A CPH-number page exists but fires only for high-risk-EU consignments.
+- **Page content variance** - which fields appear on a page that is already present. The animals journey shows "permanent address" only for species stored at a fixed place; plants shows the variety-and-class selection only when both varieties and quality classes are populated.
 
 One configuration; two kinds of question; the same engine call answers both.
 
@@ -145,7 +145,7 @@ One configuration; two kinds of question; the same engine call answers both.
 | --- | --- |
 | `satisfied` | All required data is populated on the notification. |
 | `unsatisfied` | Some required data is missing. |
-| `deferred` | The obligation is conditional and its fact returned null — the rule doesn't yet know whether the obligation applies. |
+| `deferred` | The obligation is conditional and its fact returned null - the rule doesn't yet know whether the obligation applies. |
 | `inactive` | The obligation is conditional and its test decided it does not apply to this notification. |
 
 **Submittability.** A notification is **submittable** when every obligation is either `satisfied` or `inactive`. Unsatisfied and deferred obligations both block submission.
@@ -207,7 +207,7 @@ A field in `journey.json` ties a screen position to an obligation:
 
 ### The obligations
 
-The logic sits in `obligations.json` as declarative requirements — the "declarative requirements" input in Picture 3. An obligation from `eu-live-animals/obligations.json`:
+The logic sits in `obligations.json` as declarative requirements - the "declarative requirements" input in Picture 3. An obligation from `eu-live-animals/obligations.json`:
 
 ```json
 {
@@ -236,7 +236,7 @@ A conditional obligation from the same file:
 }
 ```
 
-The condition names a `fact` and a `test` by string, resolved against `resolvers.js` at evaluation time — the indirection described in the concepts layer.
+The condition names a `fact` and a `test` by string, resolved against `resolvers.js` at evaluation time - the indirection described in the concepts layer.
 
 This is the schema-like view: the journey, its rules, and its presentation are all describable as configuration. Numbers from the two working journeys:
 
@@ -247,7 +247,7 @@ This is the schema-like view: the journey, its rules, and its presentation are a
 
 ## The mechanics
 
-Full depth: the engine API, a worked evaluation, the resolver code, the refdata shapes, and the slice boundaries spelled out. Keep Picture 3 in mind throughout — everything here is a station on that dataflow.
+Full depth: the engine API, a worked evaluation, the resolver code, the refdata shapes, and the slice boundaries spelled out. Keep Picture 3 in mind throughout - everything here is a station on that dataflow.
 
 ### The engine API
 
@@ -263,7 +263,7 @@ The engine is five public functions:
 
 ### A worked evaluation
 
-A real `EvaluationResult` over a partial notification — the four statuses from the concepts layer, in the wild:
+A real `EvaluationResult` over a partial notification - the four statuses from the concepts layer, in the wild:
 
 ```json
 {
