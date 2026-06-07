@@ -383,6 +383,44 @@ The contract between the slices is exactly the engine's input and output: the UI
 
 All three slices run in the same process today. The seams are logical, not physical. The framework-isolation property (zero `@hapi/*` imports under `engine/`) keeps the engine library-shaped, so the UI/engine seam could become an HTTP boundary later without restructuring the engine.
 
+## How the demo runs over HTTP
+
+The `features/http-api/` work surfaces the engine and configuration as **two HTTP API namespaces**, lets the UI consume them over loopback, and documents the lot in a single Swagger page. The architecture is now legible from outside the process — `curl`, Postman, and DevTools see what the audience needs to see.
+
+**Two namespaces, one Swagger UI at `/documentation`:**
+
+| Namespace | Question it answers | Example |
+|---|---|---|
+| `/api/config/*` | *What is the journey?* | `GET /api/config/journeys`, `GET /api/config/journeys/{key}/commodities/{code}/species/{species}` |
+| `/api/engine/*` | *How does this notification evaluate against the journey?* | `POST /api/engine/journeys/{key}/evaluate?withTrace=true`, `.../sections` |
+
+A third, smaller surface `PUT /ui/session/notification` is the UI's "in-memory database" — explicit session persistence that lets the debug page's edits propagate to the task-list view. The browser fires it sequentially before each evaluate so the cross-page bridge is honest, not a side effect.
+
+**Three Postman recipes** that exercise the architecture end-to-end:
+
+```bash
+# 1. List registered journeys (the config side).
+curl http://localhost:3000/api/config/journeys
+
+# 2. Drill into one commodity's driver (Plants apples, MABSD species).
+curl http://localhost:3000/api/config/journeys/chedpp-plants/commodities/0808108090/species/MABSD
+
+# 3. Evaluate a notification (paste the JSON from /explorer/debug's
+#    editor as the request body; ?withTrace=true returns per-obligation
+#    diagnostic trace steps).
+curl -X POST \
+  http://localhost:3000/api/engine/journeys/eu-live-animals/evaluate?withTrace=true \
+  -H 'content-type: application/json' \
+  -d '{"origin":{"country":"NL"},"commodities":[{"id":"21044150"}]}'
+```
+
+**Demo framing — not a microservice split.** Two namespaces, one Hapi process, one shared evaluation-engine facade. The engine needs the resolvers (per-journey JavaScript), and resolvers presuppose refdata shape, so config and engine ship together. What we gained by extracting the boundary is *visibility*: the audience can hit the same endpoints the UI hits, see the JSON the engine returns, and read the contract on Swagger UI in the browser. The `/commodities/{code}` endpoint is the FE's SDUI narrative primitive — *"origin → commodity → which downstream pages now apply"*.
+
+**Pointers:**
+- Full design rationale: `features/http-api/design.md`.
+- Manual smoke checklist (12 steps, ~5 min): `features/http-api/design.md` § "Smoke checklist".
+- Drift canary: `src/server/plugins/http-api/parity.test.js` — facade vs HTTP for every scenario × journey × `withTrace` mode.
+
 ## Today's spike, tomorrow's service
 
 What the spike proves:
