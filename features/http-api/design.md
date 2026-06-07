@@ -182,8 +182,9 @@ These do not block any story in this feature.
 
 | # | Question |
 |---|---|
-| DQ2 | Should pure validators in `src/client/javascripts/explorer.js` be extracted into a testable ESM module? Senior QA flagged the file as untestable in isolation. |
+| DQ2 | Should pure validators in `src/client/javascripts/explorer.js` be extracted into a testable ESM module? Senior QA flagged the file as untestable in isolation. Story 03 made minimal changes (≤50 lines, four documented zones); a future refactor would lift `validateEvaluationResult`, `renderTraceStep`, and friends into a testable module. |
 | DQ3 | HTTP cache headers on the bulk refdata endpoint? `chedpp-plants/refdata.json` is ~1 MB. |
+| DQ4 | Should cross-commodity variance computation be exposed via an HTTP endpoint? Story 02's `commodity-config-controller` ships mixed paths: per-commodity HTTP + in-process variance aggregation, because no endpoint serves the latter. A `/api/config/journeys/{key}/refdata-view/variance` (or similar) would let the controller go single-path. Not blocking the demo; the documented mixed path is deliberate. |
 
 (DQ1 — should "Save & Evaluate" remain a feature — is **resolved** in
 favour of keeping it via the explicit session endpoint. See D12 and
