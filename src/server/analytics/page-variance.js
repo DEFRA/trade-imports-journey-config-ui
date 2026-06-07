@@ -8,11 +8,14 @@
  * plus the per-driver reasons returned by the journey's resolver
  * tests.
  *
- * Lives in the explorer layer; the engine and the journey adapters
- * are not touched. See features/journey-switching/06-page-variance-panel.md.
+ * Lives in the analytics layer; the engine and the journey adapters
+ * are not touched. Backs the HTTP endpoints
+ * `GET /api/config/journeys/{key}/commodities/{code}/page-variance`
+ * (and the `/species/{species}` variant) and the in-process call from
+ * the commodity-config controller (until Story 05b switches it to HTTP).
  */
 
-import { parseCommodityKey } from './config-utils.js'
+import { parseCommodityKey } from '#server/routes/explorer/config-utils.js'
 
 const COMMODITY_FACT = 'commodity'
 

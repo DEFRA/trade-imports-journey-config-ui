@@ -9,7 +9,7 @@ import {
   toSelectItems
 } from './config-utils.js'
 import { navContext } from './nav-context.js'
-import { computePageVariance } from './page-variance.js'
+import { computePageVariance } from '#server/analytics/page-variance.js'
 import { clientForRequest } from '#server/clients/journey-api-client.js'
 
 const baseViewContext = (nav) => ({

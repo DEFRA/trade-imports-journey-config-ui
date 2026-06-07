@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest'
-import { createServer } from '../../server.js'
+import { createServer } from '../server.js'
 import { buildCommodityValue, computePageVariance } from './page-variance.js'
 
 /**
- * Behaviour & intent (Story 06):
+ * Behaviour & intent:
  *   `page-variance.js` derives, per selected commodity, which screens
  *   in the active journey would be present. The panel renders one row
  *   per screen, OR-ing each screen's commodity-fact conditional
