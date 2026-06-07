@@ -447,3 +447,154 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
     expect(statusCode).toBe(statusCodes.notFound)
   })
 })
+
+describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}/page-variance', () => {
+  let server
+
+  beforeAll(async () => {
+    server = await createServer()
+    await server.initialize()
+  })
+
+  afterAll(async () => {
+    await server.stop({ timeout: 0 })
+  })
+
+  test.each([
+    ['eu-live-animals', '102'],
+    ['chedpp-plants', '0805108010']
+  ])(
+    'returns 200 with { pageVariance: [...] } envelope and well-formed entries for %s/%s',
+    async (key, code) => {
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: `/api/config/journeys/${key}/commodities/${code}/page-variance`
+      })
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(result).toMatchObject({ pageVariance: expect.any(Array) })
+      expect(result.pageVariance.length).toBeGreaterThan(0)
+      for (const row of result.pageVariance) {
+        expect(row).toMatchObject({
+          screenId: expect.any(String),
+          screenName: expect.any(String),
+          activates: expect.any(Boolean),
+          drivers: expect.any(Array)
+        })
+        for (const d of row.drivers) {
+          expect(d).toMatchObject({
+            id: expect.any(String),
+            name: expect.any(String),
+            active: expect.any(Boolean),
+            reason: expect.any(String)
+          })
+        }
+      }
+    }
+  )
+
+  test('PHSI-only plants commodity 06042090 with no species segment returns 200 with a pageVariance array', async () => {
+    // The trailing-pipe boundary: handler must reassemble commodityKey
+    // as '06042090|' (not '06042090'). A regression that dropped the
+    // pipe would silently break parseCommodityKey downstream.
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url: '/api/config/journeys/chedpp-plants/commodities/06042090/page-variance'
+    })
+    expect(statusCode).toBe(statusCodes.ok)
+    expect(result).toMatchObject({ pageVariance: expect.any(Array) })
+  })
+
+  test('returns 404 for unknown commodity code', async () => {
+    // computePageVariance would happily return [] for a non-existent
+    // commodity. The handler must check existence first so callers see
+    // a real 404 instead of a misleading "empty" 200.
+    const { statusCode } = await server.inject({
+      method: 'GET',
+      url: '/api/config/journeys/eu-live-animals/commodities/99999/page-variance'
+    })
+    expect(statusCode).toBe(statusCodes.notFound)
+  })
+
+  test('returns 404 for unknown journey', async () => {
+    const { statusCode } = await server.inject({
+      method: 'GET',
+      url: '/api/config/journeys/unknown/commodities/102/page-variance'
+    })
+    expect(statusCode).toBe(statusCodes.notFound)
+  })
+
+  test('route is tagged "api" and "config" so it appears in the Swagger config group', () => {
+    const route = server.table().find(
+      (r) =>
+        r.path ===
+          '/api/config/journeys/{key}/commodities/{code}/page-variance' &&
+        r.method === 'get'
+    )
+    expect(route).toBeDefined()
+    expect(route.settings.tags).toEqual(
+      expect.arrayContaining(['api', 'config'])
+    )
+  })
+})
+
+describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}/page-variance/species/{species}', () => {
+  let server
+
+  beforeAll(async () => {
+    server = await createServer()
+    await server.initialize()
+  })
+
+  afterAll(async () => {
+    await server.stop({ timeout: 0 })
+  })
+
+  test.each([
+    ['0805108010', 'CIDAU', true],
+    ['0709999090', 'DATME', false]
+  ])(
+    'plants %s/%s drives the GMS declaration screen with activates=%s',
+    async (code, species, expectedActivates) => {
+      // Activation crossover is the canary for commodityKey
+      // reassembly: handler must produce 'code|species' so the pure
+      // function reads the correct refdata row. If the pipe is
+      // dropped or species is appended without it, both rows return
+      // identically and this test fails.
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: `/api/config/journeys/chedpp-plants/commodities/${code}/page-variance/species/${species}`
+      })
+      expect(statusCode).toBe(statusCodes.ok)
+      const gms = result.pageVariance.find(
+        (r) => r.screenName === 'GMS declaration'
+      )
+      expect(gms).toBeDefined()
+      expect(gms.activates).toBe(expectedActivates)
+    }
+  )
+
+  test('plants: unknown species returns 200 (not 404) with a valid pageVariance array', async () => {
+    // /page-variance does NOT own species existence. An unknown species
+    // is a legitimate request: drivers that read species return
+    // activates=false. Deliberate split from /commodities/{code}/species/{species}
+    // which DOES 404.
+    const { result, statusCode } = await server.inject({
+      method: 'GET',
+      url:
+        '/api/config/journeys/chedpp-plants/commodities/0805108010/page-variance/species/UNKNOWN'
+    })
+    expect(statusCode).toBe(statusCodes.ok)
+    expect(result).toMatchObject({ pageVariance: expect.any(Array) })
+  })
+
+  test('returns 404 for unknown commodity code even when species segment is present', async () => {
+    // Existence check must run before species reassembly. Catches the
+    // copy-paste failure where the species branch skips the check.
+    const { statusCode } = await server.inject({
+      method: 'GET',
+      url:
+        '/api/config/journeys/eu-live-animals/commodities/99999/page-variance/species/Bos%20taurus'
+    })
+    expect(statusCode).toBe(statusCodes.notFound)
+  })
+})

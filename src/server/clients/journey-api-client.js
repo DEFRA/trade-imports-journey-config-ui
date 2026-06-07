@@ -141,6 +141,21 @@ export const createJourneyApiClient = ({
       return get(path)
     },
 
+    // Returns the response body verbatim (`{ pageVariance: [...] }`).
+    // Do NOT unwrap to a bare array — the wrapper IS the contract.
+    // Story 05b's controller uses `.catch(() => ({ pageVariance: [] }))`
+    // as a uniform fallback, which only works because the success path
+    // returns the same shape.
+    async getPageVariance(key, code, species) {
+      if (!hasValue(code)) {
+        throw new Error('getPageVariance: code is required')
+      }
+      const path = hasValue(species)
+        ? `${journeyBase(key)}/commodities/${encodeSegment(code)}/page-variance/species/${encodeSegment(species)}`
+        : `${journeyBase(key)}/commodities/${encodeSegment(code)}/page-variance`
+      return get(path)
+    },
+
     async evaluate(key, notification, { withTrace = false } = {}) {
       const qs = withTrace ? '?withTrace=true' : ''
       return postJson(

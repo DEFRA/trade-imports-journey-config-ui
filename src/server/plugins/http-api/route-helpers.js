@@ -21,3 +21,19 @@ export const withJourney = (request, h, work) => {
   if (!journey) return notFound(h, `Unknown journey: "${key}"`)
   return work(journey, request, h)
 }
+
+// Joi failAction shared by routes whose params validation rejects the
+// pipe character. Produces a stable, user-facing 400 envelope so we
+// don't leak Joi's internal "fails to match the no-pipe pattern"
+// language or break the route's declared response shape.
+export const noPipeParamFailAction = (_request, h, err) => {
+  const detail = err.details?.[0]
+  const message =
+    detail?.type === 'string.pattern.name'
+      ? `${detail.path?.[0] ?? 'parameter'} must not contain the | character`
+      : 'Invalid parameters'
+  return h
+    .response({ error: 'Bad Request', message })
+    .code(statusCodes.badRequest)
+    .takeover()
+}

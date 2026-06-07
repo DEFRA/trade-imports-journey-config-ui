@@ -233,4 +233,45 @@ export const sectionsResponse = Joi.object({
     }
   })
 
+// Page-variance: per-commodity "which screens would this drive?" output.
+// Strict on the load-bearing inner shape (drift canary for the analytics
+// function and Story 05b's controller consumption); .unknown(true) on
+// the item leaves a small forward-compat hatch.
+
+const pageVarianceDriverSchema = Joi.object({
+  id: Joi.string().required(),
+  name: Joi.string().required(),
+  active: Joi.boolean().required(),
+  reason: Joi.string().allow('').required()
+}).unknown(true)
+
+const pageVarianceItemSchema = Joi.object({
+  screenId: Joi.string().required(),
+  screenName: Joi.string().required(),
+  activates: Joi.boolean().required(),
+  drivers: Joi.array().items(pageVarianceDriverSchema).required()
+}).unknown(true)
+
+export const pageVarianceResponse = Joi.object({
+  pageVariance: Joi.array().items(pageVarianceItemSchema).required()
+})
+  .label('PageVarianceResponse')
+  .example({
+    pageVariance: [
+      {
+        screenId: 'gms-declaration',
+        screenName: 'GMS declaration',
+        activates: true,
+        drivers: [
+          {
+            id: 'gms-declaration',
+            name: 'GMS declaration required',
+            active: true,
+            reason: 'HMI-inspected species with GMS marketing standard'
+          }
+        ]
+      }
+    ]
+  })
+
 export const emptyResponse = Joi.any().label('EmptyResponse')

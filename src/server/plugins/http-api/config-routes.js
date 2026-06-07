@@ -1,15 +1,17 @@
 import Joi from 'joi'
 
 import { statusCodes } from '#server/common/constants/status-codes.js'
+import { computePageVariance } from '#server/analytics/page-variance.js'
 import {
   journeyListResponse,
   journeyResponse,
   refdataViewResponse,
   commoditiesResponse,
   commodityDetailResponse,
+  pageVarianceResponse,
   errorResponse
 } from './schemas.js'
-import { withJourney, notFound } from './route-helpers.js'
+import { withJourney, notFound, noPipeParamFailAction } from './route-helpers.js'
 
 // validateJourney (evaluation-engine plugin) guarantees journey.journeyMap
 // with journeyMap.sections (array) and journey.obligations (non-empty array)
@@ -258,6 +260,83 @@ export const configRoutes = [
             )
           }
           return h.response(detail).code(statusCodes.ok)
+        }
+      )
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/config/journeys/{key}/commodities/{code}/page-variance',
+    options: {
+      description:
+        'Return the per-commodity page-variance: which screens this commodity drives, with each screen\'s drivers and activation reason.',
+      tags: ['api', 'config'],
+      validate: {
+        params: Joi.object({
+          key: Joi.string().required(),
+          code: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required()
+        }),
+        failAction: noPipeParamFailAction
+      },
+      response: {
+        schema: pageVarianceResponse,
+        status: { 400: errorResponse, 404: errorResponse, 500: errorResponse }
+      }
+    },
+    handler(request, h) {
+      return withJourney(request, h, (journey, { params: { key, code } }) => {
+        // Existence check via commodityDetail (not commodityKeys, which
+        // returns composite keys). 404 here is the contract: an unknown
+        // commodity would otherwise yield a misleading empty 200.
+        if (journey.commodityDetail(journey.refdata, code) === null) {
+          return notFound(h, `Unknown commodity: "${code}" in journey "${key}"`)
+        }
+        const pageVariance = computePageVariance(
+          journey,
+          key,
+          refdataKey(code)
+        )
+        return h.response({ pageVariance }).code(statusCodes.ok)
+      })
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/config/journeys/{key}/commodities/{code}/page-variance/species/{species}',
+    options: {
+      description:
+        'Return the per-commodity page-variance with a species refinement applied. Unknown species returns 200 with drivers reading species marked activates=false (this endpoint does not own species existence).',
+      tags: ['api', 'config'],
+      validate: {
+        params: Joi.object({
+          key: Joi.string().required(),
+          code: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required(),
+          species: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required()
+        }),
+        failAction: noPipeParamFailAction
+      },
+      response: {
+        schema: pageVarianceResponse,
+        status: { 400: errorResponse, 404: errorResponse, 500: errorResponse }
+      }
+    },
+    handler(request, h) {
+      return withJourney(
+        request,
+        h,
+        (journey, { params: { key, code, species } }) => {
+          if (journey.commodityDetail(journey.refdata, code) === null) {
+            return notFound(
+              h,
+              `Unknown commodity: "${code}" in journey "${key}" (species "${species}" was provided)`
+            )
+          }
+          const pageVariance = computePageVariance(
+            journey,
+            key,
+            refdataKey(code, species)
+          )
+          return h.response({ pageVariance }).code(statusCodes.ok)
         }
       )
     }

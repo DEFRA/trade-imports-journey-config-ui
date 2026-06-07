@@ -305,6 +305,79 @@ describe('createJourneyApiClient — getCommodityDetail', () => {
   })
 })
 
+describe('createJourneyApiClient — getPageVariance', () => {
+  it('omits the /species/{species} segment when species is undefined', async () => {
+    okJson({ pageVariance: [] })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.getPageVariance('chedpp-plants', '0808108090')
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/chedpp-plants/commodities/0808108090/page-variance'
+    )
+  })
+
+  it.each([null, ''])(
+    'omits the /species segment when species is %p',
+    async (species) => {
+      okJson({ pageVariance: [] })
+      const client = createJourneyApiClient({ baseUrl: 'http://x' })
+      await client.getPageVariance('chedpp-plants', '0808108090', species)
+      expect(lastRequest().url).toBe(
+        'http://x/api/config/journeys/chedpp-plants/commodities/0808108090/page-variance'
+      )
+    }
+  )
+
+  it('appends /species/{encoded} when species is provided', async () => {
+    okJson({ pageVariance: [] })
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await client.getPageVariance('eu-live-animals', '1063100', 'Bos taurus')
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/eu-live-animals/commodities/1063100/page-variance/species/Bos%20taurus'
+    )
+  })
+
+  it('returns the response body verbatim with the pageVariance wrapper preserved', async () => {
+    // Load-bearing: Story 05b's controller relies on the wrapper for a
+    // uniform `.catch(() => ({ pageVariance: [] }))` fallback. A future
+    // "tidy up" that unwraps to a bare array would break that.
+    const body = {
+      pageVariance: [
+        {
+          screenId: 'gms-declaration',
+          screenName: 'GMS declaration',
+          activates: true,
+          drivers: [
+            {
+              id: 'gms-declaration',
+              name: 'GMS declaration required',
+              active: true,
+              reason: 'HMI-inspected species with GMS marketing standard'
+            }
+          ]
+        }
+      ]
+    }
+    okJson(body)
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    const result = await client.getPageVariance(
+      'chedpp-plants',
+      '0805108010',
+      'CIDAU'
+    )
+    expect(result).toEqual(body)
+  })
+
+  it('throws when code is missing or empty', async () => {
+    const client = createJourneyApiClient({ baseUrl: 'http://x' })
+    await expect(() => client.getPageVariance('chedpp-plants')).rejects.toThrow(
+      /code is required/
+    )
+    await expect(() => client.getPageVariance('chedpp-plants', '')).rejects.toThrow(
+      /code is required/
+    )
+  })
+})
+
 describe('createJourneyApiClient — evaluate', () => {
   it('POSTs the raw notification to /api/engine/journeys/{key}/evaluate with no query', async () => {
     okJson({ obligations: [], summary: { total: 0, submittable: true } })
