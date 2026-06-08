@@ -2,7 +2,7 @@
   "info": {
     "name": "trade-imports-journey-config-ui - demo",
     "description": {
-      "content": "# IPAFFS journey configuration and evaluation - demo collection\n\nThis collection walks two journeys end-to-end through their HTTP surface:\n\n- **Plants (CHEDPP)** - the GMS-declaration predicate and its AND-arms.\n- **Animals (CHED-A)** - the four routing-flag patterns and the purpose-conditional dimension.\n\nEach folder is one chapter of the demo. Run requests in order; each folder description sets up the chapter and each request description explains what makes that example interesting.\n\n## Setup\n\n1. Start the dev server: `npm run dev` from the project root.\n2. The collection variable `baseUrl` defaults to `http://localhost:3000`. Override it under collection settings if you run the server elsewhere.\n3. Pick a folder. The folders are ordered as a demo arc - start at folder 1 if you're new to the project.\n\n## Where to read deeper\n\n- `SOLUTION.md` - the architecture and concepts behind every endpoint here.\n- `README.md` - operational entry point: quick start, Swagger UI, full endpoint surface.\n- `features/http-api/design.md` - HTTP design rationale.\n- Swagger UI at <http://localhost:3000/documentation> - every endpoint with worked examples.",
+      "content": "# IPAFFS journey configuration and evaluation - demo collection\n\nThis collection walks two journeys end-to-end through their HTTP surface:\n\n- **Plants (CHEDPP)** - the GMS-declaration predicate and its AND-arms.\n- **Animals (CHED-A)** - the four routing-flag patterns and the purpose-conditional dimension.\n\nEach folder is one chapter of the demo. Run requests in order; each folder description sets up the chapter and each request description explains what makes that example interesting.\n\n## Setup\n\n1. Start the dev server: `npm run dev` from the project root.\n2. The collection variable `baseUrl` defaults to `http://localhost:3000`. Override it under collection settings if you run the server elsewhere.\n3. Pick a folder. The folders are ordered as a demo arc - start at folder 1 if you're new to the project.\n\n## Variables\n\n- `baseUrl` (default `http://localhost:3000`) - where the dev server listens.\n- `journey` (default `chedpp-plants`) - flips the **shape-agnostic** requests in *folder 2* between `chedpp-plants` and `eu-live-animals`. Folders 3 and 5 are journey-specific narratives and ignore this variable; folder 1 carries one request per journey on purpose so you can compare side-by-side.\n\n## Where to read deeper\n\n- `SOLUTION.md` - the architecture and concepts behind every endpoint here.\n- `README.md` - operational entry point: quick start, Swagger UI, full endpoint surface.\n- `features/http-api/design.md` - HTTP design rationale.\n- Swagger UI at <http://localhost:3000/documentation> - every endpoint with worked examples.",
       "type": "text/markdown"
     },
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -11,6 +11,11 @@
     {
       "key": "baseUrl",
       "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "journey",
+      "value": "chedpp-plants",
       "type": "string"
     }
   ],
@@ -73,9 +78,9 @@
       ]
     },
     {
-      "name": "2. Refdata exploration (plants)",
+      "name": "2. Refdata exploration",
       "description": {
-        "content": "How refdata flows from the journey adapter to the API surface. The bulk endpoint returns the whole table; `refdata-view` returns a journey-shaped projection; `commodities` returns just the dropdown universe.\n\nThis folder shows the **dimensions** of plants refdata before the narrative dives into specific commodities.",
+        "content": "How refdata flows from the journey adapter to the API surface. The bulk endpoint returns the whole table; `refdata-view` returns a journey-shaped projection; `commodities` returns just the dropdown universe.\n\n**Parameterised by the `journey` collection variable.** Default is `chedpp-plants`; flip it to `eu-live-animals` to see the same endpoint shapes against the other journey. The fourth request (refdata-view for a commodity) hardcodes a plants-shaped `commodity`/`species` query - flipping to animals leaves the URL valid but returns empty/default values because the query params aren't animals-shaped. Change the query params too if you want a comparable animals example.",
         "type": "text/markdown"
       },
       "item": [
@@ -85,9 +90,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities",
+              "raw": "{{baseUrl}}/api/config/journeys/{{journey}}/commodities",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "config", "journeys", "chedpp-plants", "commodities"]
+              "path": ["api", "config", "journeys", "{{journey}}", "commodities"]
             },
             "description": {
               "content": "Every commodity key the journey knows about, as `code|species` composites. PHSI-only commodities appear as `code|` with empty species. This is what populates the commodity dropdown in the explorer.",
@@ -101,9 +106,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/refdata-view",
+              "raw": "{{baseUrl}}/api/config/journeys/{{journey}}/refdata-view",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "config", "journeys", "chedpp-plants", "refdata-view"]
+              "path": ["api", "config", "journeys", "{{journey}}", "refdata-view"]
             },
             "description": {
               "content": "The shape of the refdata, no commodity selected. Lists the dimension and detail names without values populated. Useful for a renderer that needs to know what columns exist before any commodity is chosen.",
@@ -117,9 +122,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/refdata-view?commodity=0808108090&species=MABSD",
+              "raw": "{{baseUrl}}/api/config/journeys/{{journey}}/refdata-view?commodity=0808108090&species=MABSD",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "config", "journeys", "chedpp-plants", "refdata-view"],
+              "path": ["api", "config", "journeys", "{{journey}}", "refdata-view"],
               "query": [
                 { "key": "commodity", "value": "0808108090" },
                 { "key": "species", "value": "MABSD" }
@@ -137,9 +142,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/refdata",
+              "raw": "{{baseUrl}}/api/config/journeys/{{journey}}/refdata",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "config", "journeys", "chedpp-plants", "refdata"]
+              "path": ["api", "config", "journeys", "{{journey}}", "refdata"]
             },
             "description": {
               "content": "The whole refdata JSON, no projection. About 1 MB for plants. Useful for offline analysis; for normal page renders, prefer `/refdata-view` (above) or the per-commodity endpoints in folder 3.\n\nResponse-validation is disabled on this route (see `design.md` D21) because Joi-walking 1 MB on every request is wasted CPU.",
