@@ -416,6 +416,8 @@ curl -X POST \
 
 **Demo framing — not a microservice split.** Two namespaces, one Hapi process, one shared evaluation-engine facade. The engine needs the resolvers (per-journey JavaScript), and resolvers presuppose refdata shape, so config and engine ship together. What we gained by extracting the boundary is *visibility*: the audience can hit the same endpoints the UI hits, see the JSON the engine returns, and read the contract on Swagger UI in the browser. The `/commodities/{code}` endpoint is the FE's SDUI narrative primitive — *"origin → commodity → which downstream pages now apply"*.
 
+**Lift-out invariant — controller-level (after Stories 05a/05b):** every page-render controller under `src/server/routes/explorer/` consumes the backend exclusively over HTTP. An ESLint `no-restricted-imports` rule across `src/server/routes/**/*.js` blocks direct imports from `#server/engine/*` and `#server/plugins/evaluation-engine/*`. One deliberate exception remains for `nav-context.js`, which validates the active journey against the in-process engine. Story 06 closes that final gap by removing the validation entirely (per the project principle: UI accesses config and engine only via HTTP APIs — never in-process, never as a fallback) and deletes the carve-out. After Story 06 the codebase could be lifted to a separate deployment, pointed at a different host via `apiBaseUrl`, and render identically.
+
 **Pointers:**
 - Full design rationale: `features/http-api/design.md`.
 - Manual smoke checklist (12 steps, ~5 min): `features/http-api/design.md` § "Smoke checklist".

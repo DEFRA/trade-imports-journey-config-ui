@@ -107,9 +107,9 @@
           </table>
         {% endif %}
 
-        {# Variance-annotated dimensions #}
+        {# Per-commodity dimension value lists #}
         {% for d in dimensionViews %}
-          {{ dimensionBlock(d, totalCommodities) }}
+          {{ dimensionBlock(d) }}
         {% endfor %}
 
         {# Remaining per-commodity details (as-is, no variance) #}

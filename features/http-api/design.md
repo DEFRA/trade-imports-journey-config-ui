@@ -71,6 +71,7 @@ loud so the audience isn't misled.
 | D19 | **Response gzip is on by default.** Hapi compresses `application/json` automatically; the browser shows real wire size in the Network panel. No spec work required. |
 | D20 | **`payload.maxBytes` bumped on engine routes to 5 MB.** Hapi's default 1 MB ceiling is too low for user-edited debug notifications. Per-route option: `options: { payload: { maxBytes: 5 * 1024 * 1024 } }` on each engine POST. |
 | D21 | **Response validation disabled on the bulk refdata endpoint.** `validate: { response: false }` (or `Joi.any()`) on `GET /api/config/journeys/{key}/refdata`. Walking 1 MB of plants JSON through Joi on every request is wasted CPU; the underlying refdata is journey-private and not load-bearing on the API contract. Per-commodity endpoints keep validation. |
+| D22 | **Variance computation: per-commodity exposed, cross-commodity dropped.** Story 05a adds `GET /api/config/journeys/{key}/commodities/{code}/page-variance` (and the `/species/{s}` variant) backed by a relocated `computePageVariance` in `src/server/analytics/`. Story 05b switches the commodity-config controller to consume those endpoints over HTTP and **deletes** the cross-commodity variance computation (rarity badges, "of N possible values", excluded-values list, `computeVariance`/`annotateValues`/`computeAbsentValues`) rather than exposing it. The rarity panel was meta-analytics, not part of the SDUI narrative; binning it removed memoisation hazards and an asymmetric coupling guard. Story 05b also turns on an ESLint `no-restricted-imports` rule blocking `#server/engine/*` and `#server/plugins/evaluation-engine/*` across `src/server/routes/`, with a deliberate carve-out for `nav-context.js` that Story 06 removes. Known risk recorded in `05a-add-page-variance-endpoints.md`: the relocated `buildCommodityValue` still hardcodes a journey-key switch (third-journey trap). Resolves DQ4. |
 
 ## Invariants
 
@@ -184,7 +185,6 @@ These do not block any story in this feature.
 |---|---|
 | DQ2 | Should pure validators in `src/client/javascripts/explorer.js` be extracted into a testable ESM module? Senior QA flagged the file as untestable in isolation. Story 03 made minimal changes (≤50 lines, four documented zones); a future refactor would lift `validateEvaluationResult`, `renderTraceStep`, and friends into a testable module. |
 | DQ3 | HTTP cache headers on the bulk refdata endpoint? `chedpp-plants/refdata.json` is ~1 MB. |
-| DQ4 | Should cross-commodity variance computation be exposed via an HTTP endpoint? Story 02's `commodity-config-controller` ships mixed paths: per-commodity HTTP + in-process variance aggregation, because no endpoint serves the latter. A `/api/config/journeys/{key}/refdata-view/variance` (or similar) would let the controller go single-path. Not blocking the demo; the documented mixed path is deliberate. |
 
 (DQ1 — should "Save & Evaluate" remain a feature — is **resolved** in
 favour of keeping it via the explicit session endpoint. See D12 and
@@ -245,6 +245,9 @@ Postman checks:
 | `02-config-api-and-its-consumers.md` | Remaining `/api/config/*` (including per-commodity) + `commodityDetail` per journey + `navContext` async + commodity-config + journey-picker refactor | Broadens the config side; introduces async controllers |
 | `03-engine-api-and-debug-cutover.md` | `/api/engine/*` + UI handler refactors + delete `/explorer/debug/evaluate` + add `PUT /ui/session/notification` + modify browser JS to call public API directly + three contract tests | Broadens the engine side; lands the Option β cutover |
 | `04-parity-and-test-tightening.md` | Parity test + SOLUTION.md update + deferred-decisions ledger | Cleanup and confidence-building |
+| `05a-add-page-variance-endpoints.md` | New `/page-variance` (+ species variant) endpoints; `computePageVariance` relocated to `src/server/analytics/`; client extended | Additive — endpoints exist, page renders unchanged |
+| `05b-switch-controller-and-enforce-lift-out.md` | Commodity-config controller switches to 100% HTTP; cross-commodity variance UI and `computeVariance` dropped; ESLint `no-restricted-imports` rule with `nav-context.js` carve-out | Subtractive + enforcement — controller-level lift-out invariant closed |
+| `06-navcontext-engine-decoupling.md` | `nav-context.js` engine reads removed; ESLint carve-out deleted; transitive-import isolation test added | Closes the last in-process engine surface in `src/server/routes/` |
 
 ## References
 

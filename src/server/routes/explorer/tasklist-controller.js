@@ -1,16 +1,16 @@
-import { SCREEN_STATUS } from '#server/engine/types.js'
 import { clientForRequest } from '#server/clients/journey-api-client.js'
 import { navContext } from './nav-context.js'
 
-/**
- * Map screen status to GOV.UK task list tag configuration.
- * Keys mirror `SCREEN_STATUS` wire values (the table is keyed by the
- * wire status the engine emits).
- */
+// Wire values from the engine's screen-status enum. Hardcoded here as
+// HTTP contract literals (the engine's response Joi schema enforces
+// them at the API boundary). Avoids a direct import from #server/engine
+// so this route stays HTTP-only. The fallback at the lookup site
+// gracefully handles any future drift.
+const CANNOT_START_YET = 'cannotStartYet'
 const SCREEN_STATUS_TAGS = {
-  [SCREEN_STATUS.COMPLETE]: { text: 'Done', classes: 'govuk-tag--green' },
-  [SCREEN_STATUS.INCOMPLETE]: { text: 'To do', classes: 'govuk-tag--blue' },
-  [SCREEN_STATUS.CANNOT_START_YET]: { text: 'Cannot start yet', classes: 'govuk-tag--grey' }
+  complete: { text: 'Done', classes: 'govuk-tag--green' },
+  incomplete: { text: 'To do', classes: 'govuk-tag--blue' },
+  [CANNOT_START_YET]: { text: 'Cannot start yet', classes: 'govuk-tag--grey' }
 }
 
 /**
@@ -34,7 +34,7 @@ const toTaskListSections = (sections) =>
       }
 
       // GOV.UK task list renders items without href as non-clickable
-      if (screen.status !== SCREEN_STATUS.CANNOT_START_YET) {
+      if (screen.status !== CANNOT_START_YET) {
         item.href = '#'
       }
 
@@ -46,7 +46,7 @@ const toTaskListSections = (sections) =>
  * GET /explorer/tasklist handler
  *
  * Renders the task list page with server-side evaluated obligations.
- * Uses the evaluation engine via server.app.evaluationEngine.
+ * Reaches the engine over HTTP via the journey-api-client.
  */
 export const tasklistController = {
   async handler(request, h) {

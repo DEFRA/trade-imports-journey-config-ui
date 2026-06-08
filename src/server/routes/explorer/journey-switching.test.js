@@ -161,11 +161,13 @@ describe('Explorer with JOURNEY=chedpp-plants', () => {
     expect(result).toContain('Extra Class')
   })
 
-  test('GET /explorer/commodity-config (PHSI-only commodity) renders explicit absence for species-grain dimensions', async () => {
+  test('GET /explorer/commodity-config (PHSI-only commodity) renders without crash; species-grain dimensions show empty state', async () => {
     // PHSI-only commodity — represented by the `code|` fallback key
-    // format. Species-grain dimensions render explicit absence ("0 of
-    // N possible values" + excluded list); commodity-grain group +
-    // commodity details still render.
+    // format. After Story 05b's variance cull, the rarity badges and
+    // excluded-values list are gone. Species-grain dimensions render
+    // an "empty state" because the PHSI commodity has no species row.
+    // Commodity-grain dimensions and commodity-level details still
+    // render normally.
     const { result, statusCode } = await server.inject({
       method: 'GET',
       url: '/explorer/commodity-config?commodity=06042090|'
@@ -175,13 +177,9 @@ describe('Explorer with JOURNEY=chedpp-plants', () => {
     expect(result).toContain('Commodity Summary')
     // Commodity-grain group dimension still rendered.
     expect(result).toContain('Commodity group')
-    // Species-grain dimensions render "0 of N possible values" because
-    // the PHSI commodity has no species row → empty included list.
-    expect(result).toContain('0 of')
-    // And the excluded list still surfaces what *other* species have —
-    // e.g. JOINT is in the regulatory_authority superset, so it
-    // appears in the Excluded section here.
-    expect(result).toContain('JOINT')
+    // Species-grain dimensions have empty value lists for this
+    // commodity; the template renders "Not provided" in that case.
+    expect(result).toContain('Not provided')
   })
 
   // ---------------------------------------------------------------------------
