@@ -1,4 +1,4 @@
-import { mapKeysDeep } from '../_shared/snake-to-camel.js'
+import { mapKeysDeep } from '#server/common/snake-to-camel.js'
 
 /**
  * Refdata-view descriptor for the chedpp-plants journey.
