@@ -77,13 +77,23 @@ curl -X POST \
 
 ## Postman
 
-Postman can import the OpenAPI spec directly from the running server:
+Two import paths, depending on what you want.
+
+**For the demo narrative** (six folders covering the plants and animals walkthroughs from `SOLUTION.md`), import the curated collection:
+
+1. In Postman: **File → Import → File**.
+2. Choose `docs/postman/journey-config-demo.postman_collection.json`.
+3. After import, set the collection variable `baseUrl` to `http://localhost:3000` (or whichever port the dev server is running on).
+
+Each folder and request carries a Markdown description explaining what the example demonstrates. Run requests in folder order to follow the demo arc.
+
+**For the full endpoint surface** (every endpoint, every Joi-schema example), import the OpenAPI spec from the running server:
 
 1. Start the dev server: `npm run dev`.
 2. In Postman: **File → Import → Link**.
 3. Paste `http://localhost:3000/swagger.json` and click **Continue → Import**.
 
-Postman creates a collection grouped by tag with every endpoint, request shape, and example body populated from the Joi schemas. No collection file is checked into the repo; the OpenAPI spec is the single source of truth.
+Postman creates a collection grouped by tag with every endpoint, request shape, and example body populated from the Joi `example()` clauses. Useful when you need every endpoint, including ones not in the demo arc.
 
 ## Running the tests
 

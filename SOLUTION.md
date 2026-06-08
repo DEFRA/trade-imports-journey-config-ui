@@ -412,6 +412,7 @@ The replacement story for field config:
 ## Where to read deeper
 
 - [README.md](./README.md) for the operational entry point: quick start, Swagger UI, `curl` recipes, Postman import.
+- [`docs/postman/journey-config-demo.postman_collection.json`](./docs/postman/journey-config-demo.postman_collection.json) - curated Postman collection that walks the plants and animals demo arcs end-to-end. Markdown descriptions on every folder and request carry the narrative.
 - `features/http-api/design.md` for the HTTP design rationale: decisions, deferred questions, smoke checklist.
 - `src/server/engine/` for the engine source. Five files plus `types.js`; under 600 lines of code.
 - `src/server/journeys/eu-live-animals/` and `src/server/journeys/chedpp-plants/` for the two working adapters.

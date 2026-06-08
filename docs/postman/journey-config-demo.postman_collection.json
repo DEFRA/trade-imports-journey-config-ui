@@ -1,0 +1,809 @@
+{
+  "info": {
+    "name": "trade-imports-journey-config-ui - demo",
+    "description": {
+      "content": "# IPAFFS journey configuration and evaluation - demo collection\n\nThis collection walks two journeys end-to-end through their HTTP surface:\n\n- **Plants (CHEDPP)** - the GMS-declaration predicate and its AND-arms.\n- **Animals (CHED-A)** - the four routing-flag patterns and the purpose-conditional dimension.\n\nEach folder is one chapter of the demo. Run requests in order; each folder description sets up the chapter and each request description explains what makes that example interesting.\n\n## Setup\n\n1. Start the dev server: `npm run dev` from the project root.\n2. The collection variable `baseUrl` defaults to `http://localhost:3000`. Override it under collection settings if you run the server elsewhere.\n3. Pick a folder. The folders are ordered as a demo arc - start at folder 1 if you're new to the project.\n\n## Where to read deeper\n\n- `SOLUTION.md` - the architecture and concepts behind every endpoint here.\n- `README.md` - operational entry point: quick start, Swagger UI, full endpoint surface.\n- `features/http-api/design.md` - HTTP design rationale.\n- Swagger UI at <http://localhost:3000/documentation> - every endpoint with worked examples.",
+      "type": "text/markdown"
+    },
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Discovery",
+      "description": {
+        "content": "Warm-up. What journeys are registered, and what does each one declare?\n\nThe `/api/config/journeys` list is the entry point: it names every journey the engine knows about, plus a count of obligations and sections. Drilling into a specific journey returns the full configuration tree (obligations, journey map, scenarios).",
+        "type": "text/markdown"
+      },
+      "item": [
+        {
+          "name": "List journeys",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/config/journeys",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "config", "journeys"]
+            },
+            "description": {
+              "content": "Two journeys ship with this spike: `eu-live-animals` and `chedpp-plants`. The response carries an obligation count and section count for each, so a client can render a picker without fetching the full configuration.",
+              "type": "text/markdown"
+            }
+          }
+        },
+        {
+          "name": "Plants journey configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "config", "journeys", "chedpp-plants"]
+            },
+            "description": {
+              "content": "The full configuration tree for plants: 28 obligations, 8 sections, plus the scenarios block. This is what an evaluator works with - everything the engine reads, in one response.",
+              "type": "text/markdown"
+            }
+          }
+        },
+        {
+          "name": "Animals journey configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "config", "journeys", "eu-live-animals"]
+            },
+            "description": {
+              "content": "The full configuration tree for animals: 23 obligations, 6 sections. Different vocabulary from plants - routing flags instead of regulatory authorities, purpose groups instead of marketing standards - but the same shape.",
+              "type": "text/markdown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Refdata exploration (plants)",
+      "description": {
+        "content": "How refdata flows from the journey adapter to the API surface. The bulk endpoint returns the whole table; `refdata-view` returns a journey-shaped projection; `commodities` returns just the dropdown universe.\n\nThis folder shows the **dimensions** of plants refdata before the narrative dives into specific commodities.",
+        "type": "text/markdown"
+      },
+      "item": [
+        {
+          "name": "All commodities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "config", "journeys", "chedpp-plants", "commodities"]
+            },
+            "description": {
+              "content": "Every commodity key the journey knows about, as `code|species` composites. PHSI-only commodities appear as `code|` with empty species. This is what populates the commodity dropdown in the explorer.",
+              "type": "text/markdown"
+            }
+          }
+        },
+        {
+          "name": "Refdata-view metadata",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/refdata-view",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "config", "journeys", "chedpp-plants", "refdata-view"]
+            },
+            "description": {
+              "content": "The shape of the refdata, no commodity selected. Lists the dimension and detail names without values populated. Useful for a renderer that needs to know what columns exist before any commodity is chosen.",
+              "type": "text/markdown"
+            }
+          }
+        },
+        {
+          "name": "Refdata-view for a commodity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/refdata-view?commodity=0808108090&species=MABSD",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "config", "journeys", "chedpp-plants", "refdata-view"],
+              "query": [
+                { "key": "commodity", "value": "0808108090" },
+                { "key": "species", "value": "MABSD" }
+              ]
+            },
+            "description": {
+              "content": "Same shape, now with values resolved for `0808108090|MABSD` (apples). The dimension closures run server-side and the resolved values cross the HTTP boundary as plain JSON. The commodity-config page in the UI consumes this directly.",
+              "type": "text/markdown"
+            }
+          }
+        },
+        {
+          "name": "Bulk refdata (warning: ~1 MB)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/refdata",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "config", "journeys", "chedpp-plants", "refdata"]
+            },
+            "description": {
+              "content": "The whole refdata JSON, no projection. About 1 MB for plants. Useful for offline analysis; for normal page renders, prefer `/refdata-view` (above) or the per-commodity endpoints in folder 3.\n\nResponse-validation is disabled on this route (see `design.md` D21) because Joi-walking 1 MB on every request is wasted CPU.",
+              "type": "text/markdown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Plants narrative",
+      "description": {
+        "content": "Six commodity examples in a deliberate order. The story walks from the boring default to the GMS-declaration predicate's AND-arms.\n\n| Step | Commodity | What it shows |\n|---|---|---|\n| 3.1 | `10011100` wheat seed | The 98.9% boring default |\n| 3.2 | `06011020` bulbs | Commodity-level variance |\n| 3.3 | `0808108090\\|MABSD` apples | Species-level depth |\n| 3.4 | `0808108090\\|MABSS` other Malus | Intra-commodity variance |\n| 3.5 | `0805108010\\|CIDAU` sweet oranges | The GMS trigger |\n| 3.6 | lemons + a JOINT+GMS veg | Why the predicate's AND matters |\n\nFor each example, the per-commodity driver request shows what the configuration says; the page-variance request shows which downstream screens that commodity would drive.",
+        "type": "text/markdown"
+      },
+      "item": [
+        {
+          "name": "3.1 Wheat seed 10011100 - the boring default",
+          "description": {
+            "content": "What 98.9% of plant imports actually look like.\n\n`10011100` (wheat seed for sowing) is a PHSI-only commodity: no species rows, all flags off, no marketing standard, no varieties, no classes. The GMS-declaration screen does not fire; no intended-use sub-journey; no bulk-details fields. Just commodity code plus species name and you're done.\n\n**The point.** This is the common path. The rare-interesting cases that follow (3.2 onwards) are exactly that - rare. The journey configuration handles both ends without special-casing.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Commodity driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/10011100",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "10011100"]
+                },
+                "description": {
+                  "content": "`group: 'Seed & Tissue Culture'`, all flags `false`, no propagation. Minimal commodity-level driver.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/10011100/page-variance",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "10011100", "page-variance"]
+                },
+                "description": {
+                  "content": "The smallest interesting `pageVariance` response in the journey. Most screens have `activates: false` because the commodity drives no conditional flags. Compare with 3.5 (oranges) where the GMS screen activates.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 Bulbs 06011020 - commodity-level variance",
+          "description": {
+            "content": "When commodity-level config kicks in.\n\n`06011020` (bulbs for planting) has no species rows, but its commodity-level config drives three pieces of variance:\n\n1. `group: 'Plants for Planting'` puts it in the plants-for-planting sub-flow.\n2. `propagation: 'bulb'` drives the intended-use sub-journey (bulb vs plant).\n3. `requires_finished_or_propagated: true` drives a dropdown on the bulk-details page.\n\n**The point.** Variance does not require species depth. A PHSI-only commodity can still reshape the journey through commodity-level config.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Commodity driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/06011020",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "06011020"]
+                },
+                "description": {
+                  "content": "`group: 'Plants for Planting'`, `propagation: 'bulb'`, `requiresFinishedOrPropagated: true`. Three distinct pieces of variance from one commodity-level row.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/06011020/page-variance",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "06011020", "page-variance"]
+                },
+                "description": {
+                  "content": "Page-variance includes the bulk-details fields driven by `requires_finished_or_propagated`, plus the intended-use selection driven by `propagation`. Three new screens compared to wheat seed (3.1).",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.3 Apples 0808108090|MABSD - species depth",
+          "description": {
+            "content": "Species-level data appears.\n\n`0808108090|MABSD` (apples) carries species-level marketing data: `regulatoryAuthority: 'JOINT'`, `marketingStandard: 'SMS'`, validity 7 months, and **67 varieties** (Braeburn, Bramley, Cox's Orange Pippin, ...) plus 3 quality classes.\n\n**The point.** When species rows exist, the journey shows variety and class selection. The page-variance response now mentions screens the wheat example never touched.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Species driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/0808108090/species/MABSD",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "0808108090", "species", "MABSD"]
+                },
+                "description": {
+                  "content": "67 varieties under one species. The varieties array is the most visible artefact of species-level data depth in this journey.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/0808108090/page-variance/species/MABSD",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "0808108090", "page-variance", "species", "MABSD"]
+                },
+                "description": {
+                  "content": "The variety-and-class screen activates here because both varieties and quality classes are populated. The GMS screen does NOT activate - regulatory authority is JOINT, not HMI.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.4 Other Malus 0808108090|MABSS - intra-commodity variance",
+          "description": {
+            "content": "Same commodity code, different species, different data.\n\n`0808108090|MABSS` is **another species under the same commodity code as 3.3**. Same regulatory authority (JOINT) and marketing standard (SMS), but only **2 varieties** instead of 67.\n\n**The point.** Two notifications can pick the same commodity code yet exercise meaningfully different obligations. The journey adapter models species-level variance, not just commodity-level variance. A picker on `0808108090` is the start of the choice, not the end.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Species driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/0808108090/species/MABSS",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "0808108090", "species", "MABSS"]
+                },
+                "description": {
+                  "content": "2 varieties. Compare with the 67 returned for `MABSD` in 3.3. Same commodity row, different species row, very different downstream selection.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/0808108090/page-variance/species/MABSS",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "0808108090", "page-variance", "species", "MABSS"]
+                },
+                "description": {
+                  "content": "Identical activation pattern to 3.3 - the regulatory authority is the same. The difference between MABSD and MABSS is in the selection content, not in which screens fire.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.5 Sweet oranges 0805108010|CIDAU - the GMS trigger",
+          "description": {
+            "content": "**The one notification shape that fires the GMS-declaration page.**\n\n`0805108010|CIDAU` (sweet oranges) carries `regulatoryAuthority: 'HMI'` and `marketingStandard: 'GMS'`. The GMS-declaration predicate is `regulatory_authority === 'HMI' && marketing_standard === 'GMS'` - this species satisfies both arms.\n\nOf ~486,000 production (commodity, species) pairs, this combination is one of only ~409 that trigger the GMS-declaration page.\n\n**The point.** A single rule expressed as data (one predicate, two AND-arms) reshapes the journey for a tiny minority of notifications. The journey configuration is the source of truth for both *that the rule exists* and *which notifications satisfy it*. Compare with apples (3.3): same data shape, JOINT not HMI, GMS does not fire.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Species driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/0805108010/species/CIDAU",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "0805108010", "species", "CIDAU"]
+                },
+                "description": {
+                  "content": "`regulatoryAuthority: 'HMI'`, `marketingStandard: 'GMS'`, validity 2 months, no varieties. The minimal commodity row that activates the GMS predicate.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/0805108010/page-variance/species/CIDAU",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "0805108010", "page-variance", "species", "CIDAU"]
+                },
+                "description": {
+                  "content": "Find the `gms-declaration` screen in the response. `activates: true`. The driver's `reason` field cites the rule verbatim: `'HMI-inspected species with GMS marketing standard'`. This is the headline of the plants demo.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.6 Why both AND-arms matter",
+          "description": {
+            "content": "Two examples that triangulate the GMS predicate's two arms.\n\nThe GMS predicate is `regulatory_authority === 'HMI' && marketing_standard === 'GMS'`. To fire, both must be true. To demonstrate the AND, we need two species that each satisfy ONE arm but not the other:\n\n| Species | Authority | Marketing | Failure |\n|---|---|---|---|\n| `0805102810\\|CIDSI` lemons | `HMI` | `SMS` | marketing arm fails |\n| `0709999090\\|DATME` a JOINT+GMS vegetable | `JOINT` | `GMS` | authority arm fails |\n\nNeither fires the GMS screen. Compare with sweet oranges (3.5) which satisfies both arms.\n\n**The point.** If GMS were `regulatory_authority === 'HMI'` alone, lemons would fire it. If GMS were `marketing_standard === 'GMS'` alone, the JOINT+GMS veg would fire it. The AND is load-bearing. The rule is expressed once, as data, and the engine enforces it the same way every time.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Lemons CIDSI - HMI but SMS (marketing arm fails)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/0805102810/page-variance/species/CIDSI",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "0805102810", "page-variance", "species", "CIDSI"]
+                },
+                "description": {
+                  "content": "Find `gms-declaration` in the response. `activates: false`. The driver's `reason` reports the marketing-standard arm of the predicate failing.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "JOINT+GMS veg DATME - GMS but JOINT (authority arm fails)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedpp-plants/commodities/0709999090/page-variance/species/DATME",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedpp-plants", "commodities", "0709999090", "page-variance", "species", "DATME"]
+                },
+                "description": {
+                  "content": "Find `gms-declaration` in the response. `activates: false`. The driver's `reason` reports the regulatory-authority arm of the predicate failing. Mirror image of lemons.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Plants engine",
+      "description": {
+        "content": "Configuration explains *which screens would fire*. The engine answers *for this specific notification, do they fire?* These three requests evaluate notifications and expose the obligation statuses, the screen list, and the rolled-up section tree.\n\nThe POST body is the notification JSON directly - no envelope. Paste a notification from the explorer debug page; Postman accepts it as-is.",
+        "type": "text/markdown"
+      },
+      "item": [
+        {
+          "name": "Evaluate empty notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "content-type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/evaluate?withTrace=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "engine", "journeys", "chedpp-plants", "evaluate"],
+              "query": [
+                { "key": "withTrace", "value": "true" }
+              ]
+            },
+            "description": {
+              "content": "The minimum possible notification: `{}`. Every obligation comes back `unsatisfied` or `deferred` because no data is present.\n\n`withTrace=true` adds per-obligation diagnostic steps to the response. Drop the query param to see the production shape.",
+              "type": "text/markdown"
+            }
+          }
+        },
+        {
+          "name": "Evaluate sweet-oranges notification (fires GMS)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "content-type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commodities\": [\n    {\n      \"id\": \"0805108010\",\n      \"species\": { \"code\": \"0805108010\", \"eppoCode\": \"CIDAU\" }\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/evaluate?withTrace=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "engine", "journeys", "chedpp-plants", "evaluate"],
+              "query": [
+                { "key": "withTrace", "value": "true" }
+              ]
+            },
+            "description": {
+              "content": "The same `0805108010|CIDAU` species from 3.5, now as the commodity on a notification. The `gms-declaration` obligation in the response is no longer `inactive` - it activates because the predicate satisfies. Trace shows the rule fired.\n\nDelete the species block from the body and re-send to see the obligation flip to `deferred` (the fact returned null).",
+              "type": "text/markdown"
+            }
+          }
+        },
+        {
+          "name": "Sections for sweet-oranges notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "content-type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commodities\": [\n    {\n      \"id\": \"0805108010\",\n      \"species\": { \"code\": \"0805108010\", \"eppoCode\": \"CIDAU\" }\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/sections",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "engine", "journeys", "chedpp-plants", "sections"]
+            },
+            "description": {
+              "content": "Same notification, rolled up into the task-list SDUI shape. Sections whose every screen is `notApplicable` are omitted. Screen statuses follow the first-match rule (incomplete -> cannotStartYet -> notApplicable -> complete). This is what the `/explorer/tasklist` UI consumes directly.",
+              "type": "text/markdown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Animals narrative",
+      "description": {
+        "content": "Six examples in a deliberate order. Animals model variance differently from plants: three independent routing flags (`cph_number`, `permanent_address`, `transporter_address`) plus a purpose-conditional dimension.\n\n| Step | Key | What it shows |\n|---|---|---|\n| 5.1 | `102\\|Bos taurus` cattle | Canonical livestock pattern |\n| 5.2 | `203\\|Sus scrofa domesticus` pigs | All routing flags off |\n| 5.3 | `101\\|Equus caballus` horses | Transporter-only pattern |\n| 5.4 | `1061900\\|Canis familiaris` dogs | Pets pattern (plus the charity-holding honest pitch) |\n| 5.5 | code `1061900` species variance | Same code, three downstream journeys |\n| 5.6 | transit cattle notification | Purpose-conditional dimension (engine) |\n\nUnlike plants, animals has no single predicate to triangulate. The arc shows breadth of patterns rather than the AND-arms of one rule.",
+        "type": "text/markdown"
+      },
+      "item": [
+        {
+          "name": "5.1 Cattle 102|Bos taurus - canonical livestock",
+          "description": {
+            "content": "The most-common animals pattern.\n\n`102|Bos taurus` (cattle): `cph_number: true`, `permanent_address: false`, `transporter_address: true`. Two of the three routing-driven screens activate (CPH for farm tracing, Transporter for movement); the permanent-address screen does not (cattle aren't stored at a fixed home address).\n\n**The point.** This is the equivalent of wheat seed in the plants arc: the boring default. 38 of 67 animals refdata rows share this exact pattern.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Species driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/102/species/Bos taurus",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "102", "species", "Bos taurus"]
+                },
+                "description": {
+                  "content": "`routingFlags`: `cphNumber: true, permanentAddress: false, transporterAddress: true`. Plus the content and identifier-set fields the journey expects for cattle.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/102/page-variance/species/Bos taurus",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "102", "page-variance", "species", "Bos taurus"]
+                },
+                "description": {
+                  "content": "Two of the three routing-driven screens activate. The CPH-number screen (`activates: true`, reason references the `cph_number` flag) and the transporter screen (likewise). The permanent-address screen has `activates: false`.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.2 Pigs 203|Sus scrofa domesticus - all routing flags off",
+          "description": {
+            "content": "A commodity that's in the journey but drives no conditional screens.\n\n`203|Sus scrofa domesticus` has all three routing flags `false`. None of the CPH, permanent-address, or transporter screens activate. The notification still has every non-conditional obligation to satisfy, but the conditional-routing layer is silent.\n\n**The point.** A commodity can be in the journey without driving any of the routing-flag screens. 8 of 67 refdata rows share this shape. Useful to confirm that the routing flags really are independent dimensions - turn them all off, and the journey still works, it just asks for less.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Species driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/203/species/Sus scrofa domesticus",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "203", "species", "Sus scrofa domesticus"]
+                },
+                "description": {
+                  "content": "All three routing flags `false`. The refdata row is short.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/203/page-variance/species/Sus scrofa domesticus",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "203", "page-variance", "species", "Sus scrofa domesticus"]
+                },
+                "description": {
+                  "content": "Every routing-driven screen has `activates: false`. The minimum routing-flag activation in the journey.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.3 Horses 101|Equus caballus - transporter only",
+          "description": {
+            "content": "A single-flag pattern.\n\n`101|Equus caballus` (horses): `cph_number: false`, `permanent_address: false`, `transporter_address: true`. Only the transporter screen activates.\n\n**The point.** The three routing flags are independent dimensions, not bundled into a regime. Horses are an interesting half-step: they move (transporter applies), but they don't live on a registered farm (no CPH) and they don't live at a fixed home (no permanent address). 17 of 67 rows share this pattern.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Species driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/101/species/Equus caballus",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "101", "species", "Equus caballus"]
+                },
+                "description": {
+                  "content": "Transporter only. Compare with cattle (5.1) which also has CPH, and dogs (5.4) which has permanent address.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/101/page-variance/species/Equus caballus",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "101", "page-variance", "species", "Equus caballus"]
+                },
+                "description": {
+                  "content": "Only the transporter screen activates. CPH-number and permanent-address both `activates: false`.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.4 Dogs 1061900|Canis familiaris - the pets shape",
+          "description": {
+            "content": "Pets fire a different combination.\n\n`1061900|Canis familiaris` (dogs): `cph_number: false`, `permanent_address: true`, `transporter_address: true`. The permanent-address screen activates (pets are stored at a fixed home), the transporter screen activates (they move on a transporter), but the CPH-number screen does NOT (no farm-tracing for pets). 4 of 67 rows share this pattern - dogs, cats, ferrets.\n\n## What this journey does NOT model: charity holdings\n\nThe address obligation that fires here is `permanent-address` (welfare: where the pet lives). The refdata has a separate purpose `Rescue/Rehoming` that signals a dog might be imported by a charity for rehoming, but **the address obligation is the same**. A rescue dog and a privately-owned puppy get asked for the same address field at the schema layer.\n\nThat's a real-world simplification. In production IPAFFS, a charity facility (rescue centre, sanctuary) might want a different obligation: a charity-holding registration number, not a personal address.\n\n**Why this is worth pointing out.** If real policy needed that distinction, adding it is a four-line configuration change:\n\n1. A new obligation `charity-holding-registration` in `obligations.json`.\n2. A condition: `fact: purposeGroup, test: isRescueRehoming` (composed from the existing purpose).\n3. A schema path: `commodities[].identifiers[].charityHolding`.\n4. A screen on the journey map referencing the obligation.\n\nThe engine never changes. The refdata never changes. No other journey is touched. **This is the configuration-as-data thesis in one PR.** Policy nuance lands as configuration; the engine remains a small library of pure functions.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Species driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/1061900/species/Canis familiaris",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "1061900", "species", "Canis familiaris"]
+                },
+                "description": {
+                  "content": "`permanent_address: true`, `cph_number: false`. The pets shape. Compare with cattle (5.1, CPH+transporter) and horses (5.3, transporter only).",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/1061900/page-variance/species/Canis familiaris",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "1061900", "page-variance", "species", "Canis familiaris"]
+                },
+                "description": {
+                  "content": "The permanent-address screen activates here, which it didn't for cattle or horses. The CPH-number screen does NOT activate. This is the pets routing shape made visible.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.5 Code 1061900 - intra-commodity variance",
+          "description": {
+            "content": "Same commodity code, three different downstream journeys.\n\nUnder commodity code `1061900` the refdata has multiple species, each with a different routing pattern:\n\n| Species | Pattern | Effect |\n|---|---|---|\n| `Canis familiaris` (dogs) | permanent + transporter | Pets shape |\n| `Rodentia` (rodents) | transporter only | Equines shape |\n| (species-agnostic, `1061900\\|`) | CPH + transporter | Livestock fallback |\n\nThree species. One commodity code. Three different page sets.\n\n**The point.** The journey adapter models species-level variance as data. Adding a new species under this code is an entry in `refdata.json`. The engine doesn't change. The screens don't change. The page-variance response changes because the underlying refdata row changes.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Canis familiaris - pets shape",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/1061900/species/Canis familiaris",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "1061900", "species", "Canis familiaris"]
+                },
+                "description": {
+                  "content": "permanent + transporter. Pets pattern.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Rodentia - equines shape",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/1061900/species/Rodentia",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "1061900", "species", "Rodentia"]
+                },
+                "description": {
+                  "content": "Transporter only. Compare the response with `Canis familiaris` (above): same commodity code, no permanent-address flag, no CPH flag.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Species-agnostic fallback - livestock shape",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/eu-live-animals/commodities/1061900",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "eu-live-animals", "commodities", "1061900"]
+                },
+                "description": {
+                  "content": "No species segment in the URL. Returns the commodity-level driver, which uses the species-agnostic fallback row (`1061900|` in refdata). CPH + transporter - the livestock shape. A notification that omits species under this code hits this fallback.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "5.6 Transit cattle - the purpose-conditional dimension",
+          "description": {
+            "content": "The second axis of variance: notification data, not refdata.\n\nObligation `transit-routing` is conditional on `purposeGroup`. It activates when `purpose.group` is one of `'For Transhipment to'` or `'For Transit to 3rd Country'`. The commodity refdata doesn't decide this; the notification itself does.\n\nTwo requests below. Same commodity (cattle, `102|Bos taurus`). One notification has `purpose.group: 'For Import'`; the other has `purpose.group: 'For Transit to 3rd Country'`. The `transit-routing` obligation is `inactive` in the first, `unsatisfied` in the second (because `destination.exitBIP` is missing - add it to the body and it becomes `satisfied`).\n\n**The point.** Commodity drives some screens (5.1 through 5.5). Notification data drives others. The engine handles both with the same `condition.fact` / `condition.test` mechanism - one composable rule shape, two distinct sources of input. The animals equivalent of the GMS-page trigger in plants.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Evaluate cattle - import purpose (transit-routing inactive)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"purpose\": { \"group\": \"For Import\" },\n  \"commodities\": [\n    { \"id\": \"102\", \"species\": { \"name\": \"Bos taurus\" } }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/eu-live-animals/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "eu-live-animals", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "Find the `transit-routing` obligation in the response. `status: 'inactive'`, reason cites that `'For Import'` is not a transit purpose. The transit-routing screen would not appear in the rolled-up sections.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Evaluate cattle - transit purpose (transit-routing fires)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"purpose\": { \"group\": \"For Transit to 3rd Country\" },\n  \"commodities\": [\n    { \"id\": \"102\", \"species\": { \"name\": \"Bos taurus\" } }\n  ]\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/eu-live-animals/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "eu-live-animals", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "Same commodity, transit purpose. `transit-routing` is now `unsatisfied` - it activated but `destination.exitBIP` is missing. Add the exitBIP to the body to flip it to `satisfied`. The transit-routing screen would now appear in the sections.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. UI session",
+      "description": {
+        "content": "The \"in-memory database\" of the SDUI demo.\n\nThe debug page lets a user edit notification JSON in a textarea, then click \"Save & Evaluate\". The browser fires this PUT before the engine call, so other pages (task list, journey explorer) can render against the same notification on a subsequent request. Without explicit session persistence, the bridge between pages would be a side effect of the evaluate route. Exposing it as a PUT keeps the wiring visible.\n\nIn Postman, sending this request directly requires a session cookie. Enable Postman's cookie jar for `localhost` (Settings > Cookies). The browser-side flow handles cookies automatically.",
+        "type": "text/markdown"
+      },
+      "item": [
+        {
+          "name": "Save notification (returns 204)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "content-type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"purpose\": { \"group\": \"For Import\" },\n  \"commodities\": [\n    { \"id\": \"102\", \"species\": { \"name\": \"Bos taurus\" } }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/ui/session/notification",
+              "host": ["{{baseUrl}}"],
+              "path": ["ui", "session", "notification"]
+            },
+            "description": {
+              "content": "Returns `204 No Content`. The notification is now in `yar.notification` for this session. Subsequent GETs to `/explorer/tasklist` or `/explorer` render against it.",
+              "type": "text/markdown"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
