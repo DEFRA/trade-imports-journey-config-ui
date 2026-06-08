@@ -87,38 +87,52 @@ flowchart LR
 
 > **Hold in mind:** three inputs, one pure function, one result. No I/O, no framework, no hidden state.
 
-### Picture 4: the three slices
+### Picture 4: the HTTP surface
 
-The repository contains three slices. Their sizes are unequal, and that asymmetry is the point: the engine is the idea, the per-journey configuration is the demonstration, the UI is scaffolding to make the output visible.
+The same dataflow, surfaced over HTTP. The UI consumes its own backend via loopback `fetch` - real HTTP, real wire format, visible in the Network tab. Three URL namespaces over one Hapi process: `/api/config/*` answers *what is the journey?*, `/api/engine/*` answers *how does this notification evaluate?*, `/ui/session/*` holds cross-page state the UI needs between renders.
 
 ```mermaid
-flowchart TB
-    subgraph ui["UI (demo scaffolding)"]
+flowchart LR
+    browser["Browser<br/><i>page renders, Network tab</i>"]
+
+    subgraph hapi["Hapi process"]
         direction TB
-        routes["Explorer routes<br/>journey · tasklist · debug · commodity-config"]
-        picker["Journey-selection route"]
-        njk["Nunjucks templates<br/>GOV.UK Frontend"]
-        plug["Hapi plugin glue"]
+        ui["UI routes<br/><i>/explorer, /journey-selection</i>"]
+        api["http-api plugin<br/><i>/api/config, /api/engine</i>"]
+        session["/ui/session<br/><i>cross-page state</i>"]
+        facade["Evaluation-engine facade"]
+        engine["Engine + journey adapters<br/><i>resolvers + refdata</i>"]
     end
 
-    subgraph engine["Engine (the idea)"]
-        direction TB
-        fns["evaluate · evaluateWithTrace<br/>resolveScreens · rollUpToSections"]
-        comb["combinators · types · path"]
-    end
-
-    subgraph config["Per-journey configuration (the demonstrations)"]
-        direction TB
-        anim["eu-live-animals/<br/>obligations · journey · refdata · resolvers"]
-        plants["chedpp-plants/<br/>obligations · journey · refdata · resolvers"]
-    end
-
-    ui -->|"calls with notification + journeyKey"| engine
-    engine -->|"reads"| config
-    engine -->|"returns EvaluationResult, Screen[], Section[]"| ui
+    browser --HTTP--> ui
+    browser --HTTP--> api
+    browser --HTTP--> session
+    ui --"loopback fetch<br/><i>journey-api-client</i>"--> api
+    api --> facade
+    facade --> engine
 ```
 
-> **Hold in mind:** the contract between the slices is exactly the engine's input and output - nothing else passes between them. All three run in one process today; the seams are logical, not physical.
+> **Hold in mind:** the seam between UI and engine is HTTP, not a function call. An ESLint `no-restricted-imports` rule and a transitive-import isolation test enforce that no UI route imports the engine in-process. The codebase could be lifted out and pointed at a remote backend via `apiBaseUrl` without code changes.
+
+## How it runs
+
+The three namespaces answer three distinct questions. Swagger UI at `/documentation` documents them as three tag groups; the same OpenAPI spec serves Postman at `/swagger.json`.
+
+| Namespace | Question | Headline endpoints |
+| --- | --- | --- |
+| `/api/config/*` | What is the journey? | `GET /api/config/journeys`, `GET /api/config/journeys/{key}/commodities/{code}`, `.../commodities/{code}/page-variance` |
+| `/api/engine/*` | How does this notification evaluate? | `POST /api/engine/journeys/{key}/evaluate`, `.../screens`, `.../sections` |
+| `/ui/session/*` | What state needs to persist between pages? | `PUT /ui/session/notification` |
+
+**The per-commodity endpoint is the SDUI narrative primitive.** The frontend asks `GET /api/config/journeys/{key}/commodities/{code}` to learn what selecting a commodity unlocks: routing flags, regulatory authority, marketing standard, and so on. Combined with `/api/engine/.../sections`, this is enough to tell the user *"origin → commodity → these downstream pages now apply"* before they fill in any field.
+
+**`/ui/session/notification` makes cross-page state explicit.** The debug page lets users edit a notification JSON in a textarea; the task-list view renders against that notification on a different request. Without explicit session persistence, the bridge between pages would be a side effect of the evaluate route. Exposing it as a `PUT` keeps the wiring visible.
+
+**The engine API takes the raw notification as the request body.** No `{ notification: ... }` envelope. The JSON shown in the debug-page editor is the JSON Postman accepts. `withTrace=true` on `/evaluate` is the only query param.
+
+For runnable `curl` recipes and the Postman import path, see the [README](./README.md#sample-requests).
+
+**Trade-off worth flagging.** The explorer plugin no longer validates the configured `JOURNEY` env var against the engine at boot, because doing so would be a registration-time in-process engine read. `JOURNEY=garbage npm start` now boots; the first page render surfaces the misconfiguration as a 500. CI scripts that asserted boot-time failure on bad config need updating.
 
 ## The concepts
 
@@ -247,19 +261,21 @@ This is the schema-like view: the journey, its rules, and its presentation are a
 
 ## The mechanics
 
-Full depth: the engine API, a worked evaluation, the resolver code, the refdata shapes, and the slice boundaries spelled out. Keep Picture 3 in mind throughout - everything here is a station on that dataflow.
+Full depth. The engine surface is HTTP; behind the surface sit pure functions, journey adapters, and journey-private refdata. Keep Picture 3 (the evaluation dataflow) and Picture 4 (the HTTP surface) in mind throughout.
 
-### The engine API
+### The engine surface
 
-The engine is five public functions:
+Three POST endpoints expose the engine pipeline:
 
-| Function | Signature | Returns |
-| --- | --- | --- |
-| `evaluate` | `(notification, adapter)` | `{ obligations, summary }` |
-| `evaluateWithTrace` | `(notification, adapter)` | as above, with per-obligation `trace` |
-| `resolveScreens` | `(result, journeyMap)` | `Screen[]` with statuses |
-| `rollUpToSections` | `(screens)` | `Section[]` with statuses |
-| `combinators` | n/a | `or, and, not, always, never` for composing tests |
+| Endpoint | Body | Query | Returns |
+| --- | --- | --- | --- |
+| `POST /api/engine/journeys/{key}/evaluate` | raw notification JSON | `withTrace=true` (optional) | `EvaluationResult` (`{ obligations, summary }`, optional per-obligation `trace`) |
+| `POST /api/engine/journeys/{key}/screens` | raw notification JSON | - | `{ screens: Screen[] }` |
+| `POST /api/engine/journeys/{key}/sections` | raw notification JSON | - | `{ sections: Section[], summary }` |
+
+Each route delegates to a small library of pure functions in `src/server/engine/`: `evaluate`, `evaluateWithTrace`, `resolveScreens`, `rollUpToSections`, plus combinators (`or`, `and`, `not`, `always`, `never`) for composing tests in resolver code. The library has zero `@hapi/*` imports - a kernel-isolation test enforces this. The HTTP layer is a wire over the library; the library is the substantive contribution.
+
+The UI consumes the surface via `src/server/clients/journey-api-client.js`. The client is the seam: today it points at `http://localhost:3000`, tomorrow it can point at a different host.
 
 ### A worked evaluation
 
@@ -283,7 +299,7 @@ A real `EvaluationResult` over a partial notification - the four statuses from t
 }
 ```
 
-Status detail beyond the concepts layer: `deferred` means the condition's fact returned null; `inactive` means the condition's test returned `{ active: false }`. The same result, folded over the journey map by `resolveScreens`, becomes a flat list of screens with derived statuses (the first-match rules in the concepts layer), and `rollUpToSections` produces the render-ready section list.
+Status detail beyond the concepts layer: `deferred` means the condition's fact returned null; `inactive` means the condition's test returned `{ active: false }`. The same result, folded over the journey map by `/api/engine/.../screens`, becomes a flat list of screens with derived statuses (the first-match rules in the concepts layer); `/sections` produces the render-ready section list.
 
 ### Resolvers: how rules are written
 
@@ -369,90 +385,39 @@ The principles (kernel-opaque, journey-private) are in the concepts layer; here 
 
 The full data model, the recovery of the normal form from the upstream tables, the production distribution, and the GMS-declaration predicate are documented in `src/server/journeys/chedpp-plants/research.md`.
 
-### The three slices, precisely
+## Today's reality, tomorrow's deployment
 
-Picture 4, with its boundaries spelled out.
-
-The **engine** lives in `src/server/engine/`. It is the substantive contribution: a small library of pure functions with no framework imports. Five public functions plus a handful of combinators. This is the idea.
-
-The **per-journey configuration** lives in `src/server/journeys/`. It is the demonstration that the idea works. Two journeys (`eu-live-animals` and `chedpp-plants`) ship as JSON data files and a small resolver file each. Either one can be replaced or extended without touching the engine; adding a third requires no engine changes.
-
-The **UI** lives in `src/server/routes/`, `src/server/common/templates/`, and `src/server/plugins/`. It is demo scaffolding. The four explorer views, the journey-selection page, the Nunjucks templates, and the Hapi plugin glue exist to make the engine's output visible end-to-end and to prove the idea works against real journeys. They are not the idea. A different consumer of this service could ship a completely different UI; the engine and the per-journey configuration would not change. The UI never inspects the journey map directly; the engine resolves the map into a flat render-ready model and hands the UI the result.
-
-The contract between the slices is exactly the engine's input and output: the UI calls `evaluate`, `resolveScreens`, or `rollUpToSections` with a notification and a journey key; the engine reads the journey's configuration; the engine returns `EvaluationResult`, `Screen[]`, or `Section[]` (with an optional `trace` field for diagnostics). Nothing else passes between them.
-
-All three slices run in the same process today. The seams are logical, not physical. The framework-isolation property (zero `@hapi/*` imports under `engine/`) keeps the engine library-shaped, so the UI/engine seam could become an HTTP boundary later without restructuring the engine.
-
-## How the demo runs over HTTP
-
-The `features/http-api/` work surfaces the engine and configuration as **two HTTP API namespaces**, lets the UI consume them over loopback, and documents the lot in a single Swagger page. The architecture is now legible from outside the process — `curl`, Postman, and DevTools see what the audience needs to see.
-
-**Two namespaces, one Swagger UI at `/documentation`:**
-
-| Namespace | Question it answers | Example |
-|---|---|---|
-| `/api/config/*` | *What is the journey?* | `GET /api/config/journeys`, `GET /api/config/journeys/{key}/commodities/{code}/species/{species}` |
-| `/api/engine/*` | *How does this notification evaluate against the journey?* | `POST /api/engine/journeys/{key}/evaluate?withTrace=true`, `.../sections` |
-
-A third, smaller surface `PUT /ui/session/notification` is the UI's "in-memory database" — explicit session persistence that lets the debug page's edits propagate to the task-list view. The browser fires it sequentially before each evaluate so the cross-page bridge is honest, not a side effect.
-
-**Three Postman recipes** that exercise the architecture end-to-end:
-
-```bash
-# 1. List registered journeys (the config side).
-curl http://localhost:3000/api/config/journeys
-
-# 2. Drill into one commodity's driver (Plants apples, MABSD species).
-curl http://localhost:3000/api/config/journeys/chedpp-plants/commodities/0808108090/species/MABSD
-
-# 3. Evaluate a notification (paste the JSON from /explorer/debug's
-#    editor as the request body; ?withTrace=true returns per-obligation
-#    diagnostic trace steps).
-curl -X POST \
-  http://localhost:3000/api/engine/journeys/eu-live-animals/evaluate?withTrace=true \
-  -H 'content-type: application/json' \
-  -d '{"origin":{"country":"NL"},"commodities":[{"id":"21044150"}]}'
-```
-
-**Demo framing — not a microservice split.** Two namespaces, one Hapi process, one shared evaluation-engine facade. The engine needs the resolvers (per-journey JavaScript), and resolvers presuppose refdata shape, so config and engine ship together. What we gained by extracting the boundary is *visibility*: the audience can hit the same endpoints the UI hits, see the JSON the engine returns, and read the contract on Swagger UI in the browser. The `/commodities/{code}` endpoint is the FE's SDUI narrative primitive — *"origin → commodity → which downstream pages now apply"*.
-
-**Lift-out invariant — fully enforced (Stories 05a/05b/06):** every file under `src/server/routes/` consumes the backend exclusively over HTTP. An ESLint `no-restricted-imports` rule across `src/server/routes/**/*.js` blocks direct imports from `#server/engine/*` and `#server/plugins/evaluation-engine/*`, with no exceptions. A transitive-import isolation test (`src/server/routes/explorer/_isolation.test.js`) scans every non-test source file under the routes tree and fails the build if any engine module is reached. The codebase could be lifted to a separate deployment, pointed at a different host via `apiBaseUrl`, and render identically.
-
-**Trade-off worth flagging:** Story 06 removed the registration-time fail-fast in the explorer plugin (which previously validated the configured `JOURNEY` against the in-process engine at boot). `JOURNEY=garbage npm start` now boots successfully; the first page render surfaces the misconfiguration as a 500. This is deliberate — registration-time engine reads are incompatible with the lift-out invariant. CI scripts that asserted boot-time failure on bad config need updating.
-
-**Pointers:**
-- Full design rationale: `features/http-api/design.md`.
-- Manual smoke checklist (12 steps, ~5 min): `features/http-api/design.md` § "Smoke checklist".
-- Drift canary: `src/server/plugins/http-api/parity.test.js` — facade vs HTTP for every scenario × journey × `withTrace` mode.
-
-## Today's spike, tomorrow's service
-
-What the spike proves:
+What ships today:
 
 - **One engine, two journeys.** No journey-specific code lives in `engine/`. Adding a third adapter requires zero engine changes.
-- **Drift is structurally impossible.** The same engine call that drives `/explorer/tasklist` is what gates submission. Two paths, one truth.
-- **The kernel-adapter boundary is machine-enforced.** A test statically imports every file under `engine/` and asserts the module graph contains no `@hapi/*` dependency.
+- **HTTP is the surface.** Every page render reaches the backend through `/api/config/*`, `/api/engine/*`, or `/ui/session/*`. The Network tab in any browser shows the calls.
+- **Drift is structurally impossible.** The same engine call that drives `/explorer/tasklist` is what would gate submission. Two paths, one truth, both over the same HTTP surface.
+- **The kernel-adapter boundary is machine-enforced.** A test imports every file under `engine/` and asserts the module graph contains no `@hapi/*` dependency. A second test walks every file under `src/server/routes/` and asserts none reaches the engine in-process.
+- **The lift-out invariant holds.** The UI codebase could be deployed separately and pointed at a remote backend via `apiBaseUrl` without code changes.
 - **Refdata fits in small JSON files.** Animals refdata is a few hundred routing entries; plants refdata is ~6,000 entries derived from a 486K-pair production source by recognising that 98.9% of the source carried no journey variance.
 - **Runtime journey switching works.** The picker at `/journey-selection` switches the active journey at request time; the engine resolves the new adapter and reuses the same evaluation surface.
 
-What a future *journey configuration service* would add on top:
+What a future *journey configuration service* would add:
 
-- **An HTTP boundary** over the engine. The engine functions become a service API. No change to engine internals - the framework-isolation discipline already keeps the engine shaped as a library.
+- **A deploy boundary** at the existing wire. The HTTP seam is in place; the work is moving the backend to a separate process and pointing `apiBaseUrl` at it. No engine or UI rework needed.
 - **A registry** that loads journey adapters at deploy or runtime, rather than the hardcoded list this spike ships.
 - **Versioning** for the JSON artefacts (`obligations.json`, `journey.json`, `refdata.json`) so consumers can pin to a known schema and migrations stay explicit.
-- **A comprehensive validator** that emits structured `Issue` reports for the coherence rules an adapter must satisfy (every `obligationRef` resolves; every condition `fact` and `test` exists; every `schemaPath` is a dot-notation string; etc.). Today the engine fails fast on the first violation it encounters; a richer validator would surface all issues in one pass.
+- **A comprehensive validator** that emits structured `Issue` reports for the coherence rules an adapter must satisfy (every `obligationRef` resolves; every condition `fact` and `test` exists; every `schemaPath` is a dot-notation string). Today the engine fails fast on the first violation it encounters; a richer validator would surface all issues in one pass.
 
 The replacement story for field config:
 
 - **Today.** Field config holds form structure in one service; refdata in another; journey rules in handler code inside the IPAFFS notification frontend. A change that crosses two of those concerns crosses two systems.
-- **With this service.** Form structure (`journey.json`), rules (`obligations.json` + `resolvers.js`), and refdata (`refdata.json`) are co-located per journey behind one evaluation surface. A consumer asking "what should this user see next, and what's required for submission?" calls one service, not three.
+- **With this service.** Form structure (`journey.json`), rules (`obligations.json` + `resolvers.js`), and refdata (`refdata.json`) are co-located per journey behind one HTTP surface. A consumer asking "what should this user see next, and what's required for submission?" calls one service, not three.
 
 ## Where to read deeper
 
-- `src/server/journeys/chedpp-plants/research.md` for the plants data model, the production distribution behind the refdata file, and the GMS-declaration predicate cited to its source in IPAFFS.
+- [README.md](./README.md) for the operational entry point: quick start, Swagger UI, `curl` recipes, Postman import.
+- `features/http-api/design.md` for the HTTP design rationale: decisions, deferred questions, smoke checklist.
 - `src/server/engine/` for the engine source. Five files plus `types.js`; under 600 lines of code.
 - `src/server/journeys/eu-live-animals/` and `src/server/journeys/chedpp-plants/` for the two working adapters.
-- `src/server/routes/explorer/` for the four views that exercise the engine end-to-end against either journey: the journey config view, the task list, the evaluation debugger, and the commodity config inspector.
+- `src/server/journeys/chedpp-plants/research.md` for the plants data model, the production distribution behind the refdata file, and the GMS-declaration predicate cited to its source in IPAFFS.
+- `src/server/routes/explorer/` for the four views that exercise the engine end-to-end against either journey.
+- `src/server/plugins/http-api/parity.test.js` as the drift canary: facade vs HTTP for every scenario × journey × `withTrace` mode.
 
 ## Appendix A: why field config is an antipattern
 
