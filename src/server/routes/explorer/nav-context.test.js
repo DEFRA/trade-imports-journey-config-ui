@@ -1,34 +1,49 @@
-import { describe, test, expect, afterEach } from 'vitest'
-import { currentJourneyKey } from './nav-context.js'
+import {
+  describe,
+  test,
+  expect,
+  afterEach,
+  beforeEach,
+  vi
+} from 'vitest'
+
+
+// Module-spy on the journey-api-client so navContext tests can override
+// listJourneys per-test. Default delegate is set in beforeEach.
+vi.mock('#server/clients/journey-api-client.js', async () => {
+  const actual = await vi.importActual('#server/clients/journey-api-client.js')
+  return {
+    ...actual,
+    clientForRequest: vi.fn()
+  }
+})
+
+import { currentJourneyKey, navContext } from './nav-context.js'
+import {
+  clientForRequest,
+  ApiError
+} from '#server/clients/journey-api-client.js'
 import { config } from '#config/config.js'
 
 /**
- * Behaviour & intent (Story 04 §1):
- *   `currentJourneyKey` is the single source for "what journey is
- *   this request being served as?". Session value wins when present
- *   and registered; otherwise the boot default (`config.get('journey')`)
- *   wins.
+ * Behaviour & intent (Story 06):
+ *   `currentJourneyKey` reads the session value and returns it, or
+ *   falls back to the boot default if absent/empty. No validation —
+ *   stale-session keys flow downstream where they surface as page
+ *   render failures (acceptable per the lift-out principle:
+ *   feedback_ui_http_first.md).
  *
- *   The fallback is load-bearing for the stale-session case — a
- *   `yar.journey` value pointing at a journey that's been removed
- *   from `listJourneys()` (e.g. registry change between sessions)
- *   must degrade gracefully to the boot default rather than crash
- *   `getJourney` downstream. Integration tests can't easily simulate
- *   a stale session against a real engine, so the unit test is the
- *   only place this branch is covered.
+ *   `navContext` fetches the journey list over HTTP. There is NO
+ *   in-process fallback — an HTTP failure surfaces as a thrown error,
+ *   and the page returns 500 honestly.
  */
 
-const stubRequest = ({ session = null, known = ['eu-live-animals', 'chedpp-plants'] } = {}) => ({
+const stubRequest = (session = null) => ({
   yar: {
     get: (key) => (key === 'journey' ? session : null)
   },
-  server: {
-    app: {
-      evaluationEngine: {
-        listJourneys: () => known
-      }
-    }
-  }
+  server: { info: { uri: 'http://localhost:3001' } },
+  headers: {}
 })
 
 describe('currentJourneyKey', () => {
@@ -36,30 +51,70 @@ describe('currentJourneyKey', () => {
     config.set('journey', 'eu-live-animals')
   })
 
-  test('returns session value when set and registered', () => {
+  test('returns the session value when present', () => {
     config.set('journey', 'eu-live-animals')
-    const request = stubRequest({ session: 'chedpp-plants' })
-
-    expect(currentJourneyKey(request)).toBe('chedpp-plants')
+    expect(currentJourneyKey(stubRequest('chedpp-plants'))).toBe('chedpp-plants')
   })
 
-  test('falls back to config when no session value is set', () => {
-    config.set('journey', 'chedpp-plants')
-    const request = stubRequest({ session: null })
+  test.each([null, undefined, ''])(
+    'falls back to config default when session value is %p',
+    (session) => {
+      config.set('journey', 'chedpp-plants')
+      expect(currentJourneyKey(stubRequest(session))).toBe('chedpp-plants')
+    }
+  )
 
-    expect(currentJourneyKey(request)).toBe('chedpp-plants')
+  test('returns a stale session value verbatim (no validation)', () => {
+    // Story 06 deliberately drops the stale-session guard. A session
+    // pointing at an unregistered journey is returned as-is; failure
+    // surfaces downstream (picker / explorer pages) where it has
+    // meaningful UI to report it.
+    config.set('journey', 'eu-live-animals')
+    expect(currentJourneyKey(stubRequest('removed-journey'))).toBe(
+      'removed-journey'
+    )
+  })
+})
+
+describe('navContext', () => {
+  beforeEach(() => {
+    // Default: clientForRequest returns a fake client whose listJourneys
+    // returns a known list. Per-test overrides via mockImplementation.
+    clientForRequest.mockImplementation(() => ({
+      listJourneys: async () => [
+        { key: 'eu-live-animals', name: 'eu-live-animals' },
+        { key: 'chedpp-plants', name: 'chedpp-plants' }
+      ]
+    }))
   })
 
-  test('falls back to config when the session names an unregistered journey (stale session)', () => {
-    // Simulates a session cookie carried across a registry change —
-    // the named journey no longer appears in listJourneys(). The
-    // resolver must degrade to the boot default, not crash later.
+  afterEach(() => {
+    clientForRequest.mockReset()
+  })
+
+  test('returns { journeyKey, journeyOptions } with selected wired from the session', async () => {
     config.set('journey', 'eu-live-animals')
-    const request = stubRequest({
-      session: 'old-removed-journey',
-      known: ['eu-live-animals', 'chedpp-plants']
+    const result = await navContext(stubRequest('chedpp-plants'))
+
+    expect(result).toEqual({
+      journeyKey: 'chedpp-plants',
+      journeyOptions: [
+        { value: 'eu-live-animals', text: 'eu-live-animals', selected: false },
+        { value: 'chedpp-plants', text: 'chedpp-plants', selected: true }
+      ]
     })
+  })
 
-    expect(currentJourneyKey(request)).toBe('eu-live-animals')
+  test('throws when listJourneys rejects — no silent fallback', async () => {
+    // Story 06: the in-process engine fallback is removed. A
+    // loopback HTTP failure must surface, not be swallowed.
+    clientForRequest.mockImplementation(() => ({
+      listJourneys: () =>
+        Promise.reject(new ApiError(500, 'GET', 'http://x/journeys', 'boom'))
+    }))
+
+    await expect(navContext(stubRequest('eu-live-animals'))).rejects.toThrow(
+      ApiError
+    )
   })
 })

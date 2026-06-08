@@ -1,4 +1,3 @@
-import { config } from '#config/config.js'
 import { journeyController } from './journey-controller.js'
 import { debugController } from './debug-controller.js'
 import { tasklistController } from './tasklist-controller.js'
@@ -21,25 +20,17 @@ import { journeyPickerController } from './journey-picker-controller.js'
  * NOTE: POST /explorer/debug/evaluate was deleted in Story 03. The
  * browser JS now POSTs directly to /api/engine/journeys/{key}/evaluate
  * for compute and PUT /ui/session/notification for state persistence.
+ *
+ * Story 06: this plugin no longer reads the in-process engine at
+ * registration time. The configured `JOURNEY` env var is trusted; a
+ * misconfigured journey surfaces on the first page render rather
+ * than at boot. This preserves the lift-out invariant — the routes
+ * are portable to a separate deployment.
  */
 export const explorer = {
   plugin: {
     name: 'explorer',
     register(server) {
-      // Fail fast if the configured JOURNEY is not registered with the engine.
-      // Journey *selection* is an explorer concern; the engine stays
-      // selection-agnostic. The evaluation-engine plugin registers before the
-      // router (and therefore before us), so server.app.evaluationEngine is
-      // already bound by the time we run.
-      const configured = config.get('journey')
-      const known = server.app.evaluationEngine.listJourneys()
-      if (!known.includes(configured)) {
-        throw new Error(
-          `Configured JOURNEY "${configured}" is not registered. ` +
-            `Known journeys: ${known.join(', ')}`
-        )
-      }
-
       server.route([
         {
           method: 'GET',

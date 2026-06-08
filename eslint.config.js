@@ -44,11 +44,4 @@ export default [
       ]
     }
   },
-  // Deliberate carve-out for nav-context.js — Story 06 closes this
-  // last gap (currentJourneyKey validation + listJourneys fallback)
-  // and removes this block.
-  {
-    files: ['src/server/routes/explorer/nav-context.js'],
-    rules: { 'no-restricted-imports': 'off' }
-  }
 ]

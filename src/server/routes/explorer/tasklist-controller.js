@@ -1,11 +1,11 @@
 import { clientForRequest } from '#server/clients/journey-api-client.js'
 import { navContext } from './nav-context.js'
 
-// Wire values from the engine's screen-status enum. Hardcoded here as
-// HTTP contract literals (the engine's response Joi schema enforces
-// them at the API boundary). Avoids a direct import from #server/engine
-// so this route stays HTTP-only. The fallback at the lookup site
-// gracefully handles any future drift.
+// Wire values from the screen-status enum. Hardcoded here as HTTP
+// contract literals (the response Joi schema enforces them at the API
+// boundary). Avoids a direct in-process engine import so this route
+// stays HTTP-only. The fallback at the lookup site gracefully handles
+// any future drift.
 const CANNOT_START_YET = 'cannotStartYet'
 const SCREEN_STATUS_TAGS = {
   complete: { text: 'Done', classes: 'govuk-tag--green' },

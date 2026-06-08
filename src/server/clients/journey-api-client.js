@@ -200,10 +200,8 @@ export const clientForRequest = (request) =>
   })
 
 /**
- * Normalise a journey-list entry to its bare key string. The HTTP
- * `listJourneys` returns summary objects (`{ key, name, ... }`); the
- * in-process fallback returns bare key strings. Callers that just want
- * the keys can `journeys.map(extractJourneyKey)` regardless of source.
+ * Pull the bare key string out of a `listJourneys` summary object.
+ * Kept as a named alias for grep-ability at call sites — readability
+ * win over inlining `j => j.key`.
  */
-export const extractJourneyKey = (entry) =>
-  typeof entry === 'string' ? entry : (entry?.key ?? '')
+export const extractJourneyKey = (entry) => entry?.key ?? ''

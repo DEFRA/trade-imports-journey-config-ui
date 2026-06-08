@@ -31,9 +31,9 @@ const toScenarioSelectItems = (scenarios, selected) => {
 /**
  * GET /explorer handler (scenario-based journey configuration)
  *
- * Loads a scenario from query param (?scenario=X), session, or shows empty state.
- * Uses the evaluation engine via server.app.evaluationEngine and resolves the
- * configured journey's scenario data through the facade.
+ * Loads a scenario from query param (?scenario=X), session, or shows
+ * empty state. Resolves the configured journey's scenario data through
+ * the HTTP journey-api-client.
  */
 export const journeyController = {
   async handler(request, h) {

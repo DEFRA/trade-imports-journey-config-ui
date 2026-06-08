@@ -19,17 +19,10 @@ export const journeyPickerController = {
   async handler(request, h) {
     const client = clientForRequest(request)
     const target = request.payload?.journey
-    // Same loopback-failure tolerance as navContext: a 500 from the API
-    // must not turn a journey-switch POST into a 500 of its own. Fall
-    // back to the in-process facade for validation; the user still
-    // gets a clean response.
-    const journeys = await client.listJourneys().catch((error) => {
-      request.logger.warn(
-        { err: error },
-        'journey-picker: listJourneys over HTTP failed; falling back to in-process facade for target validation'
-      )
-      return request.server.app.evaluationEngine.listJourneys()
-    })
+    // Story 06: no in-process fallback. An HTTP failure surfaces as
+    // 500. On loopback that's honest — if the API is wedged the
+    // server can't serve the page anyway.
+    const journeys = await client.listJourneys()
     const knownKeys = journeys.map(extractJourneyKey)
 
     if (!target || !knownKeys.includes(target)) {
