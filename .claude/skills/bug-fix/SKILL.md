@@ -1,6 +1,7 @@
 ---
 name: bug-fix
 description: Test-first bug-fix workflow — write a failing regression test before any code change, fix minimally, then verify. Use when fixing a defect in this codebase.
+disable-model-invocation: true
 ---
 
 # Bug Fix Workflow

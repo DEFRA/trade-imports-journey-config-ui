@@ -1,3 +1,8 @@
+---
+name: report-writing
+description: Enforce rigor in technical analysis reports intended for another AI to consume — show raw data before interpretation, define domain terms with contrasting examples, prevent jargon and hallucination. Use when producing data-analysis reports or research summaries with quantitative claims.
+---
+
 # Report Writing Skill
 
 ## When to use / when not to use

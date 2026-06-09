@@ -1,6 +1,7 @@
 ---
 name: create-stories
 description: Extract delivery stories from a design conversation or document. Strip the conversation of noise, Example Map each decision, sequence by dependency and walking skeleton, write feature README and story files using the project template.
+disable-model-invocation: true
 ---
 
 ## Purpose
