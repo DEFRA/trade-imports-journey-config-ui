@@ -47,10 +47,7 @@ const lookupRefdata = (table, commodity) => {
 // Condition tests
 // ---------------------------------------------------------------------------
 
-const TRANSIT_PURPOSES = [
-  'For Transhipment to',
-  'For Transit to 3rd Country'
-]
+const TRANSIT_PURPOSES = ['For Transhipment to', 'For Transit to 3rd Country']
 
 const IDENTIFIER_NONE = 'NONE'
 
@@ -64,10 +61,14 @@ const tests = {
 
   requiresIdentification: (commodity, refdata) => {
     const content = lookupRefdata(refdata.content, commodity)
-    if (!content) return { active: false, reason: 'no refdata content for commodity' }
+    if (!content) {
+      return { active: false, reason: 'no refdata content for commodity' }
+    }
     const idRef = content.identifiers
     const idSet = refdata.definitions?.identifier_sets?.[idRef]
-    if (!idSet) return { active: false, reason: `identifier set ${idRef} not found` }
+    if (!idSet) {
+      return { active: false, reason: `identifier set ${idRef} not found` }
+    }
     const isNone = idSet.length === 1 && idSet[0] === IDENTIFIER_NONE
     return {
       active: !isNone,
@@ -79,27 +80,37 @@ const tests = {
 
   requiresCertification: (commodity, refdata) => {
     const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     const flag = routing.has_certified_as === true
     return {
       active: flag,
-      reason: flag ? 'commodity requires certification' : 'commodity does not require certification'
+      reason: flag
+        ? 'commodity requires certification'
+        : 'commodity does not require certification'
     }
   },
 
   requiresWeaningStatus: (commodity, refdata) => {
     const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     const flag = routing.has_unweaned === true
     return {
       active: flag,
-      reason: flag ? 'commodity requires weaning status' : 'commodity does not require weaning status'
+      reason: flag
+        ? 'commodity requires weaning status'
+        : 'commodity does not require weaning status'
     }
   },
 
   requiresPermanentAddress: (commodity, refdata) => {
     const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     return {
       active: routing.permanent_address === true,
       reason: routing.permanent_address
@@ -110,7 +121,9 @@ const tests = {
 
   requiresCphNumber: (commodity, refdata) => {
     const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     return {
       active: routing.cph_number === true,
       reason: routing.cph_number
@@ -121,7 +134,9 @@ const tests = {
 
   requiresTransporter: (commodity, refdata) => {
     const routing = lookupRefdata(refdata.routing, commodity)
-    if (!routing) return { active: false, reason: 'no refdata routing for commodity' }
+    if (!routing) {
+      return { active: false, reason: 'no refdata routing for commodity' }
+    }
     return {
       active: routing.transporter_address === true,
       reason: routing.transporter_address

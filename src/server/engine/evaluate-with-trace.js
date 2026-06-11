@@ -26,7 +26,12 @@ export const evaluateWithTrace = (notification, adapter) => {
   const canonicalById = new Map(canonical.obligations.map((o) => [o.id, o]))
 
   const traced = obligations.map((obligation) => {
-    const result = traceObligation(obligation, notification, refdata, journeyResolver)
+    const result = traceObligation(
+      obligation,
+      notification,
+      refdata,
+      journeyResolver
+    )
     assertEquivalence(canonicalById.get(obligation.id), result)
     return result
   })
@@ -34,7 +39,12 @@ export const evaluateWithTrace = (notification, adapter) => {
   return { obligations: traced, summary: canonical.summary }
 }
 
-const traceObligation = (obligation, notification, refdata, journeyResolver) => {
+const traceObligation = (
+  obligation,
+  notification,
+  refdata,
+  journeyResolver
+) => {
   const { id, condition, schemaPaths } = obligation
   const steps = []
   const trace = condition
@@ -53,10 +63,20 @@ const traceObligation = (obligation, notification, refdata, journeyResolver) => 
     if (conditionResult) return { ...conditionResult, trace }
   }
 
-  return { ...traceSatisfaction(id, schemaPaths, notification, journeyResolver, steps), trace }
+  return {
+    ...traceSatisfaction(id, schemaPaths, notification, journeyResolver, steps),
+    trace
+  }
 }
 
-const traceCondition = (id, condition, notification, refdata, journeyResolver, steps) => {
+const traceCondition = (
+  id,
+  condition,
+  notification,
+  refdata,
+  journeyResolver,
+  steps
+) => {
   const { fact, test } = condition
 
   const factExtractor = journeyResolver.facts[fact]
@@ -90,9 +110,18 @@ const traceCondition = (id, condition, notification, refdata, journeyResolver, s
   return null
 }
 
-const traceSatisfaction = (id, schemaPaths, notification, journeyResolver, steps) => {
+const traceSatisfaction = (
+  id,
+  schemaPaths,
+  notification,
+  journeyResolver,
+  steps
+) => {
   if (!schemaPaths || schemaPaths.length === 0) {
-    const submissionDate = resolvePath(notification, journeyResolver.submissionDatePath)
+    const submissionDate = resolvePath(
+      notification,
+      journeyResolver.submissionDatePath
+    )
     const satisfied = !isEmpty(submissionDate)
     steps.push({
       step: 'action-check',
@@ -103,7 +132,9 @@ const traceSatisfaction = (id, schemaPaths, notification, journeyResolver, steps
     })
     return {
       id,
-      status: satisfied ? OBLIGATION_STATUS.SATISFIED : OBLIGATION_STATUS.UNSATISFIED,
+      status: satisfied
+        ? OBLIGATION_STATUS.SATISFIED
+        : OBLIGATION_STATUS.UNSATISFIED,
       missingPaths: []
     }
   }

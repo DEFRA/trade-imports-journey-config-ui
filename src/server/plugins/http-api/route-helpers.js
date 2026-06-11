@@ -8,9 +8,7 @@ export const lookupJourney = (engine, key) =>
 // 404 with the standard error envelope. Centralised so every handler
 // renders the same shape.
 export const notFound = (h, message) =>
-  h
-    .response({ error: 'Not Found', message })
-    .code(statusCodes.notFound)
+  h.response({ error: 'Not Found', message }).code(statusCodes.notFound)
 
 // All per-journey routes share the same opening dance: read {key} from
 // params, resolve the journey or 404. Extracting it leaves each handler

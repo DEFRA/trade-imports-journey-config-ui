@@ -50,9 +50,7 @@ export const buildCommodityValue = (journeyKey, commodityKey) => {
     // is no species axis (parseCommodityKey yields an empty species).
     return { id: commodityID }
   }
-  throw new Error(
-    `buildCommodityValue: unknown journey '${journeyKey}'`
-  )
+  throw new Error(`buildCommodityValue: unknown journey '${journeyKey}'`)
 }
 
 /**
@@ -111,7 +109,9 @@ const buildScreenRow = (
     ...new Map(driverObligations.map((o) => [o.id, o])).values()
   ]
 
-  const drivers = uniqueDrivers.map((o) => runDriver(o, journey, commodityValue))
+  const drivers = uniqueDrivers.map((o) =>
+    runDriver(o, journey, commodityValue)
+  )
 
   return [
     {

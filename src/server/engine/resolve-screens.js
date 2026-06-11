@@ -27,9 +27,7 @@ export const resolveScreens = (result, journeyMap) => {
     throw new Error('resolveScreens: journeyMap must have sections array')
   }
 
-  const obligationById = new Map(
-    result.obligations.map((o) => [o.id, o])
-  )
+  const obligationById = new Map(result.obligations.map((o) => [o.id, o]))
 
   return journeyMap.sections.flatMap((section) =>
     section.screens.map((screen) =>

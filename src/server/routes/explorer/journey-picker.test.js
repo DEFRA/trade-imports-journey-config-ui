@@ -146,9 +146,7 @@ describe('POST /explorer/journey (runtime picker)', () => {
       url: '/explorer/debug',
       headers: cookie ? { cookie } : {}
     })
-    expect(beforeDebug.result).toEqual(
-      expect.stringContaining('Bos taurus')
-    )
+    expect(beforeDebug.result).toEqual(expect.stringContaining('Bos taurus'))
 
     // Switch to plants — zero-on-change should wipe yar.notification.
     const switchResponse = await postJourney('chedpp-plants', cookie)
@@ -161,9 +159,7 @@ describe('POST /explorer/journey (runtime picker)', () => {
     })
 
     expect(afterDebug.statusCode).toBe(statusCodes.ok)
-    expect(afterDebug.result).not.toEqual(
-      expect.stringContaining('Bos taurus')
-    )
+    expect(afterDebug.result).not.toEqual(expect.stringContaining('Bos taurus'))
   })
 
   // ---------------------------------------------------------------------------
@@ -236,28 +232,29 @@ describe('POST /explorer/journey (runtime picker)', () => {
     '/explorer/tasklist',
     '/explorer/debug',
     '/explorer/commodity-config'
-  ])('explorer page %s shows the journey indicator and no picker form', async (path) => {
-    const { result, statusCode } = await server.inject({
-      method: 'GET',
-      url: path
-    })
+  ])(
+    'explorer page %s shows the journey indicator and no picker form',
+    async (path) => {
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: path
+      })
 
-    expect(statusCode).toBe(statusCodes.ok)
-    // Default journey (no session) is eu-live-animals. The literal
-    // markup substring catches the specific regression a controller
-    // that forgets to spread navContext would create — the indicator
-    // would render as empty `<strong></strong>` and this assertion
-    // fails.
-    expect(result).toEqual(
-      expect.stringContaining(
-        'Journey: <strong>eu-live-animals</strong>'
+      expect(statusCode).toBe(statusCodes.ok)
+      // Default journey (no session) is eu-live-animals. The literal
+      // markup substring catches the specific regression a controller
+      // that forgets to spread navContext would create — the indicator
+      // would render as empty `<strong></strong>` and this assertion
+      // fails.
+      expect(result).toEqual(
+        expect.stringContaining('Journey: <strong>eu-live-animals</strong>')
       )
-    )
-    // The picker form must NOT appear on explorer pages anymore.
-    expect(result).not.toEqual(
-      expect.stringContaining('action="/explorer/journey"')
-    )
-  })
+      // The picker form must NOT appear on explorer pages anymore.
+      expect(result).not.toEqual(
+        expect.stringContaining('action="/explorer/journey"')
+      )
+    }
+  )
 
   // ---------------------------------------------------------------------------
   // Story 03: journey-key round-trip

@@ -11,6 +11,7 @@ This story also **drops the cross-commodity variance computation entirely** — 
 Story 05a added the page-variance endpoints. This story consumes them from the controller. The result: the commodity-config page is built over HTTP end-to-end (modulo `nav-context.js`, which Story 06 closes).
 
 The variance cull removes complexity that didn't earn its keep:
+
 - The cross-commodity aggregation served only the meta-rarity panel; not the "commodity drives the page" narrative.
 - Exposing it over HTTP would have required WeakMap memoisation (a test-mode hazard the second-round review flagged) and a journey-asymmetric coupling guard test (plants-only, with animals untestable in the same shape).
 - The presentation helpers `annotateValues` and `computeAbsentValues` are dead once `computeVariance` is gone.
@@ -47,6 +48,7 @@ Two branches:
 **No-commodity branch** (no `?commodity=`): one HTTP call for the commodity dropdown.
 
 **With-commodity branch**: four parallel HTTP calls via `Promise.all`:
+
 - `client.getCommodities(journeyKey)` — dropdown population.
 - `client.getRefdataView(journeyKey, { commodity, species })` — dimensions and details.
 - `client.getPageVariance(journeyKey, commodityID, speciesName || undefined)` — SDUI page-variance panel.
@@ -84,23 +86,28 @@ In `src/server/routes/explorer/views/commodity-config.njk`:
 import neostandard from 'neostandard'
 
 export default [
-  ...neostandard({ /* existing options */ }),
+  ...neostandard({
+    /* existing options */
+  }),
   {
     files: ['src/server/routes/**/*.js'],
     rules: {
-      'no-restricted-imports': ['error', {
-        patterns: [
-          {
-            group: [
-              '#server/engine/*',
-              '#server/plugins/evaluation-engine/*'
-            ],
-            message:
-              'UI route handlers must consume the engine over HTTP, ' +
-              'not in-process. See features/http-api/design.md.'
-          }
-        ]
-      }]
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '#server/engine/*',
+                '#server/plugins/evaluation-engine/*'
+              ],
+              message:
+                'UI route handlers must consume the engine over HTTP, ' +
+                'not in-process. See features/http-api/design.md.'
+            }
+          ]
+        }
+      ]
     }
   },
   // Carve-out for nav-context.js. Story 06 closes this last gap and
@@ -128,7 +135,7 @@ Any matches outside `nav-context.js` need handling — either resolve in-place (
 
 ### 5. design.md ledger
 
-- Move DQ4 out of *Deferred questions* into *Decisions*. The decision row:
+- Move DQ4 out of _Deferred questions_ into _Decisions_. The decision row:
   - Per-commodity page-variance: exposed via HTTP (`/commodities/{code}/page-variance`, Story 05a).
   - Cross-commodity variance: **dropped**, not exposed. Rarity badges and total counter removed from the UI.
   - `analytics/` relocation rationale.
@@ -148,11 +155,11 @@ Existing tests need adjustment: the `Promise.all` fan-out changes the wire patte
 
 **Defensive guard table (per second-review patch — four cases, not one):**
 
-| `?commodity=` query | Expected branch |
-|---|---|
-| empty (`?commodity=`) | no-commodity render |
-| whitespace (`?commodity=%20`) | no-commodity render |
-| species-without-id (`?commodity=|MABSD`) | no-commodity render |
+| `?commodity=` query                                   | Expected branch                                                 |
+| ----------------------------------------------------- | --------------------------------------------------------------- | ------------------- |
+| empty (`?commodity=`)                                 | no-commodity render                                             |
+| whitespace (`?commodity=%20`)                         | no-commodity render                                             |
+| species-without-id (`?commodity=                      | MABSD`)                                                         | no-commodity render |
 | well-formed key with no detail row (`?commodity=zzz`) | with-commodity render; `commodityDriver` is `null`; warn logged |
 
 **Fail-loud asymmetry** — one test per fetch:
@@ -234,8 +241,8 @@ npm run dev
 
 ## Resolved by this story
 
-- **DQ4** — *"Should cross-commodity variance computation be exposed via an HTTP endpoint?"*. Resolved: **no, dropped**. Per-commodity page-variance is exposed (Story 05a); cross-commodity rarity is removed from the UI rather than relocated to an HTTP endpoint.
+- **DQ4** — _"Should cross-commodity variance computation be exposed via an HTTP endpoint?"_. Resolved: **no, dropped**. Per-commodity page-variance is exposed (Story 05a); cross-commodity rarity is removed from the UI rather than relocated to an HTTP endpoint.
 
 ## Opened by this story
 
-- **Story 06** — *"Remove the in-process engine reads from nav-context.js. The last remaining gap in the lift-out invariant."*
+- **Story 06** — _"Remove the in-process engine reads from nav-context.js. The last remaining gap in the lift-out invariant."_

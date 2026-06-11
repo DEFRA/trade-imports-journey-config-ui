@@ -44,7 +44,7 @@ flowchart LR
     ja --drives--> cv
 ```
 
-> **Hold in mind:** one journey, one place to read. Two kinds of question - *which pages?* and *which fields on a page?* - answered from the same configuration.
+> **Hold in mind:** one journey, one place to read. Two kinds of question - _which pages?_ and _which fields on a page?_ - answered from the same configuration.
 
 ### Picture 2: the inter-relation
 
@@ -63,7 +63,7 @@ flowchart LR
 
 For a given notification, the engine answers: which obligations are satisfied; which screens are complete, cannot-start-yet, or do not apply; whether the notification is submittable. That output is the only thing a renderer needs.
 
-> **Hold in mind:** the configuration doesn't just render forms - it can be *reasoned over*. The same engine call that gates submission produces the data the task-list view consumes, so drift between what is shown and what is accepted is structurally impossible.
+> **Hold in mind:** the configuration doesn't just render forms - it can be _reasoned over_. The same engine call that gates submission produces the data the task-list view consumes, so drift between what is shown and what is accepted is structurally impossible.
 
 ### Picture 3: the evaluation dataflow
 
@@ -89,7 +89,7 @@ flowchart LR
 
 ### Picture 4: the HTTP surface
 
-The same dataflow, surfaced over HTTP. The UI consumes its own backend via loopback `fetch` - real HTTP, real wire format, visible in the Network tab. Three URL namespaces over one Hapi process: `/api/config/*` answers *what is the journey?*, `/api/engine/*` answers *how does this notification evaluate?*, `/ui/session/*` holds cross-page state the UI needs between renders.
+The same dataflow, surfaced over HTTP. The UI consumes its own backend via loopback `fetch` - real HTTP, real wire format, visible in the Network tab. Three URL namespaces over one Hapi process: `/api/config/*` answers _what is the journey?_, `/api/engine/*` answers _how does this notification evaluate?_, `/ui/session/*` holds cross-page state the UI needs between renders.
 
 ```mermaid
 flowchart LR
@@ -118,13 +118,13 @@ flowchart LR
 
 The three namespaces answer three distinct questions. Swagger UI at `/documentation` documents them as three tag groups; the same OpenAPI spec serves Postman at `/swagger.json`.
 
-| Namespace | Question | Headline endpoints |
-| --- | --- | --- |
-| `/api/config/*` | What is the journey? | `GET /api/config/journeys`, `GET /api/config/journeys/{key}/commodities/{code}`, `.../commodities/{code}/page-variance` |
-| `/api/engine/*` | How does this notification evaluate? | `POST /api/engine/journeys/{key}/evaluate`, `.../screens`, `.../sections` |
-| `/ui/session/*` | What state needs to persist between pages? | `PUT /ui/session/notification` |
+| Namespace       | Question                                   | Headline endpoints                                                                                                      |
+| --------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `/api/config/*` | What is the journey?                       | `GET /api/config/journeys`, `GET /api/config/journeys/{key}/commodities/{code}`, `.../commodities/{code}/page-variance` |
+| `/api/engine/*` | How does this notification evaluate?       | `POST /api/engine/journeys/{key}/evaluate`, `.../screens`, `.../sections`                                               |
+| `/ui/session/*` | What state needs to persist between pages? | `PUT /ui/session/notification`                                                                                          |
 
-**The per-commodity endpoint is the SDUI narrative primitive.** The frontend asks `GET /api/config/journeys/{key}/commodities/{code}` to learn what selecting a commodity unlocks: routing flags, regulatory authority, marketing standard, and so on. Combined with `/api/engine/.../sections`, this is enough to tell the user *"origin → commodity → these downstream pages now apply"* before they fill in any field.
+**The per-commodity endpoint is the SDUI narrative primitive.** The frontend asks `GET /api/config/journeys/{key}/commodities/{code}` to learn what selecting a commodity unlocks: routing flags, regulatory authority, marketing standard, and so on. Combined with `/api/engine/.../sections`, this is enough to tell the user _"origin → commodity → these downstream pages now apply"_ before they fill in any field.
 
 **`/ui/session/notification` makes cross-page state explicit.** The debug page lets users edit a notification JSON in a textarea; the task-list view renders against that notification on a different request. Without explicit session persistence, the bridge between pages would be a side effect of the evaluate route. Exposing it as a `PUT` keeps the wiring visible.
 
@@ -142,7 +142,7 @@ The vocabulary, in words. No code yet.
 
 **Obligation.** A declarative requirement: a statement of what the notification must contain, with a rationale. An obligation asks a **question** of a notification ("is this data present?"). An obligation may carry a **condition** that decides whether the question applies at all.
 
-**Condition, fact, test.** A condition names two things: a *fact* - an extractor that reads a value off the notification - and a *test* - a predicate that decides, from that value and the journey's reference data, whether the condition is active. Both are named by string in the JSON and resolved against the journey's resolver code at evaluation time. The id-string indirection is deliberate: the JSON files stay declarative; behaviour lives in code where it can be tested.
+**Condition, fact, test.** A condition names two things: a _fact_ - an extractor that reads a value off the notification - and a _test_ - a predicate that decides, from that value and the journey's reference data, whether the condition is active. Both are named by string in the JSON and resolved against the journey's resolver code at evaluation time. The id-string indirection is deliberate: the JSON files stay declarative; behaviour lives in code where it can be tested.
 
 **Refdata.** Journey-private lookup tables. The engine treats refdata opaquely - it passes the data to the resolver functions and does nothing else with it. Two consequences follow: the kernel cannot read refdata (it has no way to know what a journey's table columns mean; only the journey's tests do), and refdata is journey-private (two journeys cannot accidentally couple through shared refdata - cross-journey state is structurally impossible).
 
@@ -155,23 +155,23 @@ One configuration; two kinds of question; the same engine call answers both.
 
 **The four statuses.** Every evaluation assigns each obligation one of four statuses:
 
-| Status | Meaning |
-| --- | --- |
-| `satisfied` | All required data is populated on the notification. |
-| `unsatisfied` | Some required data is missing. |
-| `deferred` | The obligation is conditional and its fact returned null - the rule doesn't yet know whether the obligation applies. |
-| `inactive` | The obligation is conditional and its test decided it does not apply to this notification. |
+| Status        | Meaning                                                                                                              |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `satisfied`   | All required data is populated on the notification.                                                                  |
+| `unsatisfied` | Some required data is missing.                                                                                       |
+| `deferred`    | The obligation is conditional and its fact returned null - the rule doesn't yet know whether the obligation applies. |
+| `inactive`    | The obligation is conditional and its test decided it does not apply to this notification.                           |
 
 **Submittability.** A notification is **submittable** when every obligation is either `satisfied` or `inactive`. Unsatisfied and deferred obligations both block submission.
 
 **Screens and sections.** Obligation statuses fold up into UI state. A screen's status follows from the obligations its fields reference; first matching rule wins:
 
-| Predicate over fields' obligation statuses | Screen status |
-| --- | --- |
-| Any field's obligation is `unsatisfied` | `incomplete` |
-| No `unsatisfied`, any is `deferred` | `cannotStartYet` |
-| Every referenced obligation is `inactive` | `notApplicable` |
-| Otherwise (all `satisfied`, or `satisfied` + `inactive`) | `complete` |
+| Predicate over fields' obligation statuses               | Screen status    |
+| -------------------------------------------------------- | ---------------- |
+| Any field's obligation is `unsatisfied`                  | `incomplete`     |
+| No `unsatisfied`, any is `deferred`                      | `cannotStartYet` |
+| Every referenced obligation is `inactive`                | `notApplicable`  |
+| Otherwise (all `satisfied`, or `satisfied` + `inactive`) | `complete`       |
 
 Screens then group into sections: `notApplicable` screens are dropped, a section whose every screen is `notApplicable` is omitted, and section status rolls up by the same first-match discipline. The shape that comes back is what a task-list view renders directly.
 
@@ -183,13 +183,13 @@ First contact with the actual files. This section is the structure from Picture 
 
 A journey adapter is a directory of files. Three are plain JSON data, one is small JavaScript, one assembles them:
 
-| File | Form | Purpose |
-| --- | --- | --- |
-| `obligations.json` | data | What the notification must contain, conditionally or not |
-| `journey.json` | data | The page tree: sections → screens → fields |
-| `refdata.json` | data | Journey-private lookup tables |
-| `resolvers.js` | code | Functions that read facts off a notification and apply tests against refdata |
-| `index.js` | code | Assembles the adapter record |
+| File               | Form | Purpose                                                                      |
+| ------------------ | ---- | ---------------------------------------------------------------------------- |
+| `obligations.json` | data | What the notification must contain, conditionally or not                     |
+| `journey.json`     | data | The page tree: sections → screens → fields                                   |
+| `refdata.json`     | data | Journey-private lookup tables                                                |
+| `resolvers.js`     | code | Functions that read facts off a notification and apply tests against refdata |
+| `index.js`         | code | Assembles the adapter record                                                 |
 
 ### The page tree
 
@@ -208,14 +208,20 @@ A field in `journey.json` ties a screen position to an obligation:
 {
   "id": "origin-section",
   "name": "Origin",
-  "screens": [{
-    "id": "origin-screen",
-    "screenName": "Region of origin",
-    "fields": [
-      { "fieldName": "originCountry", "fieldType": "text",
-        "label": "Country of origin", "obligationRef": "consignment-origin" }
-    ]
-  }]
+  "screens": [
+    {
+      "id": "origin-screen",
+      "screenName": "Region of origin",
+      "fields": [
+        {
+          "fieldName": "originCountry",
+          "fieldType": "text",
+          "label": "Country of origin",
+          "obligationRef": "consignment-origin"
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -254,10 +260,10 @@ The condition names a `fact` and a `test` by string, resolved against `resolvers
 
 This is the schema-like view: the journey, its rules, and its presentation are all describable as configuration. Numbers from the two working journeys:
 
-| Journey | Obligations | Sections | Screens |
-| --- | --- | --- | --- |
-| `eu-live-animals` | 23 | 6 | 15 |
-| `chedpp-plants` | 28 | 7 | 16 |
+| Journey           | Obligations | Sections | Screens |
+| ----------------- | ----------- | -------- | ------- |
+| `eu-live-animals` | 23          | 6        | 15      |
+| `chedpp-plants`   | 28          | 7        | 16      |
 
 ## The mechanics
 
@@ -267,11 +273,11 @@ Full depth. The engine surface is HTTP; behind the surface sit pure functions, j
 
 Three POST endpoints expose the engine pipeline:
 
-| Endpoint | Body | Query | Returns |
-| --- | --- | --- | --- |
+| Endpoint                                   | Body                  | Query                       | Returns                                                                          |
+| ------------------------------------------ | --------------------- | --------------------------- | -------------------------------------------------------------------------------- |
 | `POST /api/engine/journeys/{key}/evaluate` | raw notification JSON | `withTrace=true` (optional) | `EvaluationResult` (`{ obligations, summary }`, optional per-obligation `trace`) |
-| `POST /api/engine/journeys/{key}/screens` | raw notification JSON | - | `{ screens: Screen[] }` |
-| `POST /api/engine/journeys/{key}/sections` | raw notification JSON | - | `{ sections: Section[], summary }` |
+| `POST /api/engine/journeys/{key}/screens`  | raw notification JSON | -                           | `{ screens: Screen[] }`                                                          |
+| `POST /api/engine/journeys/{key}/sections` | raw notification JSON | -                           | `{ sections: Section[], summary }`                                               |
 
 Each route delegates to a small library of pure functions in `src/server/engine/`: `evaluate`, `evaluateWithTrace`, `resolveScreens`, `rollUpToSections`, plus combinators (`or`, `and`, `not`, `always`, `never`) for composing tests in resolver code. The library has zero `@hapi/*` imports - a kernel-isolation test enforces this. The HTTP layer is a wire over the library; the library is the substantive contribution.
 
@@ -284,17 +290,31 @@ A real `EvaluationResult` over a partial notification - the four statuses from t
 ```json
 {
   "obligations": [
-    { "id": "notification-type",    "status": "satisfied",   "missingPaths": [] },
-    { "id": "consignment-origin",   "status": "unsatisfied", "missingPaths": ["origin.region"] },
-    { "id": "transit-routing",      "status": "inactive",
-      "reason": "purposeGroup \"For Import\" is not a transit purpose" },
-    { "id": "animal-identification","status": "deferred",
-      "reason": "commodity not yet provided" },
-    { "id": "legal-declaration",    "status": "unsatisfied", "missingPaths": [] }
+    { "id": "notification-type", "status": "satisfied", "missingPaths": [] },
+    {
+      "id": "consignment-origin",
+      "status": "unsatisfied",
+      "missingPaths": ["origin.region"]
+    },
+    {
+      "id": "transit-routing",
+      "status": "inactive",
+      "reason": "purposeGroup \"For Import\" is not a transit purpose"
+    },
+    {
+      "id": "animal-identification",
+      "status": "deferred",
+      "reason": "commodity not yet provided"
+    },
+    { "id": "legal-declaration", "status": "unsatisfied", "missingPaths": [] }
   ],
   "summary": {
-    "satisfied": 1, "unsatisfied": 2, "deferred": 1, "inactive": 1,
-    "total": 5, "submittable": false
+    "satisfied": 1,
+    "unsatisfied": 2,
+    "deferred": 1,
+    "inactive": 1,
+    "total": 5,
+    "submittable": false
   }
 }
 ```
@@ -319,11 +339,14 @@ export const resolvers = {
   tests: {
     requiresGmsDeclaration: (species, refdata) => {
       const row = refdata.species[`${species.code}|${species.eppoCode}`]
-      const active = row?.regulatory_authority === 'HMI'
-                  && row?.marketing_standard === 'GMS'
-      return { active, reason: active
-        ? 'species is HMI with GMS marketing standard'
-        : 'species does not meet HMI + GMS criteria' }
+      const active =
+        row?.regulatory_authority === 'HMI' && row?.marketing_standard === 'GMS'
+      return {
+        active,
+        reason: active
+          ? 'species is HMI with GMS marketing standard'
+          : 'species does not meet HMI + GMS criteria'
+      }
     }
   },
   submissionDatePath: 'submittedAt'
@@ -341,13 +364,13 @@ tests.requiresOnwardRouting = or(tests.isTransit, tests.isTranshipment)
 
 The engine treats the result as an ordinary test. Five universal combinators ship with the kernel:
 
-| Combinator | Semantics |
-| --- | --- |
-| `or(...tests)` | Short-circuits on the first active test |
-| `and(...tests)` | Short-circuits on the first inactive test |
-| `not(test)` | Negates the active boolean; wraps the reason |
-| `always(reason)` | Always active |
-| `never(reason)` | Always inactive |
+| Combinator       | Semantics                                    |
+| ---------------- | -------------------------------------------- |
+| `or(...tests)`   | Short-circuits on the first active test      |
+| `and(...tests)`  | Short-circuits on the first inactive test    |
+| `not(test)`      | Negates the active boolean; wraps the reason |
+| `always(reason)` | Always active                                |
+| `never(reason)`  | Always inactive                              |
 
 A helper that reads refdata shape (for example a `refdataFlag(flagName, on, off)` helper that knows the routing-table layout in animals) is journey-private by definition: it presupposes a refdata shape so it cannot be universal. A test that composes purely through universal combinators stays kernel-portable.
 
@@ -397,7 +420,7 @@ What ships today:
 - **Refdata fits in small JSON files.** Animals refdata is a few hundred routing entries; plants refdata is ~6,000 entries derived from a 486K-pair production source by recognising that 98.9% of the source carried no journey variance.
 - **Runtime journey switching works.** The picker at `/journey-selection` switches the active journey at request time; the engine resolves the new adapter and reuses the same evaluation surface.
 
-What a future *journey configuration service* would add:
+What a future _journey configuration service_ would add:
 
 - **A deploy boundary** at the existing wire. The HTTP seam is in place; the work is moving the backend to a separate process and pointing `apiBaseUrl` at it. No engine or UI rework needed.
 - **A registry** that loads journey adapters at deploy or runtime, rather than the hardcoded list this spike ships.

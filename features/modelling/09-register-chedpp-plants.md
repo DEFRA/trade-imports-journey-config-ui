@@ -23,7 +23,7 @@ existing `validateJourney` runs against both adapters at startup.
 The UI surface remains as it is — every explorer controller is
 hardcoded to `'eu-live-animals'`. Adding chedpp-plants to the UI
 (journey selector, plant-specific views) is a separate stream of
-work and is *not* part of this refactor.
+work and is _not_ part of this refactor.
 
 ## Context
 
@@ -76,7 +76,7 @@ import * as chedppPlants from '#server/journeys/chedpp-plants/index.js'
 // ...
 const JOURNEYS = {
   'eu-live-animals': euLiveAnimals,
-  'chedpp-plants':   chedppPlants
+  'chedpp-plants': chedppPlants
 }
 ```
 
@@ -94,7 +94,7 @@ The five explorer route handlers continue to import from
 to call `evaluationEngine.evaluate('eu-live-animals', ...)` and
 `evaluationEngine.getJourney('eu-live-animals')`. No new UI exposes
 chedpp-plants. Adding a journey picker, registering plant scenarios
-to a dropdown, or building plant-specific views is *separate work*
+to a dropdown, or building plant-specific views is _separate work_
 and is not part of this refactor.
 
 ## Tests
@@ -106,6 +106,7 @@ similar; co-locate with the plugin) — only if not already covered
 by Story 08's boot test:
 
 State the behaviour and risks (≤5 lines):
+
 > Plugin registration with two journeys: both pass validateJourney
 > at startup; listJourneys returns both keys; evaluate routes by
 > key. Risks: adapter shape mismatch for chedpp-plants, accidental
@@ -132,20 +133,20 @@ Explicitly excluded:
 ## Acceptance Criteria
 
 - [ ] `src/server/journeys/chedpp-plants/` is committed (no longer
-  untracked).
+      untracked).
 - [ ] `chedpp-plants` is registered in the JOURNEYS map in
-  `plugin.js`.
+      `plugin.js`.
 - [ ] `validateJourney` accepts both adapters at startup; the server
-  boots cleanly with `npm run dev`.
+      boots cleanly with `npm run dev`.
 - [ ] `server.app.evaluationEngine.listJourneys()` returns both
-  keys.
+      keys.
 - [ ] `evaluate('chedpp-plants', notification)` and
-  `getJourney('chedpp-plants')` work via the facade.
+      `getJourney('chedpp-plants')` work via the facade.
 - [ ] Explorer route handlers and view templates are unchanged.
 - [ ] All four UI views continue to render `eu-live-animals` content
-  correctly. The UI does not expose chedpp-plants.
+      correctly. The UI does not expose chedpp-plants.
 - [ ] All existing tests continue to pass; the new registration test
-  passes.
+      passes.
 
 ## Verification
 
@@ -175,7 +176,7 @@ npm test
 - Don't modify view templates.
 - Don't change `validateJourney` to accommodate chedpp-plants — if
   chedpp-plants needs adjustment to pass the existing check, adjust
-  the *journey*, not the validator.
+  the _journey_, not the validator.
 - Don't replace chedpp-plants' local `or` combinator in this story
   (Story 10).
 - Don't add `journey.contract.test.js` files in this story

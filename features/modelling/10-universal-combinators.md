@@ -106,6 +106,7 @@ In `src/server/journeys/chedpp-plants/resolvers.js`:
 New `src/server/engine/combinators.test.js` — owns protocol.md §5.5.
 
 State the behaviour and risks (≤5 lines):
+
 > Five HOFs over ConditionTest. Risks: short-circuit semantics
 > (returning the active/inactive test's result verbatim, not a
 > rebuilt object), reason composition (exact semicolon-space
@@ -138,17 +139,17 @@ two-arg cases; more args don't add semantic risk).
 ## Acceptance Criteria
 
 - [ ] `engine/combinators.js` exports `or`, `and`, `not`, `always`,
-  `never` with the §5.5 semantics.
+      `never` with the §5.5 semantics.
 - [ ] `engine/combinators.test.js` covers each operator's semantics
-  and all documented throws.
+      and all documented throws.
 - [ ] `chedpp-plants/resolvers.js` imports `or` from the kernel; the
-  local `or` is removed.
+      local `or` is removed.
 - [ ] chedpp-plants' existing resolver tests continue to pass.
 - [ ] All existing engine tests continue to pass.
 - [ ] All four explorer views render correctly for
-  `eu-live-animals` content.
+      `eu-live-animals` content.
 - [ ] `evaluate('chedpp-plants', ...)` still works via the engine
-  facade (the local-to-kernel `or` swap is transparent).
+      facade (the local-to-kernel `or` swap is transparent).
 
 ## Verification
 
@@ -167,7 +168,7 @@ npm run dev    # smoke each explorer view (eu-live-animals only)
 ## What NOT to change
 
 - Don't add combinator usage to eu-live-animals — that journey
-  doesn't use `or` today, and this story is *not* about expanding
+  doesn't use `or` today, and this story is _not_ about expanding
   usage; it's about consolidating chedpp's pattern into the kernel.
 - Don't add any sixth combinator (XOR, k-of-n, etc.) — out of scope
   per the completeness rationale above.

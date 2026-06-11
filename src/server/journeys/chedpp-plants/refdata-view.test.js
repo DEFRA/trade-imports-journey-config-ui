@@ -49,7 +49,9 @@ describe('chedpp-plants commodityDetail', () => {
         marketingStandard: 'SMS',
         validityPeriod: '7'
       })
-      expect(detail.varieties).toEqual(expect.arrayContaining(['Braeburn', 'Bramley']))
+      expect(detail.varieties).toEqual(
+        expect.arrayContaining(['Braeburn', 'Bramley'])
+      )
       // Species shape excludes commodity-level fields
       expect(detail).not.toHaveProperty('group')
       expect(detail).not.toHaveProperty('classes')

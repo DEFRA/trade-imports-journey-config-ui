@@ -10,10 +10,7 @@ export const journeySelectionController = {
     return h.view('journey-selection/index', {
       pageTitle: 'Journey Selection',
       heading: 'Journey Selection',
-      breadcrumbs: [
-        { text: 'Home', href: '/' },
-        { text: 'Journey Selection' }
-      ],
+      breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Journey Selection' }],
       ...nav
     })
   }

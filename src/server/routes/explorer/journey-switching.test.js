@@ -138,7 +138,9 @@ describe('Explorer with JOURNEY=chedpp-plants', () => {
     expect(result).toContain('The routing data immediately above')
     expect(result).toContain('computed at render time')
     expect(result).toContain('GMS declaration')
-    expect(result).toContain('HMI-inspected species with GMS marketing standard')
+    expect(result).toContain(
+      'HMI-inspected species with GMS marketing standard'
+    )
   })
 
   test('detail block formats value-by-type (Disabled / Not provided / text)', async () => {

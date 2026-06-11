@@ -82,8 +82,15 @@ export async function createServer() {
         },
         tags: [
           { name: 'config', description: 'Read-only journey configuration' },
-          { name: 'engine', description: 'Evaluate notifications against journeys' },
-          { name: 'ui-state', description: 'UI session state (the "in-memory database" of the SDUI demo)' }
+          {
+            name: 'engine',
+            description: 'Evaluate notifications against journeys'
+          },
+          {
+            name: 'ui-state',
+            description:
+              'UI session state (the "in-memory database" of the SDUI demo)'
+          }
         ],
         grouping: 'tags',
         documentationPath: '/documentation'

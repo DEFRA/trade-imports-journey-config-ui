@@ -13,9 +13,7 @@ const JOURNEYS = {
 
 export const validateJourney = (key, journey) => {
   if (!Array.isArray(journey.obligations) || journey.obligations.length === 0) {
-    throw new Error(
-      `Journey "${key}": obligations must be a non-empty array`
-    )
+    throw new Error(`Journey "${key}": obligations must be a non-empty array`)
   }
   // Refdata shape is a journey concern (animals uses routing/content/
   // definitions; plants uses commodities/species/classes). The plugin's
@@ -31,10 +29,16 @@ export const validateJourney = (key, journey) => {
       `Journey "${key}": journeyMap.sections is missing or not an array`
     )
   }
-  if (!journey.resolvers?.facts || typeof journey.resolvers.facts !== 'object') {
+  if (
+    !journey.resolvers?.facts ||
+    typeof journey.resolvers.facts !== 'object'
+  ) {
     throw new Error(`Journey "${key}": resolvers.facts is missing`)
   }
-  if (!journey.resolvers?.tests || typeof journey.resolvers.tests !== 'object') {
+  if (
+    !journey.resolvers?.tests ||
+    typeof journey.resolvers.tests !== 'object'
+  ) {
     throw new Error(`Journey "${key}": resolvers.tests is missing`)
   }
   if (typeof journey.resolvers?.submissionDatePath !== 'string') {
@@ -62,9 +66,7 @@ export const validateJourney = (key, journey) => {
   // the API contract. Require it at boot so a malformed journey fails
   // there, not at request time via Joi response-schema rejection.
   if (!journey.scenarios || typeof journey.scenarios !== 'object') {
-    throw new Error(
-      `Journey "${key}": scenarios is missing or not an object`
-    )
+    throw new Error(`Journey "${key}": scenarios is missing or not an object`)
   }
 }
 

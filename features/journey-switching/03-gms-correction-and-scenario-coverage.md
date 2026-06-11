@@ -40,7 +40,7 @@ coherent is what the user explicitly ruled out.
 
 Independently, `gms-declaration-rule-investigation.md` confirmed —
 against `ipaffs-frontend-notification/.../utils/chedpp.js:21–28` — that
-the real rule is *any species with `HMI` + `GMS`*. Our resolver fires for
+the real rule is _any species with `HMI` + `GMS`_. Our resolver fires for
 ~5,321 species-pairs instead of ~409 — a ~92 % over-trigger, almost all
 JOINT.
 
@@ -55,7 +55,7 @@ change, isolated and tested.
 ## Context
 
 - **Producer of today's refdata:** `cdp-fieldconfig-analysis-frontend/
-  data-analysis/field-config/scripts/build-chedpp-refdata.js` (cross-
+data-analysis/field-config/scripts/build-chedpp-refdata.js` (cross-
   repo). We do **not** edit it; reconstruction happens **here**.
 - **Only evaluation consumer of plants refdata:**
   `src/server/journeys/chedpp-plants/resolvers.js` — `lookupRefdata`
@@ -69,7 +69,7 @@ change, isolated and tested.
 - **The engine** (`src/server/engine/*`) passes `refdata` opaquely to
   `testFn(factValue, refdata)` — it never inspects shape. Untouched.
 - **The explorer does NOT read plants refdata yet** —
-  `commodity-config-controller.js` imports *animals* refdata directly
+  `commodity-config-controller.js` imports _animals_ refdata directly
   and plants commodity-config is gated off (story 01 §7). So this
   story's blast radius excludes the explorer. The shared
   `config-utils#extractCommodityOptions` reads `refdata.routing` and
@@ -142,8 +142,8 @@ of data already in the file; only `classes` needs an external source.
   `routing`/`content`/`definitions` and assert it equals the snapshotted
   pre-migration file **with an explicit allowlist of permitted
   differences and nothing else**:
-  - re-derived `has_gms` = `marketing_standard != null` *(Phase A —
-    parity)*, `has_varieties` = `varieties?.length > 0`,
+  - re-derived `has_gms` = `marketing_standard != null` _(Phase A —
+    parity)_, `has_varieties` = `varieties?.length > 0`,
     `requires_billing` = species-row present — must equal the originals
     byte-for-byte.
   - `definitions.classes` literal replaced by per-commodity `classes`.
@@ -175,8 +175,8 @@ object from the two tables (see `plants-refdata-model.md` §"How
 evaluation reads it"). For Phase A the derivations reproduce today's
 values **exactly**:
 
-- `has_gms` ← `marketing_standard != null`  *(Phase A only —
-  Phase B replaces this)*
+- `has_gms` ← `marketing_standard != null` _(Phase A only —
+  Phase B replaces this)_
 - `has_varieties` ← `(varieties?.length ?? 0) > 0`
 - `requires_billing` ← species row present
 - commodity flags ← `commodities[code]`
@@ -200,7 +200,7 @@ assert it. Animals (keeps `routing`) and plants (doesn't) both pass.
 #### A7. Commit an invariant test on the normalised refdata
 
 A new **committed** test (e.g.
-`chedpp-plants/refdata.test.js`) asserts the *output* is well-formed,
+`chedpp-plants/refdata.test.js`) asserts the _output_ is well-formed,
 independent of the git-ignored tooling:
 
 - no legacy keys (`routing`/`content`/`definitions` absent);
@@ -224,8 +224,8 @@ boolean:
 ```js
 requiresGmsDeclaration: (commodity, refdata) => {
   const sp = refdata.species[buildRefdataKey(commodity)]
-  const active = sp?.regulatory_authority === 'HMI'
-              && sp?.marketing_standard === 'GMS'
+  const active =
+    sp?.regulatory_authority === 'HMI' && sp?.marketing_standard === 'GMS'
   return {
     active,
     reason: active
@@ -275,11 +275,11 @@ Selection guidance:
 Add to `scenarioMap` (parallel to existing fixtures, using the chosen
 species):
 
-| New scenario | Cell | gms-declaration | Notes |
-|---|---|---|---|
-| `import-hmi-gms` | HMI + GMS | **active** | Canonical positive case; the GMS declaration page should appear. |
-| `import-hmi-sms` | HMI + SMS | inactive | HMI inspects, but Specific Marketing Standards apply — no GMS declaration. |
-| `import-joint-gms` | JOINT + GMS | inactive | The "surprising" cell — JOINT routing doesn't fire the GMS page despite the GMS standard. |
+| New scenario       | Cell        | gms-declaration | Notes                                                                                     |
+| ------------------ | ----------- | --------------- | ----------------------------------------------------------------------------------------- |
+| `import-hmi-gms`   | HMI + GMS   | **active**      | Canonical positive case; the GMS declaration page should appear.                          |
+| `import-hmi-sms`   | HMI + SMS   | inactive        | HMI inspects, but Specific Marketing Standards apply — no GMS declaration.                |
+| `import-joint-gms` | JOINT + GMS | inactive        | The "surprising" cell — JOINT routing doesn't fire the GMS page despite the GMS standard. |
 
 Each scenario sets the species' notification keyDataPair fields (the
 same way `importPeppers` already overrides authority+standard at
@@ -299,13 +299,13 @@ active for that scenario.
 
 `chedpp-plants/scenarios.test.js` parityTargets:
 
-| Scenario | Was `(satisfied, inactive)` | Now | Reason |
-|---|---|---|---|
-| `import-apples` | `23, 5` | `22, 6` | `gms-declaration` moves active-satisfied → inactive (corrected predicate; apples is JOINT+SMS in refdata) |
-| `import-peppers` | `22, 6` | `21, 7` | same — peppers is JOINT+SMS |
-| `import-hmi-gms` | — | (new pin) | active-satisfied for the GMS path |
-| `import-hmi-sms` | — | (new pin) | inactive for GMS path |
-| `import-joint-gms` | — | (new pin) | inactive for GMS path |
+| Scenario           | Was `(satisfied, inactive)` | Now       | Reason                                                                                                    |
+| ------------------ | --------------------------- | --------- | --------------------------------------------------------------------------------------------------------- |
+| `import-apples`    | `23, 5`                     | `22, 6`   | `gms-declaration` moves active-satisfied → inactive (corrected predicate; apples is JOINT+SMS in refdata) |
+| `import-peppers`   | `22, 6`                     | `21, 7`   | same — peppers is JOINT+SMS                                                                               |
+| `import-hmi-gms`   | —                           | (new pin) | active-satisfied for the GMS path                                                                         |
+| `import-hmi-sms`   | —                           | (new pin) | inactive for GMS path                                                                                     |
+| `import-joint-gms` | —                           | (new pin) | inactive for GMS path                                                                                     |
 
 Exact pins for new scenarios are determined at implementation time.
 The empty-notification inverse check is unaffected.
@@ -356,62 +356,62 @@ coverage point.
 ### Phase A — normalisation (behaviour-preserving)
 
 - [ ] `refdata.json` is `{ _meta, commodities, species }` with
-  `classes` per commodity; no `routing`/`content`/`definitions`; no
-  stored `has_gms`/`has_varieties`/`requires_billing`.
+      `classes` per commodity; no `routing`/`content`/`definitions`; no
+      stored `has_gms`/`has_varieties`/`requires_billing`.
 - [ ] `commodities[code].classes` is populated from a pinned
-  `commodity_class` revision (linkage restored; revision recorded in
-  `_meta`); absence means no classes.
+      `commodity_class` revision (linkage restored; revision recorded in
+      `_meta`); absence means no classes.
 - [ ] `data-reconstruction/` is git-ignored and uncommitted
-  (`git status --porcelain data-reconstruction` empty).
+      (`git status --porcelain data-reconstruction` empty).
 - [ ] Dev-time round-trip passes with the explicit allowlist (A2).
 - [ ] Committed invariant test passes: no legacy keys, every species
-  resolves to a commodity, classes well-formed.
+      resolves to a commodity, classes well-formed.
 - [ ] `resolvers.js` reads the two-grain shape via a read-time merge;
-  **all seven scenario counts unchanged at end of Phase A.**
+      **all seven scenario counts unchanged at end of Phase A.**
 - [ ] Plugin guard is journey-agnostic; animals + plants both register.
 - [ ] Engine (`src/server/engine/*`) and its tests are unmodified.
 
 ### Phase B — predicate correction + new scenarios
 
 - [ ] `requiresGmsDeclaration` derives from
-  `regulatory_authority === 'HMI' && marketing_standard === 'GMS'`
-  read off `refdata.species`; no `has_gms` field is read.
+      `regulatory_authority === 'HMI' && marketing_standard === 'GMS'`
+      read off `refdata.species`; no `has_gms` field is read.
 - [ ] `lookupRouting` no longer emits `has_gms` (removed; unused).
 - [ ] `grep -rn "has_gms" src/server/journeys/chedpp-plants/`
-  returns **zero hits** — including comments, tests, and scenario
-  docstrings.
+      returns **zero hits** — including comments, tests, and scenario
+      docstrings.
 - [ ] Three new scenarios (`import-hmi-gms`, `import-hmi-sms`,
-  `import-joint-gms`) exist in `scenarioMap`, each using a real
-  refdata species matching its cell.
+      `import-joint-gms`) exist in `scenarioMap`, each using a real
+      refdata species matching its cell.
 - [ ] `scenarios.test.js` parity pins updated: apples + peppers
-  re-pinned; three new pins added; empty-notification inverse holds.
+      re-pinned; three new pins added; empty-notification inverse holds.
 - [ ] Resolver unit tests cover all five cells (PHSI, HMI+GMS,
-  HMI+SMS, JOINT+GMS, JOINT+SMS).
+      HMI+SMS, JOINT+GMS, JOINT+SMS).
 - [ ] Each new scenario is submittable (`submittable: true`,
-  `unsatisfied: 0`, `deferred: 0`) — carrying billing data, and (for
-  `import-hmi-gms`) the GMS declaration.
+      `unsatisfied: 0`, `deferred: 0`) — carrying billing data, and (for
+      `import-hmi-gms`) the GMS declaration.
 - [ ] The chosen `HMI+GMS` species has **no** varieties (focused
-  GMS signal).
+      GMS signal).
 - [ ] Resolver unit tests use the **actual chosen species** for each
-  cell (catch refdata drift at unit-test level too).
+      cell (catch refdata drift at unit-test level too).
 - [ ] The `APPLES` docstring no longer claims "HMI commodity".
 - [ ] `chedpp-plants/README.md` updated: the "Current implementation
-  vs the correct rule" section reads in the past tense.
+      vs the correct rule" section reads in the past tense.
 - [ ] Full `npm test` green.
 
 ## Risks and pre-emptive mitigations
 
-| # | Risk | Mitigation |
-|---|---|---|
-| R1 | Phase B's predicate flip silently changes outcomes outside apples + peppers — i.e. some PHSI scenario unexpectedly flips. | Phase A is gated on **all seven** scenarios unchanged before Phase B starts. Phase B re-pins exactly apples + peppers; any other movement is a regression and stops the story. |
-| R2 | Reconstruct-from-flat loses information the flat file already lost. | Only `classes` is sourced externally; everything else round-trips losslessly against the snapshotted flat file (A2 allowlist). Classes coverage asserted against source row count. |
-| R3 | The vendored `commodity_class` revision is inconsistent with the group/config era used by the original build. | Pin the revision deliberately; record in `_meta`; assert its codes resolve against `commodities` and row count ≈ 82 (A4). |
-| R4 | Relaxing the plugin guard removes a safety net. | The guard still rejects a missing/garbage adapter ("refdata is an object"); per-journey shape validation was never the plugin's job. Covered by the guard test. |
-| R5 | `data-reconstruction/` accidentally committed (the "AI explosion"). | `.gitignore` entry + acceptance check that `git status --porcelain data-reconstruction` is empty. |
-| R6 | Picking species fixtures that don't actually exist in the refdata, producing brittle scenarios. | B2 selection rule: pick from `refdata.species` via jq; record the chosen `(code, eppo)` in `scenarios.js` constants; the resolver-unit test using the actual chosen species catches refdata drift at unit level. |
-| R7 | The `HMI+GMS` scenario inadvertently exercises the variety/class page if the chosen species has varieties, entangling two concerns. | B2 selection rule: pick a **no-varieties** HMI+GMS species. Variety/class coverage is a separate scenario if wanted later. |
-| R8 | The corrected predicate accidentally changes other obligations through a shared flag. | Verified: `has_gms` is read **only** by `requiresGmsDeclaration`. Removing the field is safe. Resolver unit tests cover the cells; scenario parity catches any unexpected ripple. |
-| R9 | The committed data drifts/corrupts later with no in-repo regenerator. | The committed invariant test (A7) + scenario parity catch any incoherence on every CI run; the one-shot regeneration is intentionally dev-time only. |
+| #   | Risk                                                                                                                                | Mitigation                                                                                                                                                                                                       |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | Phase B's predicate flip silently changes outcomes outside apples + peppers — i.e. some PHSI scenario unexpectedly flips.           | Phase A is gated on **all seven** scenarios unchanged before Phase B starts. Phase B re-pins exactly apples + peppers; any other movement is a regression and stops the story.                                   |
+| R2  | Reconstruct-from-flat loses information the flat file already lost.                                                                 | Only `classes` is sourced externally; everything else round-trips losslessly against the snapshotted flat file (A2 allowlist). Classes coverage asserted against source row count.                               |
+| R3  | The vendored `commodity_class` revision is inconsistent with the group/config era used by the original build.                       | Pin the revision deliberately; record in `_meta`; assert its codes resolve against `commodities` and row count ≈ 82 (A4).                                                                                        |
+| R4  | Relaxing the plugin guard removes a safety net.                                                                                     | The guard still rejects a missing/garbage adapter ("refdata is an object"); per-journey shape validation was never the plugin's job. Covered by the guard test.                                                  |
+| R5  | `data-reconstruction/` accidentally committed (the "AI explosion").                                                                 | `.gitignore` entry + acceptance check that `git status --porcelain data-reconstruction` is empty.                                                                                                                |
+| R6  | Picking species fixtures that don't actually exist in the refdata, producing brittle scenarios.                                     | B2 selection rule: pick from `refdata.species` via jq; record the chosen `(code, eppo)` in `scenarios.js` constants; the resolver-unit test using the actual chosen species catches refdata drift at unit level. |
+| R7  | The `HMI+GMS` scenario inadvertently exercises the variety/class page if the chosen species has varieties, entangling two concerns. | B2 selection rule: pick a **no-varieties** HMI+GMS species. Variety/class coverage is a separate scenario if wanted later.                                                                                       |
+| R8  | The corrected predicate accidentally changes other obligations through a shared flag.                                               | Verified: `has_gms` is read **only** by `requiresGmsDeclaration`. Removing the field is safe. Resolver unit tests cover the cells; scenario parity catches any unexpected ripple.                                |
+| R9  | The committed data drifts/corrupts later with no in-repo regenerator.                                                               | The committed invariant test (A7) + scenario parity catch any incoherence on every CI run; the one-shot regeneration is intentionally dev-time only.                                                             |
 
 ## Verification
 

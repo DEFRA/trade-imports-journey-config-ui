@@ -12,19 +12,13 @@
       "id": "consignment-origin",
       "name": "Consignment Origin",
       "rationale": "Traceability: country and region of origin determine applicable health rules and risk profile.",
-      "schemaPaths": [
-        "origin.country",
-        "origin.region"
-      ]
+      "schemaPaths": ["origin.country", "origin.region"]
     },
     {
       "id": "import-purpose",
       "name": "Import Purpose",
       "rationale": "Determines regulatory pathway: different purposes (slaughter, breeding, transit) carry different inspection requirements.",
-      "schemaPaths": [
-        "purpose.group",
-        "purpose.subPurpose"
-      ],
+      "schemaPaths": ["purpose.group", "purpose.subPurpose"],
       "note": "subPurpose has field-level visibility (dependsOn purpose) but the obligation itself is unconditional."
     },
     {
@@ -36,19 +30,14 @@
         "test": "isTransit",
         "description": "Active when purposeGroup is 'For Transhipment to' or 'For Transit to 3rd Country'."
       },
-      "schemaPaths": [
-        "purpose.exitBIP",
-        "entry.portOfExit"
-      ],
+      "schemaPaths": ["purpose.exitBIP", "entry.portOfExit"],
       "note": "Purpose-conditional obligation (fact: purposeGroup, test: isTransit). The journey map should have visibility conditions on both exit-bcp and port-of-exit fields (exit-bcp already has dependsOn:purpose, port-of-exit is missing it)."
     },
     {
       "id": "commodity-selection",
       "name": "Commodity Selection",
       "rationale": "Identifies the commodity being imported. The commodity code is the key fact that drives all downstream variance.",
-      "schemaPaths": [
-        "commodities[].id"
-      ],
+      "schemaPaths": ["commodities[].id"],
       "note": "Key fact: the commodity code selected here drives all commodity-conditional obligation activation via refdata."
     },
     {
@@ -82,9 +71,7 @@
         "test": "requiresIdentification",
         "description": "Active when the commodity's identifier set is not NONE."
       },
-      "schemaPaths": [
-        "commodities[].identifiers[].data"
-      ]
+      "schemaPaths": ["commodities[].identifiers[].data"]
     },
     {
       "id": "animal-certification",
@@ -95,9 +82,7 @@
         "test": "requiresCertification",
         "description": "Active for commodity codes where animalsCertifiedAs applies. Requires refdata extension."
       },
-      "schemaPaths": [
-        "consignment.animalsCertifiedAs"
-      ]
+      "schemaPaths": ["consignment.animalsCertifiedAs"]
     },
     {
       "id": "animal-weaning-status",
@@ -108,9 +93,7 @@
         "test": "requiresWeaningStatus",
         "description": "Active for commodity codes where includeNonAblactedAnimals applies. Requires refdata extension."
       },
-      "schemaPaths": [
-        "consignment.includeNonAblactedAnimals"
-      ]
+      "schemaPaths": ["consignment.includeNonAblactedAnimals"]
     },
     {
       "id": "health-certification",
@@ -126,9 +109,7 @@
       "id": "establishments-of-origin",
       "name": "Establishments of Origin",
       "rationale": "Traceability: approved establishments where animals originated, for disease outbreak investigation.",
-      "schemaPaths": [
-        "documents.veterinary.establishments[].approvalNumber"
-      ]
+      "schemaPaths": ["documents.veterinary.establishments[].approvalNumber"]
     },
     {
       "id": "accompanying-documents",
@@ -174,9 +155,7 @@
         "test": "requiresPermanentAddress",
         "description": "Active when the commodity requires a permanent address."
       },
-      "schemaPaths": [
-        "commodities[].identifiers[].permanentAddress"
-      ]
+      "schemaPaths": ["commodities[].identifiers[].permanentAddress"]
     },
     {
       "id": "livestock-holding",
@@ -193,10 +172,7 @@
       "id": "entry-and-arrival",
       "name": "Entry Point and Arrival",
       "rationale": "Operational: port of entry determines BCP for inspection. Arrival date triggers scheduling.",
-      "schemaPaths": [
-        "entry.bcp",
-        "entry.arrivalDate"
-      ]
+      "schemaPaths": ["entry.bcp", "entry.arrivalDate"]
     },
     {
       "id": "transporter-identification",

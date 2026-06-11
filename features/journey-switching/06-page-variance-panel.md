@@ -8,11 +8,11 @@ Add a panel to `/explorer/commodity-config` that lists, per selected commodity, 
 
 ## Why
 
-The Commodity Reference Data Configuration page currently shows what data is *present* in the refdata for a selected commodity (dimensions and details). It does not show which conditional pages each commodity triggers. A demo audience comparing HMI+GMS oranges against JOINT+SMS apples against PHSI-only foliage cannot tell, from the existing page, which conditional pages exist for each commodity.
+The Commodity Reference Data Configuration page currently shows what data is _present_ in the refdata for a selected commodity (dimensions and details). It does not show which conditional pages each commodity triggers. A demo audience comparing HMI+GMS oranges against JOINT+SMS apples against PHSI-only foliage cannot tell, from the existing page, which conditional pages exist for each commodity.
 
 The two journeys in this spike encode commodity-driven page presence two different ways:
 
-- The animals journey stamps page-firing decisions as commodity-level booleans in the routing table (`cph_number`, `permanent_address`, `transporter_address`). The flag *is* the decision.
+- The animals journey stamps page-firing decisions as commodity-level booleans in the routing table (`cph_number`, `permanent_address`, `transporter_address`). The flag _is_ the decision.
 - The plants journey composes page-firing decisions from species- and commodity-level refdata via predicates: the GMS-declaration page fires when `regulatory_authority === 'HMI' AND marketing_standard === 'GMS'`; the intended-use page fires when `propagation !== null`; and so on.
 
 The journey's resolvers already encode the predicate (or the boolean read) for each case. The panel calls those resolvers directly with the selected commodity and renders the result. The same panel works for both journeys; the demo point - that one service answers "which pages fire?" regardless of underlying data shape - lands when the audience switches journey at `/journey-selection` and sees the same panel populated by very different config paths.
@@ -35,27 +35,27 @@ Each journey exposes `resolvers.facts` (extractors `(notification) -> value`) an
 - A screen whose referenced obligations are ALL `inactive` becomes `notApplicable` and is dropped by `rollUpToSections`.
 - If any referenced obligation is `unsatisfied`, `deferred`, or `satisfied`, the screen renders.
 
-So the panel's claim "for this commodity, this page would appear" maps cleanly onto "is any of the screen's commodity-fact conditional obligations active?" *if and only if* the screen's only obligation-referencing fields point at commodity-fact conditional obligations. If a screen mixed a commodity-fact conditional with an always-required obligation, the always-required obligation would be `unsatisfied` and the screen would render regardless of the commodity. The §4 invariant test asserts this property holds for both journeys.
+So the panel's claim "for this commodity, this page would appear" maps cleanly onto "is any of the screen's commodity-fact conditional obligations active?" _if and only if_ the screen's only obligation-referencing fields point at commodity-fact conditional obligations. If a screen mixed a commodity-fact conditional with an always-required obligation, the always-required obligation would be `unsatisfied` and the screen would render regardless of the commodity. The §4 invariant test asserts this property holds for both journeys.
 
 **Screens driven by commodity-fact conditional obligations** (verified against each journey's `journey.json` and `obligations.json`):
 
-| Journey | Screen | Commodity-fact obligations referenced from the screen |
-| --- | --- | --- |
-| `eu-live-animals` | Animal identifiers | `animal-identification` |
-| `eu-live-animals` | Additional details | `animal-certification`, `animal-weaning-status` |
+| Journey           | Screen                       | Commodity-fact obligations referenced from the screen                       |
+| ----------------- | ---------------------------- | --------------------------------------------------------------------------- |
+| `eu-live-animals` | Animal identifiers           | `animal-identification`                                                     |
+| `eu-live-animals` | Additional details           | `animal-certification`, `animal-weaning-status`                             |
 | `eu-live-animals` | Permanent addresses for pets | `permanent-address` (plus one presentational field without `obligationRef`) |
-| `eu-live-animals` | CPH number | `livestock-holding` |
-| `eu-live-animals` | Transporter | `transporter-identification` |
-| `chedpp-plants` | GMS declaration | `gms-declaration` |
-| `chedpp-plants` | Variety and class | `variety-class` |
-| `chedpp-plants` | Finished or propagated | `finished-or-propagated` |
-| `chedpp-plants` | For test and trial | `test-and-trial` |
-| `chedpp-plants` | Intended use | `intended-use` |
-| `chedpp-plants` | Billing details | `billing-information` |
+| `eu-live-animals` | CPH number                   | `livestock-holding`                                                         |
+| `eu-live-animals` | Transporter                  | `transporter-identification`                                                |
+| `chedpp-plants`   | GMS declaration              | `gms-declaration`                                                           |
+| `chedpp-plants`   | Variety and class            | `variety-class`                                                             |
+| `chedpp-plants`   | Finished or propagated       | `finished-or-propagated`                                                    |
+| `chedpp-plants`   | For test and trial           | `test-and-trial`                                                            |
+| `chedpp-plants`   | Intended use                 | `intended-use`                                                              |
+| `chedpp-plants`   | Billing details              | `billing-information`                                                       |
 
 Two cases worth flagging:
 
-- The animals **Additional details** screen has *two* obligations with different conditions. The screen appears if EITHER is active. The panel groups by screen and shows a single row with the combined Yes/No.
+- The animals **Additional details** screen has _two_ obligations with different conditions. The screen appears if EITHER is active. The panel groups by screen and shows a single row with the combined Yes/No.
 - The animals **Permanent addresses for pets** screen has one presentational field (`permanent-address-same-as-pds`) with no `obligationRef`. Per `extractScreenObligations`, presentational fields don't influence screen status, so the screen's presence is still determined by the single `permanent-address` obligation.
 
 Purpose-fact conditional obligations (`transit-routing`, `transhipment-routing`) are deliberately excluded - they sit on the "Reason for importing" screen alongside always-required fields, so their condition drives field-level variance within an always-present page, not page presence.
@@ -203,9 +203,7 @@ describe('page-variance invariant: every commodity-conditional screen is uniform
 
     for (const section of journey.journeyMap.sections) {
       for (const screen of section.screens) {
-        const refs = screen.fields
-          .map((f) => f.obligationRef)
-          .filter(Boolean)
+        const refs = screen.fields.map((f) => f.obligationRef).filter(Boolean)
         const hasCommodityFactConditional = refs.some((r) =>
           commodityFactConditionalIds.has(r)
         )
@@ -221,6 +219,7 @@ describe('page-variance invariant: every commodity-conditional screen is uniform
 ```
 
 Two reads of the property:
+
 - Presentational fields with no `obligationRef` are skipped (matching `extractScreenObligations`).
 - Every other ref on a commodity-conditional screen must be a commodity-fact conditional. If a future obligation lands on such a screen without a commodity-fact condition, the test fails and forces the change author to either restructure the journey map or update the panel's claim.
 
@@ -252,6 +251,7 @@ Two reads of the property:
 - After loading `/explorer/commodity-config?commodity=0805108010|CIDAU` under plants, the rendered HTML contains the hint paragraph beginning `'Each row below corresponds to a page'` and a row for `GMS declaration` marked `Yes`.
 
 Existing tests confirmed unmodified:
+
 - `engine/*.test.js` - no engine surface touched.
 - Per-journey adapter tests - no adapter surface touched.
 - The existing `journey-switching.test.js` plants assertions - the new section is purely additive.
@@ -280,13 +280,13 @@ Existing tests confirmed unmodified:
 
 ## Risks and mitigations
 
-| # | Risk | Mitigation |
-|---|---|---|
-| R1 | The commodity-value builder is journey-aware (a switch on `journeyKey`). A third journey needs its commodity shape added. | The switch lives in one file in the explorer layer; not in the adapter contract. Adding a third journey is a one-paragraph extension. The grep "no `src/server/engine` imports in this file" doubles as a discipline check. |
-| R2 | The helper bypasses the journey's `facts.commodity` extractor and constructs the commodity value directly. If a journey's commodity-fact tests ever started reading something the constructed value doesn't carry (e.g. a new `species.id` field), the panel would silently produce wrong results. | The constructed shape is documented inline in §1 and tied to specific resolver-internal lookups in both journeys (`buildRefdataKey`, `lookupRouting`). The unit tests pin exact `reason` strings, so a divergence between constructed-value and test expectation surfaces as a test failure rather than silent corruption. |
-| R3 | A future obligation lands on a commodity-conditional screen with a non-commodity-fact condition (e.g. `purposeGroup`-driven), breaking the screen-presence claim. | §4 invariant test fails immediately, forcing the change author to either restructure the journey map or update the panel's claim. |
-| R4 | The animals "Additional details" screen has two obligations with different conditions. The panel groups by screen so the row shows one Yes/No and two drivers, but a demo audience may still find it confusing. | The drivers cell shows each driver with its own reason on its own line. The OR semantics for the screen-level Yes/No follows the engine's actual `resolveScreens` behaviour - the panel does not invent a rule. Demo prose should call this out if the multi-driver case lands on the audience. |
-| R5 | The hint paragraph is the only UI signal that values are derived. A reader who scrolls past it might still treat the Yes/No tags as stored flags. | The hint sits in `govuk-hint` styling immediately under the heading; tested by asserting the literal substring is in the rendered HTML. |
+| #   | Risk                                                                                                                                                                                                                                                                                               | Mitigation                                                                                                                                                                                                                                                                                                                 |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | The commodity-value builder is journey-aware (a switch on `journeyKey`). A third journey needs its commodity shape added.                                                                                                                                                                          | The switch lives in one file in the explorer layer; not in the adapter contract. Adding a third journey is a one-paragraph extension. The grep "no `src/server/engine` imports in this file" doubles as a discipline check.                                                                                                |
+| R2  | The helper bypasses the journey's `facts.commodity` extractor and constructs the commodity value directly. If a journey's commodity-fact tests ever started reading something the constructed value doesn't carry (e.g. a new `species.id` field), the panel would silently produce wrong results. | The constructed shape is documented inline in §1 and tied to specific resolver-internal lookups in both journeys (`buildRefdataKey`, `lookupRouting`). The unit tests pin exact `reason` strings, so a divergence between constructed-value and test expectation surfaces as a test failure rather than silent corruption. |
+| R3  | A future obligation lands on a commodity-conditional screen with a non-commodity-fact condition (e.g. `purposeGroup`-driven), breaking the screen-presence claim.                                                                                                                                  | §4 invariant test fails immediately, forcing the change author to either restructure the journey map or update the panel's claim.                                                                                                                                                                                          |
+| R4  | The animals "Additional details" screen has two obligations with different conditions. The panel groups by screen so the row shows one Yes/No and two drivers, but a demo audience may still find it confusing.                                                                                    | The drivers cell shows each driver with its own reason on its own line. The OR semantics for the screen-level Yes/No follows the engine's actual `resolveScreens` behaviour - the panel does not invent a rule. Demo prose should call this out if the multi-driver case lands on the audience.                            |
+| R5  | The hint paragraph is the only UI signal that values are derived. A reader who scrolls past it might still treat the Yes/No tags as stored flags.                                                                                                                                                  | The hint sits in `govuk-hint` styling immediately under the heading; tested by asserting the literal substring is in the rendered HTML.                                                                                                                                                                                    |
 
 ## Verification
 

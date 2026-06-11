@@ -14,7 +14,7 @@ Today the obligation status values (`'satisfied'`, `'unsatisfied'`,
 scattered string literals across `evaluate-obligations.js`,
 `trace-evaluate-obligations.js`, and `routes/explorer/map-to-screens.js`.
 
-`protocol.md` §3 names these enums as part of the *immovable surface*
+`protocol.md` §3 names these enums as part of the _immovable surface_
 of the protocol. Promoting them to named, frozen constants makes the
 protocol visible in code, greppable, and stable. Subsequent refactor
 stages reference them rather than re-introducing literals as the code
@@ -43,17 +43,17 @@ Create `src/server/engine/types.js`. Two responsibilities:
 
 ```javascript
 export const OBLIGATION_STATUS = Object.freeze({
-  SATISFIED:   'satisfied',
+  SATISFIED: 'satisfied',
   UNSATISFIED: 'unsatisfied',
-  DEFERRED:    'deferred',
-  INACTIVE:    'inactive'
+  DEFERRED: 'deferred',
+  INACTIVE: 'inactive'
 })
 
 export const SCREEN_STATUS = Object.freeze({
-  COMPLETE:         'complete',
-  INCOMPLETE:       'incomplete',
+  COMPLETE: 'complete',
+  INCOMPLETE: 'incomplete',
   CANNOT_START_YET: 'cannotStartYet',
-  NOT_APPLICABLE:   'notApplicable'
+  NOT_APPLICABLE: 'notApplicable'
 })
 ```
 
@@ -111,15 +111,15 @@ Existing tests pass unchanged.
 ## Acceptance Criteria
 
 - [ ] `src/server/engine/types.js` exists and exports
-  `OBLIGATION_STATUS` and `SCREEN_STATUS` as frozen objects.
+      `OBLIGATION_STATUS` and `SCREEN_STATUS` as frozen objects.
 - [ ] Each enum value matches the literal it replaces (wire
-  compatibility).
+      compatibility).
 - [ ] JSDoc typedefs declared for the protocol records named in
-  protocol.md §2.
+      protocol.md §2.
 - [ ] The four engine/route modules import and use the constants in
-  place of literals.
+      place of literals.
 - [ ] String literals for status values appear only in tests,
-  fixtures, scenarios, and `types.js` itself (greppable).
+      fixtures, scenarios, and `types.js` itself (greppable).
 - [ ] All existing tests pass.
 - [ ] All four explorer views render correctly.
 

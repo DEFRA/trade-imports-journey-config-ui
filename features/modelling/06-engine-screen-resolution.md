@@ -101,6 +101,7 @@ Two test files, each owning its protocol §5 section.
 **`src/server/engine/resolve-screens.test.js` — owns §5.3.**
 
 State the behaviour and risks (≤5 lines):
+
 > Folds an EvaluationResult over a JourneyMap producing a flat
 > Screen[]. Risks: status-derivation rule order (top-down,
 > first-match wins matters), field-enrichment for obligationRef
@@ -117,12 +118,14 @@ High-value cases:
 - Throws on dangling `obligationRef` with the exact message format.
 
 Explicitly excluded:
+
 - Don't unit-test `deriveScreenStatus` directly — the public table
   covers it.
 
 **`src/server/engine/roll-up-to-sections.test.js` — owns §5.4.**
 
 State the behaviour and risks (≤5 lines):
+
 > Groups screens by section in first-appearance order; filters
 > notApplicable; omits whole-notApplicable sections; derives section
 > status. Risks: filter behaviour, omission rule, section-status
@@ -143,21 +146,21 @@ journey map) as integration smoke cases.
 ## Acceptance Criteria
 
 - [ ] `engine/resolve-screens.js` exports `resolveScreens(result, journeyMap)`
-  matching protocol.md §5.3 (shape, status table, throws).
+      matching protocol.md §5.3 (shape, status table, throws).
 - [ ] `engine/roll-up-to-sections.js` exports `rollUpToSections(screens)`
-  matching protocol.md §5.4 (shape, filter rules, status table,
-  throws).
+      matching protocol.md §5.4 (shape, filter rules, status table,
+      throws).
 - [ ] `routes/explorer/map-to-screens.js` is a thin shim that
-  re-exports both functions (with `resolveScreens` aliased as
-  `mapToScreens`).
+      re-exports both functions (with `resolveScreens` aliased as
+      `mapToScreens`).
 - [ ] Explorer route handlers continue to import and call the same
-  symbols they do today.
+      symbols they do today.
 - [ ] `engine/resolve-screens.test.js` and
-  `engine/roll-up-to-sections.test.js` cover their respective
-  protocol sections.
+      `engine/roll-up-to-sections.test.js` cover their respective
+      protocol sections.
 - [ ] All existing tests continue to pass.
 - [ ] All four explorer views render correctly, including the task
-  list ordering and the section/screen status badges.
+      list ordering and the section/screen status badges.
 
 ## Verification
 

@@ -311,9 +311,21 @@
               "label": "How is the consignment being transported to the BCP?",
               "obligationRef": "transport-to-bcp",
               "subFields": [
-                { "fieldName": "transport-type", "fieldType": "select", "label": "Type of transport" },
-                { "fieldName": "transport-id", "fieldType": "text", "label": "Transport identification" },
-                { "fieldName": "transport-document", "fieldType": "text", "label": "Transport document reference" }
+                {
+                  "fieldName": "transport-type",
+                  "fieldType": "select",
+                  "label": "Type of transport"
+                },
+                {
+                  "fieldName": "transport-id",
+                  "fieldType": "text",
+                  "label": "Transport identification"
+                },
+                {
+                  "fieldName": "transport-document",
+                  "fieldType": "text",
+                  "label": "Transport document reference"
+                }
               ]
             }
           ]
@@ -328,9 +340,21 @@
               "label": "Seal and container numbers",
               "obligationRef": "seal-containers",
               "subFields": [
-                { "fieldName": "seal-number", "fieldType": "text", "label": "Seal number" },
-                { "fieldName": "container-number", "fieldType": "text", "label": "Container number" },
-                { "fieldName": "official-seal", "fieldType": "checkbox", "label": "Official seal" }
+                {
+                  "fieldName": "seal-number",
+                  "fieldType": "text",
+                  "label": "Seal number"
+                },
+                {
+                  "fieldName": "container-number",
+                  "fieldType": "text",
+                  "label": "Container number"
+                },
+                {
+                  "fieldName": "official-seal",
+                  "fieldType": "checkbox",
+                  "label": "Official seal"
+                }
               ]
             }
           ]
@@ -400,8 +424,16 @@
               "obligationRef": "nominated-contacts",
               "subFields": [
                 { "fieldName": "name", "fieldType": "text", "label": "Name" },
-                { "fieldName": "email", "fieldType": "email", "label": "Email address" },
-                { "fieldName": "telephone", "fieldType": "tel", "label": "Telephone number" }
+                {
+                  "fieldName": "email",
+                  "fieldType": "email",
+                  "label": "Email address"
+                },
+                {
+                  "fieldName": "telephone",
+                  "fieldType": "tel",
+                  "label": "Telephone number"
+                }
               ]
             }
           ]
@@ -422,10 +454,26 @@
               "label": "Accompanying documents",
               "obligationRef": "accompanying-documents",
               "subFields": [
-                { "fieldName": "document-type", "fieldType": "select", "label": "Document type" },
-                { "fieldName": "document-reference", "fieldType": "text", "label": "Document reference" },
-                { "fieldName": "document-issue-date", "fieldType": "date", "label": "Date of issue" },
-                { "fieldName": "document-attachment", "fieldType": "file", "label": "Upload document" }
+                {
+                  "fieldName": "document-type",
+                  "fieldType": "select",
+                  "label": "Document type"
+                },
+                {
+                  "fieldName": "document-reference",
+                  "fieldType": "text",
+                  "label": "Document reference"
+                },
+                {
+                  "fieldName": "document-issue-date",
+                  "fieldType": "date",
+                  "label": "Date of issue"
+                },
+                {
+                  "fieldName": "document-attachment",
+                  "fieldType": "file",
+                  "label": "Upload document"
+                }
               ]
             }
           ]
@@ -446,16 +494,56 @@
               "label": "Importer",
               "obligationRef": "importer-identification",
               "subFields": [
-                { "fieldName": "trader-name", "fieldType": "text", "label": "Name" },
-                { "fieldName": "trader-company-name", "fieldType": "text", "label": "Company name" },
-                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
-                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
-                { "fieldName": "address-line-3", "fieldType": "text", "label": "Address line 3" },
-                { "fieldName": "city", "fieldType": "text", "label": "Town or city" },
-                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" },
-                { "fieldName": "country", "fieldType": "select", "label": "Country" },
-                { "fieldName": "email", "fieldType": "email", "label": "Email address" },
-                { "fieldName": "phone", "fieldType": "tel", "label": "Telephone number" }
+                {
+                  "fieldName": "trader-name",
+                  "fieldType": "text",
+                  "label": "Name"
+                },
+                {
+                  "fieldName": "trader-company-name",
+                  "fieldType": "text",
+                  "label": "Company name"
+                },
+                {
+                  "fieldName": "address-line-1",
+                  "fieldType": "text",
+                  "label": "Address line 1"
+                },
+                {
+                  "fieldName": "address-line-2",
+                  "fieldType": "text",
+                  "label": "Address line 2"
+                },
+                {
+                  "fieldName": "address-line-3",
+                  "fieldType": "text",
+                  "label": "Address line 3"
+                },
+                {
+                  "fieldName": "city",
+                  "fieldType": "text",
+                  "label": "Town or city"
+                },
+                {
+                  "fieldName": "postal-code",
+                  "fieldType": "text",
+                  "label": "Postal code"
+                },
+                {
+                  "fieldName": "country",
+                  "fieldType": "select",
+                  "label": "Country"
+                },
+                {
+                  "fieldName": "email",
+                  "fieldType": "email",
+                  "label": "Email address"
+                },
+                {
+                  "fieldName": "phone",
+                  "fieldType": "tel",
+                  "label": "Telephone number"
+                }
               ]
             },
             {
@@ -476,14 +564,46 @@
               "label": "Packer",
               "obligationRef": "packer-identification",
               "subFields": [
-                { "fieldName": "trader-name", "fieldType": "text", "label": "Name" },
-                { "fieldName": "trader-company-name", "fieldType": "text", "label": "Company name" },
-                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
-                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
-                { "fieldName": "address-line-3", "fieldType": "text", "label": "Address line 3" },
-                { "fieldName": "city", "fieldType": "text", "label": "Town or city" },
-                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" },
-                { "fieldName": "country", "fieldType": "select", "label": "Country" }
+                {
+                  "fieldName": "trader-name",
+                  "fieldType": "text",
+                  "label": "Name"
+                },
+                {
+                  "fieldName": "trader-company-name",
+                  "fieldType": "text",
+                  "label": "Company name"
+                },
+                {
+                  "fieldName": "address-line-1",
+                  "fieldType": "text",
+                  "label": "Address line 1"
+                },
+                {
+                  "fieldName": "address-line-2",
+                  "fieldType": "text",
+                  "label": "Address line 2"
+                },
+                {
+                  "fieldName": "address-line-3",
+                  "fieldType": "text",
+                  "label": "Address line 3"
+                },
+                {
+                  "fieldName": "city",
+                  "fieldType": "text",
+                  "label": "Town or city"
+                },
+                {
+                  "fieldName": "postal-code",
+                  "fieldType": "text",
+                  "label": "Postal code"
+                },
+                {
+                  "fieldName": "country",
+                  "fieldType": "select",
+                  "label": "Country"
+                }
               ]
             }
           ]
@@ -498,16 +618,56 @@
               "label": "Delivery address",
               "obligationRef": "destination-identification",
               "subFields": [
-                { "fieldName": "trader-name", "fieldType": "text", "label": "Name" },
-                { "fieldName": "trader-company-name", "fieldType": "text", "label": "Company name" },
-                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
-                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
-                { "fieldName": "address-line-3", "fieldType": "text", "label": "Address line 3" },
-                { "fieldName": "city", "fieldType": "text", "label": "Town or city" },
-                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" },
-                { "fieldName": "country", "fieldType": "select", "label": "Country" },
-                { "fieldName": "email", "fieldType": "email", "label": "Email address" },
-                { "fieldName": "phone", "fieldType": "tel", "label": "Telephone number" }
+                {
+                  "fieldName": "trader-name",
+                  "fieldType": "text",
+                  "label": "Name"
+                },
+                {
+                  "fieldName": "trader-company-name",
+                  "fieldType": "text",
+                  "label": "Company name"
+                },
+                {
+                  "fieldName": "address-line-1",
+                  "fieldType": "text",
+                  "label": "Address line 1"
+                },
+                {
+                  "fieldName": "address-line-2",
+                  "fieldType": "text",
+                  "label": "Address line 2"
+                },
+                {
+                  "fieldName": "address-line-3",
+                  "fieldType": "text",
+                  "label": "Address line 3"
+                },
+                {
+                  "fieldName": "city",
+                  "fieldType": "text",
+                  "label": "Town or city"
+                },
+                {
+                  "fieldName": "postal-code",
+                  "fieldType": "text",
+                  "label": "Postal code"
+                },
+                {
+                  "fieldName": "country",
+                  "fieldType": "select",
+                  "label": "Country"
+                },
+                {
+                  "fieldName": "email",
+                  "fieldType": "email",
+                  "label": "Email address"
+                },
+                {
+                  "fieldName": "phone",
+                  "fieldType": "tel",
+                  "label": "Telephone number"
+                }
               ]
             }
           ]
@@ -522,16 +682,56 @@
               "label": "Consignor or exporter",
               "obligationRef": "consignor-identification",
               "subFields": [
-                { "fieldName": "trader-name", "fieldType": "text", "label": "Name" },
-                { "fieldName": "trader-company-name", "fieldType": "text", "label": "Company name" },
-                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
-                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
-                { "fieldName": "address-line-3", "fieldType": "text", "label": "Address line 3" },
-                { "fieldName": "city", "fieldType": "text", "label": "Town or city" },
-                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" },
-                { "fieldName": "country", "fieldType": "select", "label": "Country" },
-                { "fieldName": "email", "fieldType": "email", "label": "Email address" },
-                { "fieldName": "phone", "fieldType": "tel", "label": "Telephone number" }
+                {
+                  "fieldName": "trader-name",
+                  "fieldType": "text",
+                  "label": "Name"
+                },
+                {
+                  "fieldName": "trader-company-name",
+                  "fieldType": "text",
+                  "label": "Company name"
+                },
+                {
+                  "fieldName": "address-line-1",
+                  "fieldType": "text",
+                  "label": "Address line 1"
+                },
+                {
+                  "fieldName": "address-line-2",
+                  "fieldType": "text",
+                  "label": "Address line 2"
+                },
+                {
+                  "fieldName": "address-line-3",
+                  "fieldType": "text",
+                  "label": "Address line 3"
+                },
+                {
+                  "fieldName": "city",
+                  "fieldType": "text",
+                  "label": "Town or city"
+                },
+                {
+                  "fieldName": "postal-code",
+                  "fieldType": "text",
+                  "label": "Postal code"
+                },
+                {
+                  "fieldName": "country",
+                  "fieldType": "select",
+                  "label": "Country"
+                },
+                {
+                  "fieldName": "email",
+                  "fieldType": "email",
+                  "label": "Email address"
+                },
+                {
+                  "fieldName": "phone",
+                  "fieldType": "tel",
+                  "label": "Telephone number"
+                }
               ]
             }
           ]
@@ -570,13 +770,41 @@
               "label": "Billing postal address",
               "obligationRef": "billing-information",
               "subFields": [
-                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
-                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
-                { "fieldName": "address-line-3", "fieldType": "text", "label": "Address line 3" },
-                { "fieldName": "address-line-4", "fieldType": "text", "label": "Address line 4" },
-                { "fieldName": "city-or-town", "fieldType": "text", "label": "City or town" },
-                { "fieldName": "county", "fieldType": "text", "label": "County" },
-                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" }
+                {
+                  "fieldName": "address-line-1",
+                  "fieldType": "text",
+                  "label": "Address line 1"
+                },
+                {
+                  "fieldName": "address-line-2",
+                  "fieldType": "text",
+                  "label": "Address line 2"
+                },
+                {
+                  "fieldName": "address-line-3",
+                  "fieldType": "text",
+                  "label": "Address line 3"
+                },
+                {
+                  "fieldName": "address-line-4",
+                  "fieldType": "text",
+                  "label": "Address line 4"
+                },
+                {
+                  "fieldName": "city-or-town",
+                  "fieldType": "text",
+                  "label": "City or town"
+                },
+                {
+                  "fieldName": "county",
+                  "fieldType": "text",
+                  "label": "County"
+                },
+                {
+                  "fieldName": "postal-code",
+                  "fieldType": "text",
+                  "label": "Postal code"
+                }
               ]
             }
           ]

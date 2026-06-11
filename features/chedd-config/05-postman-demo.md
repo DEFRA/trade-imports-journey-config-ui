@@ -10,7 +10,7 @@ The curated Postman collection exercises `chedd-products` end-to-end over its HT
 
 ## Context
 
-- The collection: `docs/postman/journey-config-demo.postman_collection.json`. Structure: folder 1 *Discovery* (one config request per journey, hardcoded); folder 2 *Refdata exploration* (parameterised by the `journey` collection variable, default `chedpp-plants`); folder 3 *Plants narrative* and folder 5 *Animals narrative* (journey-specific, walking specific commodity codes with commodity-driver + page-variance requests); folder 4 *Plants engine*; folder 6 *UI session*.
+- The collection: `docs/postman/journey-config-demo.postman_collection.json`. Structure: folder 1 _Discovery_ (one config request per journey, hardcoded); folder 2 _Refdata exploration_ (parameterised by the `journey` collection variable, default `chedpp-plants`); folder 3 _Plants narrative_ and folder 5 _Animals narrative_ (journey-specific, walking specific commodity codes with commodity-driver + page-variance requests); folder 4 _Plants engine_; folder 6 _UI session_.
 - The collection variable `journey` (default `chedpp-plants`) already flips folder 2 between journeys; folder 2's fourth request hardcodes a plants-shaped `commodity`/`species` query, so a chedd flip needs chedd-shaped params.
 - Real chedd commodity codes from `features/chedd-config/chedd-products-staging.json`: `1001` (internal-market active), `84181020` (anomaly, no internal market), `200710` (combo-override outlier).
 - The HTTP surface to exercise (auto-discovered once story 03 registers the journey): `GET /api/config/journeys/{key}`, `…/commodities`, `…/commodities/{code}`, `…/commodities/{code}/page-variance`, `POST /api/engine/journeys/{key}/evaluate`.

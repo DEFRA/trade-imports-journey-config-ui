@@ -19,23 +19,19 @@ You are about to fix a bug. Follow these steps IN ORDER. DO NOT skip steps.
 **STOP**: Before writing ANY code to fix the bug, you MUST:
 
 1. **Read the valuable unit test skill**:
-
    - Read `.claude/skills/valuable-unit-tests/SKILL.md`
    - Apply the principles to determine what test is needed
 
 2. **Create a TodoWrite entry**:
-
    - Add: "Write regression test for [bug description]"
    - Mark status: `in_progress`
 
 3. **Write a test that FAILS**:
-
    - The test should fail with the current buggy code
    - The test should be minimal and focused on the bug
    - Follow the principles from valuable-unit-tests.md
 
 4. **Run the test to confirm it FAILS**:
-
    - Use `TZ=UTC npx vitest run path/to/test.test.js`
    - Verify the test fails for the right reason
    - Do NOT proceed if the test passes (it's not testing the bug)
@@ -45,12 +41,10 @@ You are about to fix a bug. Follow these steps IN ORDER. DO NOT skip steps.
 ## Step 3: Fix the Bug
 
 1. **Create a TodoWrite entry**:
-
    - Add: "Fix [bug description]"
    - Mark status: `in_progress`
 
 2. **Make the minimal change**:
-
    - Fix ONLY what's needed to make the test pass
    - Avoid refactoring or "improvements" during the fix
 
@@ -59,12 +53,10 @@ You are about to fix a bug. Follow these steps IN ORDER. DO NOT skip steps.
 ## Step 4: Verify the Fix
 
 1. **Run the regression test**:
-
    - The test should now PASS
    - If it still fails, the bug isn't fixed - return to Step 3
 
 2. **Run the full test suite**:
-
    - Use `npm test` to ensure no regressions
    - If other tests fail, you may have introduced a new bug
 

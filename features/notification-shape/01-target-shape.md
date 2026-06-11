@@ -26,11 +26,11 @@ story documents derived from this design.
 
 ## Overlap analysis (from `00-deep-dive.md`)
 
-| Category | Count | Treatment |
-|---|---|---|
-| Identical paths in both journeys | 15 | **Shared fragments / shared top-level keys.** These are the load-bearing case for a common base. |
-| Animals-only paths | 20 | Top-level keys when the concept could plausibly recur in another journey; under a `vet` extension when truly domain-specific. |
-| Plants-only paths | 23 | Same principle. |
+| Category                         | Count | Treatment                                                                                                                     |
+| -------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Identical paths in both journeys | 15    | **Shared fragments / shared top-level keys.** These are the load-bearing case for a common base.                              |
+| Animals-only paths               | 20    | Top-level keys when the concept could plausibly recur in another journey; under a `vet` extension when truly domain-specific. |
+| Plants-only paths                | 23    | Same principle.                                                                                                               |
 
 The shared set covers all the "transport boilerplate" — parties,
 addresses, point of entry, arrival date, purpose, type, basic commodity
@@ -228,86 +228,86 @@ any code touches `obligations.json`.
 
 ### Shared paths (15 — identical in both journeys)
 
-| Old IPAFFS path | New path |
-|---|---|
-| `notification.type` | `type` |
-| `notification.partOne.arrivalDate` | `entry.arrivalDate` |
-| `notification.partOne.commodities.commodityComplement[].commodityID` | `commodities[].id` |
-| `notification.partOne.commodities.commodityComplement[].speciesName` | `commodities[].species.name` |
-| `notification.partOne.commodities.commodityComplement[].speciesNomination` | `commodities[].species.nomination` |
-| `notification.partOne.commodities.complementParameterSet[].keyDataPair` | `commodities[].parameters.keyDataPair` |
-| `notification.partOne.commodities.countryOfOrigin` | `origin.country` |
-| `notification.partOne.consignee` | `parties.consignee` |
-| `notification.partOne.consignor` | `parties.consignor` |
-| `notification.partOne.importer` | `parties.importer` |
-| `notification.partOne.nominatedContacts[]` | `contacts[]` |
-| `notification.partOne.placeOfDestination` | `destination` |
-| `notification.partOne.pointOfEntry` | `entry.bcp` |
-| `notification.partOne.purpose.exitBIP` | `purpose.exitBIP` |
-| `notification.partOne.purpose.purposeGroup` | `purpose.group` |
+| Old IPAFFS path                                                            | New path                               |
+| -------------------------------------------------------------------------- | -------------------------------------- |
+| `notification.type`                                                        | `type`                                 |
+| `notification.partOne.arrivalDate`                                         | `entry.arrivalDate`                    |
+| `notification.partOne.commodities.commodityComplement[].commodityID`       | `commodities[].id`                     |
+| `notification.partOne.commodities.commodityComplement[].speciesName`       | `commodities[].species.name`           |
+| `notification.partOne.commodities.commodityComplement[].speciesNomination` | `commodities[].species.nomination`     |
+| `notification.partOne.commodities.complementParameterSet[].keyDataPair`    | `commodities[].parameters.keyDataPair` |
+| `notification.partOne.commodities.countryOfOrigin`                         | `origin.country`                       |
+| `notification.partOne.consignee`                                           | `parties.consignee`                    |
+| `notification.partOne.consignor`                                           | `parties.consignor`                    |
+| `notification.partOne.importer`                                            | `parties.importer`                     |
+| `notification.partOne.nominatedContacts[]`                                 | `contacts[]`                           |
+| `notification.partOne.placeOfDestination`                                  | `destination`                          |
+| `notification.partOne.pointOfEntry`                                        | `entry.bcp`                            |
+| `notification.partOne.purpose.exitBIP`                                     | `purpose.exitBIP`                      |
+| `notification.partOne.purpose.purposeGroup`                                | `purpose.group`                        |
 
 ### Animals-only paths (20)
 
-| Old IPAFFS path | New path |
-|---|---|
-| `notification.partOne.cphNumber` | `consignment.cph` |
-| `notification.partOne.portOfExit` | `entry.portOfExit` |
-| `notification.partOne.transporter` | `parties.transporter` |
-| `notification.partOne.commodities.regionOfOrigin` | `origin.region` |
-| `notification.partOne.commodities.animalsCertifiedAs` | `consignment.animalsCertifiedAs` |
-| `notification.partOne.commodities.includeNonAblactedAnimals` | `consignment.includeNonAblactedAnimals` |
-| `notification.partOne.purpose.internalMarketPurpose` | `purpose.subPurpose` |
-| `notification.partOne.commodities.commodityComplement[].speciesClass` | `commodities[].species.class` |
-| `notification.partOne.commodities.commodityComplement[].speciesFamilyName` | `commodities[].species.family` |
-| `notification.partOne.commodities.commodityComplement[].speciesType` | `commodities[].species.type` |
-| `notification.partOne.commodities.commodityComplement[].speciesTypeName` | `commodities[].species.typeName` |
-| `notification.partOne.commodities.complementParameterSet[].identifiers[].data` | `commodities[].identifiers[].data` |
-| `notification.partOne.commodities.complementParameterSet[].identifiers[].permanentAddress` | `commodities[].identifiers[].permanentAddress` |
-| `notification.partOne.veterinaryInformation.veterinaryDocument` | `documents.veterinary.reference` |
-| `notification.partOne.veterinaryInformation.veterinaryDocumentIssueDate` | `documents.veterinary.issueDate` |
-| `notification.partOne.veterinaryInformation.establishmentsOfOrigin[].approvalNumber` | `documents.veterinary.establishments[].approvalNumber` |
-| `notification.partOne.veterinaryInformation.accompanyingDocuments[].documentType` | `documents.accompanying[].type` |
-| `notification.partOne.veterinaryInformation.accompanyingDocuments[].documentReference` | `documents.accompanying[].reference` |
-| `notification.partOne.veterinaryInformation.accompanyingDocuments[].documentIssueDate` | `documents.accompanying[].issueDate` |
-| `notification.partOne.veterinaryInformation.accompanyingDocuments[].attachmentId` | `documents.accompanying[].attachmentId` |
+| Old IPAFFS path                                                                            | New path                                               |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| `notification.partOne.cphNumber`                                                           | `consignment.cph`                                      |
+| `notification.partOne.portOfExit`                                                          | `entry.portOfExit`                                     |
+| `notification.partOne.transporter`                                                         | `parties.transporter`                                  |
+| `notification.partOne.commodities.regionOfOrigin`                                          | `origin.region`                                        |
+| `notification.partOne.commodities.animalsCertifiedAs`                                      | `consignment.animalsCertifiedAs`                       |
+| `notification.partOne.commodities.includeNonAblactedAnimals`                               | `consignment.includeNonAblactedAnimals`                |
+| `notification.partOne.purpose.internalMarketPurpose`                                       | `purpose.subPurpose`                                   |
+| `notification.partOne.commodities.commodityComplement[].speciesClass`                      | `commodities[].species.class`                          |
+| `notification.partOne.commodities.commodityComplement[].speciesFamilyName`                 | `commodities[].species.family`                         |
+| `notification.partOne.commodities.commodityComplement[].speciesType`                       | `commodities[].species.type`                           |
+| `notification.partOne.commodities.commodityComplement[].speciesTypeName`                   | `commodities[].species.typeName`                       |
+| `notification.partOne.commodities.complementParameterSet[].identifiers[].data`             | `commodities[].identifiers[].data`                     |
+| `notification.partOne.commodities.complementParameterSet[].identifiers[].permanentAddress` | `commodities[].identifiers[].permanentAddress`         |
+| `notification.partOne.veterinaryInformation.veterinaryDocument`                            | `documents.veterinary.reference`                       |
+| `notification.partOne.veterinaryInformation.veterinaryDocumentIssueDate`                   | `documents.veterinary.issueDate`                       |
+| `notification.partOne.veterinaryInformation.establishmentsOfOrigin[].approvalNumber`       | `documents.veterinary.establishments[].approvalNumber` |
+| `notification.partOne.veterinaryInformation.accompanyingDocuments[].documentType`          | `documents.accompanying[].type`                        |
+| `notification.partOne.veterinaryInformation.accompanyingDocuments[].documentReference`     | `documents.accompanying[].reference`                   |
+| `notification.partOne.veterinaryInformation.accompanyingDocuments[].documentIssueDate`     | `documents.accompanying[].issueDate`                   |
+| `notification.partOne.veterinaryInformation.accompanyingDocuments[].attachmentId`          | `documents.accompanying[].attachmentId`                |
 
 ### Plants-only paths (23)
 
-| Old IPAFFS path | New path |
-|---|---|
-| `notification.partOne.arrivalTime` | `entry.arrivalTime` |
-| `notification.partOne.billingInformation` | `billing` |
-| `notification.partOne.commodities.commodityComplement[].eppoCode` | `commodities[].species.eppoCode` |
-| `notification.partOne.commodities.commodityComplement[].speciesID` | `commodities[].species.id` |
-| `notification.partOne.commodities.consignedCountry` | `origin.consignedCountry` |
-| `notification.partOne.commodities.gmsDeclarationAccepted` | `declarations.gmsAccepted` |
-| `notification.partOne.commodities.numberOfPackages` | `consignment.numberOfPackages` |
-| `notification.partOne.commodities.totalGrossWeight` | `consignment.totalGrossWeight` |
-| `notification.partOne.commodities.totalNetWeight` | `consignment.totalNetWeight` |
-| `notification.partOne.contactDetails` | `contactDetails` |
-| `notification.partOne.importerLocalReferenceNumber` | `importerLocalRef` |
-| `notification.partOne.isGVMSRoute` | `entry.isGVMS` |
-| `notification.partOne.meansOfTransportFromEntryPoint` | `entry.transportType` |
-| `notification.partOne.packer` | `parties.packer` |
-| `notification.partOne.pointOfEntryControlPoint` | `entry.bcpControlPoint` |
-| `notification.partOne.provideCtcMrn` | `ctcMrn` |
-| `notification.partOne.purpose.finalBIP` | `purpose.finalBIP` |
-| `notification.partOne.purpose.forImportOrAdmission` | `purpose.forImportOrAdmission` |
-| `notification.partOne.purpose.thirdCountry` | `purpose.thirdCountry` |
-| `notification.partOne.purpose.thirdCountryTranshipment` | `purpose.thirdCountryTranshipment` |
-| `notification.partOne.purpose.transitThirdCountries` | `purpose.transitThirdCountries` |
-| `notification.partOne.sealsContainers[]` | `sealsContainers[]` |
-| `notification.partOne.veterinaryInformation.accompanyingDocuments[]` | `documents.accompanying[]` |
+| Old IPAFFS path                                                      | New path                           |
+| -------------------------------------------------------------------- | ---------------------------------- |
+| `notification.partOne.arrivalTime`                                   | `entry.arrivalTime`                |
+| `notification.partOne.billingInformation`                            | `billing`                          |
+| `notification.partOne.commodities.commodityComplement[].eppoCode`    | `commodities[].species.eppoCode`   |
+| `notification.partOne.commodities.commodityComplement[].speciesID`   | `commodities[].species.id`         |
+| `notification.partOne.commodities.consignedCountry`                  | `origin.consignedCountry`          |
+| `notification.partOne.commodities.gmsDeclarationAccepted`            | `declarations.gmsAccepted`         |
+| `notification.partOne.commodities.numberOfPackages`                  | `consignment.numberOfPackages`     |
+| `notification.partOne.commodities.totalGrossWeight`                  | `consignment.totalGrossWeight`     |
+| `notification.partOne.commodities.totalNetWeight`                    | `consignment.totalNetWeight`       |
+| `notification.partOne.contactDetails`                                | `contactDetails`                   |
+| `notification.partOne.importerLocalReferenceNumber`                  | `importerLocalRef`                 |
+| `notification.partOne.isGVMSRoute`                                   | `entry.isGVMS`                     |
+| `notification.partOne.meansOfTransportFromEntryPoint`                | `entry.transportType`              |
+| `notification.partOne.packer`                                        | `parties.packer`                   |
+| `notification.partOne.pointOfEntryControlPoint`                      | `entry.bcpControlPoint`            |
+| `notification.partOne.provideCtcMrn`                                 | `ctcMrn`                           |
+| `notification.partOne.purpose.finalBIP`                              | `purpose.finalBIP`                 |
+| `notification.partOne.purpose.forImportOrAdmission`                  | `purpose.forImportOrAdmission`     |
+| `notification.partOne.purpose.thirdCountry`                          | `purpose.thirdCountry`             |
+| `notification.partOne.purpose.thirdCountryTranshipment`              | `purpose.thirdCountryTranshipment` |
+| `notification.partOne.purpose.transitThirdCountries`                 | `purpose.transitThirdCountries`    |
+| `notification.partOne.sealsContainers[]`                             | `sealsContainers[]`                |
+| `notification.partOne.veterinaryInformation.accompanyingDocuments[]` | `documents.accompanying[]`         |
 
 ### Special case — `submissionDatePath` (resolver export, not a schemaPath)
 
-| Old | New |
-|---|---|
+| Old                                     | New             |
+| --------------------------------------- | --------------- |
 | `'notification.partOne.submissionDate'` | `'submittedAt'` |
 
 ### Note on `contactDetails` vs `contacts[]` (plants)
 
-chedpp-plants has *two* contact-related obligations referencing
+chedpp-plants has _two_ contact-related obligations referencing
 distinct paths:
 
 - `notification.partOne.contactDetails` (singular object) → `contactDetails`
@@ -318,11 +318,11 @@ plants-specific (singular), `contacts[]` is shared (array).
 
 ### Depth comparison
 
-| Stat | IPAFFS shape | New shape |
-|---|---|---|
-| Median path depth | 4 | 2 |
-| Max path depth (non-array) | 5 | 4 |
-| Deepest array-traversing path | 7 segments | 4 segments |
+| Stat                          | IPAFFS shape | New shape  |
+| ----------------------------- | ------------ | ---------- |
+| Median path depth             | 4            | 2          |
+| Max path depth (non-array)    | 5            | 4          |
+| Deepest array-traversing path | 7 segments   | 4 segments |
 
 The deepest old path is
 `notification.partOne.commodities.complementParameterSet[0].identifiers[0].permanentAddress.addressLine1`
@@ -360,9 +360,7 @@ no engine change is needed.
         "type": "Bovine",
         "typeName": "Cattle"
       },
-      "identifiers": [
-        { "data": "GB123456789012" }
-      ]
+      "identifiers": [{ "data": "GB123456789012" }]
     }
   ],
   "consignment": {
@@ -370,9 +368,18 @@ no engine change is needed.
     "cph": "CPH12/345/6789"
   },
   "parties": {
-    "importer":  { "name": "Test Importer",  "address": { "city": "...", "country": "GB" } },
-    "consignor": { "name": "Test Consignor", "address": { "city": "...", "country": "FR" } },
-    "consignee": { "name": "Test Consignee", "address": { "city": "...", "country": "GB" } },
+    "importer": {
+      "name": "Test Importer",
+      "address": { "city": "...", "country": "GB" }
+    },
+    "consignor": {
+      "name": "Test Consignor",
+      "address": { "city": "...", "country": "FR" }
+    },
+    "consignee": {
+      "name": "Test Consignee",
+      "address": { "city": "...", "country": "GB" }
+    },
     "transporter": {
       "name": "Test Transport Ltd",
       "address": { "country": "FR" },
@@ -391,11 +398,15 @@ no engine change is needed.
     "veterinary": {
       "reference": "CERT123",
       "issueDate": "2026-04-10",
-      "establishments": [ { "approvalNumber": "FR12345" } ]
+      "establishments": [{ "approvalNumber": "FR12345" }]
     },
     "accompanying": [
-      { "type": "HEALTH_CERTIFICATE", "reference": "CERT123",
-        "issueDate": "2026-04-10", "attachmentId": "ATT123" }
+      {
+        "type": "HEALTH_CERTIFICATE",
+        "reference": "CERT123",
+        "issueDate": "2026-04-10",
+        "attachmentId": "ATT123"
+      }
     ]
   },
   "contacts": [
@@ -485,7 +496,7 @@ notifications are arrays of length 1.
 
 Animals' `commodities.regionOfOrigin` / `animalsCertifiedAs` /
 `includeNonAblactedAnimals` and plants' `numberOfPackages` /
-`totalGrossWeight` etc. are *consignment-level*, not commodity-level
+`totalGrossWeight` etc. are _consignment-level_, not commodity-level
 (they describe the whole shipment regardless of which commodities are in
 it). Promoting them to a `consignment` block separates these from
 per-commodity attributes.

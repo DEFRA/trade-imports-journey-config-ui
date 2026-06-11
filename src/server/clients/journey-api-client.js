@@ -90,9 +90,7 @@ const buildRefdataViewQuery = ({ commodity, species } = {}) => {
   // constraint. Throwing here gives a clear stack trace instead of an
   // opaque 400 from the server.
   if (hasValue(species) && !hasValue(commodity)) {
-    throw new Error(
-      'getRefdataView: species requires commodity to also be set'
-    )
+    throw new Error('getRefdataView: species requires commodity to also be set')
   }
   const params = new URLSearchParams()
   if (hasValue(commodity)) params.set('commodity', commodity)
@@ -123,7 +121,9 @@ export const createJourneyApiClient = ({
     },
 
     async getRefdataView(key, opts) {
-      return get(`${journeyBase(key)}/refdata-view${buildRefdataViewQuery(opts)}`)
+      return get(
+        `${journeyBase(key)}/refdata-view${buildRefdataViewQuery(opts)}`
+      )
     },
 
     async getCommodities(key) {

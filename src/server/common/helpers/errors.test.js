@@ -23,7 +23,9 @@ describe('#errors', () => {
     })
 
     expect(result).toEqual(
-      expect.stringContaining('Page not found | trade-imports-journey-config-ui')
+      expect.stringContaining(
+        'Page not found | trade-imports-journey-config-ui'
+      )
     )
     expect(statusCode).toBe(statusCodes.notFound)
   })

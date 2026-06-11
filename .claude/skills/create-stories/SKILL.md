@@ -11,7 +11,7 @@ implementable stories that match the project's existing story format
 (see `features/multi-journey/story-01-journey-owned-resolvers.md` as
 the canonical example).
 
-The skill is an *extractor*, not a designer. If the source material
+The skill is an _extractor_, not a designer. If the source material
 didn't produce a decision, there is no story.
 
 The process follows the **Refine and Thought (RaT) pattern**
@@ -31,6 +31,7 @@ makes drift visible at gate points.
 ## Inputs
 
 One of:
+
 - A conversation summary or transcript
 - One or more design documents (e.g. the files in `features/<X>/`)
 - A feature directory with context docs but no stories yet
@@ -51,6 +52,7 @@ they are different starting points within the same loop. The skill does
 not tag stories with a workflow class.
 
 Two skills feed the loop:
+
 - `.claude/skills/valuable-unit-tests/SKILL.md` — governs test selection
   per module. Stories should describe behaviour at a level the
   qa-test-planner can plan against, not pre-decompose modules.
@@ -65,7 +67,7 @@ is small, the cost of writing wrong stories is large.
 
 ### Step 1: Filter — strip the conversation to actionable signal
 
-This is the *refine* step in the RaT pattern. Conversations meander;
+This is the _refine_ step in the RaT pattern. Conversations meander;
 the output of this step replaces the raw input for everything that
 follows. Subsequent steps must work from this refined classification,
 not from the original transcript or doc set.
@@ -73,13 +75,13 @@ not from the original transcript or doc set.
 Before extracting anything, classify every substantive point into one
 of five categories:
 
-| Category | What it is | Where it lands |
-|---|---|---|
-| **Decision** | A design choice made and agreed | One story (or one slice of a story) |
-| **Constraint / Invariant** | A cross-cutting rule that applies across all work (e.g. "every PR ships green and functional") | Feature README's *Invariants* section; referenced from stories, not duplicated |
-| **Rejected alternative** | An option explored and discarded | Feature README's *Rejected alternatives* (prevents future revisiting) |
-| **Open question** | Unresolved unknown | Red card on the relevant decision (Step 3), or feature-level *Open questions* if cross-cutting |
-| **Background** | Context that informs but isn't actionable | Linked from Context sections; never inlined |
+| Category                   | What it is                                                                                     | Where it lands                                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Decision**               | A design choice made and agreed                                                                | One story (or one slice of a story)                                                            |
+| **Constraint / Invariant** | A cross-cutting rule that applies across all work (e.g. "every PR ships green and functional") | Feature README's _Invariants_ section; referenced from stories, not duplicated                 |
+| **Rejected alternative**   | An option explored and discarded                                                               | Feature README's _Rejected alternatives_ (prevents future revisiting)                          |
+| **Open question**          | Unresolved unknown                                                                             | Red card on the relevant decision (Step 3), or feature-level _Open questions_ if cross-cutting |
+| **Background**             | Context that informs but isn't actionable                                                      | Linked from Context sections; never inlined                                                    |
 
 **STOP.** Present the filtered list:
 
@@ -106,7 +108,7 @@ Background:
   ...
 ```
 
-Ask: *Does this look right? Anything missing or miscategorised?* Wait
+Ask: _Does this look right? Anything missing or miscategorised?_ Wait
 for confirmation.
 
 ### Step 2: Identify feature and numbering
@@ -150,13 +152,13 @@ Example Mapping):
 Apply the diagnostic signals immediately. They tell you whether the
 story is well-shaped:
 
-| Signal | Meaning | Action |
-|---|---|---|
-| **≥ 3 red cards** | Story isn't ready — too many unknowns | Park it; record in feature *Open questions* |
-| **≥ 6 blue cards** | Story is too big | Slice along rule boundaries — each cluster of related blue cards becomes its own story |
-| **One blue card with many greens, no other blues** | Multiple rules are tangled | Tease them apart into separate blue cards |
-| **A blue card with zero greens** | Rule is unclear | Ask for an example or park as a red card |
-| **A green card that doesn't illustrate any blue** | Drift / orphan example | Drop it or surface a missing rule |
+| Signal                                             | Meaning                               | Action                                                                                 |
+| -------------------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------- |
+| **≥ 3 red cards**                                  | Story isn't ready — too many unknowns | Park it; record in feature _Open questions_                                            |
+| **≥ 6 blue cards**                                 | Story is too big                      | Slice along rule boundaries — each cluster of related blue cards becomes its own story |
+| **One blue card with many greens, no other blues** | Multiple rules are tangled            | Tease them apart into separate blue cards                                              |
+| **A blue card with zero greens**                   | Rule is unclear                       | Ask for an example or park as a red card                                               |
+| **A green card that doesn't illustrate any blue**  | Drift / orphan example                | Drop it or surface a missing rule                                                      |
 
 ### Step 4: Sequence — dependency order and walking skeleton
 
@@ -164,7 +166,7 @@ Order stories by dependency. Two cases:
 
 **Case A — the source material is already sequenced.** If the design
 explicitly orders work (e.g. "Stage 0 preflight, then Stage 1, then
-Stage 2…"), use that order. Then *validate* it:
+Stage 2…"), use that order. Then _validate_ it:
 
 - Do later stories depend only on earlier ones?
 - Does any single story, delivered alone, prove the eventual
@@ -230,32 +232,37 @@ the template below. `NN` is a zero-padded two-digit integer in delivery
 order; the slug describes what the story delivers (e.g.
 `01-evaluate-returns-summary.md`). Use the existing
 `features/multi-journey/story-01-journey-owned-resolvers.md` as a
-*shape* reference for sections, but follow the simpler `NN-slug.md`
+_shape_ reference for sections, but follow the simpler `NN-slug.md`
 filename convention.
 
 ````markdown
 # Story NN: <Title>
 
 ## Goal
+
 <One paragraph. What changes, and what becomes true that wasn't true
 before.>
 
 ## Why
+
 <The problem this solves. If alternatives were rejected during design,
 note them here so future readers don't re-litigate.>
 
 ## Context
-<Background the implementer needs. *Reference* the design docs,
+
+<Background the implementer needs. _Reference_ the design docs,
 conversation, and feature README — don't inline them. Call out the
 specific sections that matter.>
 
 ## Specification
+
 <Concrete changes the story delivers. File paths, function signatures,
 before/after where useful. This is the implementer's reference. Where
 the design doc gives an exact change, quote it. Where it gives a
 behaviour, describe the outcome and leave implementation to the loop.>
 
 ## Tests
+
 <What this story lands in test code. Cite the protocol section being
 proven (e.g. "protocol.md §5.1"). Name the test files added or
 extended. Describe behaviour at the level qa-test-planner can plan
@@ -264,6 +271,7 @@ during implementation. Test selection follows
 `.claude/skills/valuable-unit-tests/SKILL.md`.>
 
 ## Acceptance Criteria
+
 <Checkboxes derived directly from the green-card examples in Step 3.
 Each is observable and verifiable.>
 
@@ -271,6 +279,7 @@ Each is observable and verifiable.>
 - [ ] <criterion derived from example 2>
 
 ## Verification
+
 <The exact bash invocations a reviewer runs to prove the criteria.
 Include the test command, lint command, and any greppable invariants
 (e.g. "no `@hapi/*` imports under `engine/`").>
@@ -281,13 +290,15 @@ npm test
 ```
 
 ## Known unknowns
+
 <Red cards that survived Step 3. If empty, omit this section. If
 non-empty and any are blocking, the story shouldn't be in the active
 sequence yet.>
 
 ## What NOT to change
+
 <Explicit scope boundaries. Names the files, modules, or concerns
-this story is *not* allowed to touch. Prevents scope creep during
+this story is _not_ allowed to touch. Prevents scope creep during
 implementation.>
 ````
 
@@ -305,15 +316,16 @@ Parked:
   - <decision that didn't become a story> — reason
 ```
 
-Ask: *Anything to adjust?* Then stop.
+Ask: _Anything to adjust?_ Then stop.
 
 ## Merging and slicing rules
 
-The skill's job is to produce stories that are *small enough to ship
-green independently* but *not so small that file count balloons*. Two
+The skill's job is to produce stories that are _small enough to ship
+green independently_ but _not so small that file count balloons_. Two
 balancing rules:
 
 **Slice when:**
+
 - The blue-card count exceeds ~6 — multiple rules tangled
 - The story would break the "every PR ships green and functional"
   invariant if delivered as one unit
@@ -321,13 +333,14 @@ balancing rules:
   consumers → remove old) — each phase is its own slice
 
 **Merge when:**
+
 - Two adjacent stories share a green-test boundary (delivering them
   separately requires test scaffolding that's thrown away in the next
   story)
 - The combined story is still under ~6 blue cards
 - Neither story is independently meaningful as a release
 
-When the rules conflict, *slicing wins*. Branch-by-abstraction's
+When the rules conflict, _slicing wins_. Branch-by-abstraction's
 independent green-ness is a stronger constraint than file count.
 
 ## What this skill does NOT do

@@ -40,7 +40,7 @@ Export `evaluateWithTrace(notification, adapter)` with this contract:
 - **Parameters:** same as `engine/evaluate.js` Story 04.
 - **Returns** `EvaluationResult` (per §5.1) with each
   `EvaluatedObligation` extended by a `trace: Trace` field per §5.2.
-- **Throws** the §5.1 set of conditions *plus* the §5.2 mismatch
+- **Throws** the §5.1 set of conditions _plus_ the §5.2 mismatch
   error if any traced status diverges from the canonical status.
 
 The module:
@@ -59,6 +59,7 @@ Step builders, `traceObligation`, `buildSatisfactionSteps`, and
 `assertEquivalence` stay inside the module (private helpers).
 
 Imports:
+
 - `evaluate` from `engine/evaluate.js`.
 - `resolvePath`, `isEmpty` from `engine/path.js`.
 - `OBLIGATION_STATUS` from `engine/types.js`.
@@ -69,7 +70,12 @@ Imports:
 import { evaluateWithTrace } from '#server/engine/evaluate-with-trace.js'
 
 // Adapt the old positional signature for existing callers.
-export const traceEvaluateObligations = (notification, obligations, refdata, resolvers) =>
+export const traceEvaluateObligations = (
+  notification,
+  obligations,
+  refdata,
+  resolvers
+) =>
   evaluateWithTrace(notification, {
     obligations,
     refdata,
@@ -127,19 +133,19 @@ against the shim. No changes to that test.
 ## Acceptance Criteria
 
 - [ ] `engine/evaluate-with-trace.js` exists and exports
-  `evaluateWithTrace(notification, adapter)`.
+      `evaluateWithTrace(notification, adapter)`.
 - [ ] Contract matches protocol.md §5.2 exactly: return shape, trace
-  step variants, terminal-step ↔ status correspondence, throws.
+      step variants, terminal-step ↔ status correspondence, throws.
 - [ ] `trace-evaluate-obligations.js` is a thin shim adapting the
-  positional signature.
+      positional signature.
 - [ ] The plugin facade (`evaluationEngine.evaluate`) and explorer
-  routes continue to work without modification.
+      routes continue to work without modification.
 - [ ] `engine/evaluate-with-trace.test.js` covers every §5.2 contract
-  case (terminal-step table, conditional/unconditional, equivalence,
-  mismatch throw).
+      case (terminal-step table, conditional/unconditional, equivalence,
+      mismatch throw).
 - [ ] All existing tests continue to pass.
 - [ ] All four explorer views render correctly, including
-  `/explorer/debug` which depends on the trace structure.
+      `/explorer/debug` which depends on the trace structure.
 
 ## Verification
 

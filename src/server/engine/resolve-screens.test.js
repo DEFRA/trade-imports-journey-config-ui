@@ -61,18 +61,45 @@ const oneScreenMap = (fields, screenOverrides = {}) => ({
 
 describe('resolveScreens — throws (§5.3 exact text)', () => {
   it.each([
-    ['missing obligations', null, { sections: [] }, 'resolveScreens: evaluationResult must have obligations array'],
-    ['empty result object', {}, { sections: [] }, 'resolveScreens: evaluationResult must have obligations array'],
-    ['missing sections', { obligations: [] }, null, 'resolveScreens: journeyMap must have sections array'],
-    ['empty journeyMap object', { obligations: [] }, {}, 'resolveScreens: journeyMap must have sections array']
+    [
+      'missing obligations',
+      null,
+      { sections: [] },
+      'resolveScreens: evaluationResult must have obligations array'
+    ],
+    [
+      'empty result object',
+      {},
+      { sections: [] },
+      'resolveScreens: evaluationResult must have obligations array'
+    ],
+    [
+      'missing sections',
+      { obligations: [] },
+      null,
+      'resolveScreens: journeyMap must have sections array'
+    ],
+    [
+      'empty journeyMap object',
+      { obligations: [] },
+      {},
+      'resolveScreens: journeyMap must have sections array'
+    ]
   ])('%s throws "%s"', (_label, result, journeyMap, expectedMessage) => {
     expect(() => resolveScreens(result, journeyMap)).toThrow(expectedMessage)
   })
 
   it('dangling obligationRef throws with §5.3 exact wording', () => {
-    const result = makeResult([{ id: 'known', status: 'satisfied', missingPaths: [] }])
+    const result = makeResult([
+      { id: 'known', status: 'satisfied', missingPaths: [] }
+    ])
     const journeyMap = oneScreenMap([
-      { fieldName: 'field-x', fieldType: 'text', label: 'X', obligationRef: 'NON-EXISTENT' }
+      {
+        fieldName: 'field-x',
+        fieldType: 'text',
+        label: 'X',
+        obligationRef: 'NON-EXISTENT'
+      }
     ])
     expect(() => resolveScreens(result, journeyMap)).toThrow(
       'Field "field-x" references obligation "NON-EXISTENT" which was not found in evaluation result.'
@@ -112,8 +139,16 @@ describe('resolveScreens — screen status derivation table (§5.3)', () => {
   it.each([
     // [label, statuses, expected screen status]
     ['no obligations referenced', [], 'complete'],
-    ['any unsatisfied → incomplete', ['satisfied', 'unsatisfied', 'deferred', 'inactive'], 'incomplete'],
-    ['any deferred (no unsatisfied) → cannotStartYet', ['satisfied', 'deferred', 'inactive'], 'cannotStartYet'],
+    [
+      'any unsatisfied → incomplete',
+      ['satisfied', 'unsatisfied', 'deferred', 'inactive'],
+      'incomplete'
+    ],
+    [
+      'any deferred (no unsatisfied) → cannotStartYet',
+      ['satisfied', 'deferred', 'inactive'],
+      'cannotStartYet'
+    ],
     ['all inactive → notApplicable', ['inactive', 'inactive'], 'notApplicable'],
     ['satisfied + inactive → complete', ['satisfied', 'inactive'], 'complete']
   ])('%s', (_label, statuses, expectedStatus) => {
@@ -139,7 +174,12 @@ describe('resolveScreens — repeats pass-through (§5.3)', () => {
           id: '01',
           name: 'Section',
           screens: [
-            { id: 'repeated', screenName: 'Repeated', fields: [], repeats: 'commodity' },
+            {
+              id: 'repeated',
+              screenName: 'Repeated',
+              fields: [],
+              repeats: 'commodity'
+            },
             { id: 'plain', screenName: 'Plain', fields: [] }
           ]
         }
@@ -173,7 +213,10 @@ describe('resolveScreens — real-data composition with evaluate (eu-live-animal
   })
 
   it('every committed scenario produces a non-empty Screen[] with §5.3-conforming shape', () => {
-    const evalResult = evaluate(scenarioMap['import-cattle'].notification, adapter)
+    const evalResult = evaluate(
+      scenarioMap['import-cattle'].notification,
+      adapter
+    )
     const screens = resolveScreens(evalResult, journeyMap)
 
     expect(screens.length).toBeGreaterThan(0)

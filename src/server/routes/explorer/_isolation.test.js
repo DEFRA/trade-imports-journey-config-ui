@@ -82,9 +82,8 @@ describe('explorer routes lift-out invariant', () => {
     '%s does not import #server/engine/* or #server/plugins/evaluation-engine/*',
     (file) => {
       const source = readFileSync(file, 'utf-8')
-      const engineImports = extractImportSpecifiers(source).filter(
-        isEngineImport
-      )
+      const engineImports =
+        extractImportSpecifiers(source).filter(isEngineImport)
       expect(engineImports).toEqual([])
     }
   )

@@ -37,6 +37,7 @@ git status
 1. **PAUSE immediately** - Do NOT proceed with story implementation
 2. **Show the user** the output of `git status`
 3. **Ask the user**:
+
    ```
    There are uncommitted changes in the working tree:
 
@@ -49,6 +50,7 @@ git status
 
    Which would you like to do before I start the story?
    ```
+
 4. **Wait for user decision** - Do NOT proceed until the working tree is clean
 
 **IF the working tree is clean** (no uncommitted changes):
@@ -60,17 +62,20 @@ git status
 Once the working tree is clean:
 
 1. **Determine branch name** from the story:
-  - Read the story file name or title
-  - Convert to kebab-case branch name
-  - Prefix with `feature/` or `story/`
-  - Example: `feature/scenario-based-journey-explorer`
+
+- Read the story file name or title
+- Convert to kebab-case branch name
+- Prefix with `feature/` or `story/`
+- Example: `feature/scenario-based-journey-explorer`
 
 2. **Check if branch already exists**:
+
    ```bash
    git branch --list | grep <branch-name>
    ```
 
 3. **Create and checkout the branch**:
+
    ```bash
    git checkout -b <branch-name>
    ```
@@ -83,6 +88,7 @@ Once the working tree is clean:
    ```
 
 **IMPORTANT**:
+
 - ALL story work MUST happen on this feature branch
 - DO NOT merge or push the branch - the user will do this manually
 - If branch creation fails, STOP and report error to user
@@ -141,12 +147,13 @@ Before proceeding to Step 1:
 1. **Read the story file** that the user specified
 2. **Read all referenced documentation** mentioned in the story's "Context" or "Specification" sections
 3. **Use Explore agent** to understand the codebase context:
-  - Launch with `subagent_type: "Explore"`
-  - Pass story context and ask for:
-    - Existing similar implementations
-    - Reusable utilities/modules
-    - Architecture patterns in the codebase
-    - Potential conflicts or dependencies
+
+- Launch with `subagent_type: "Explore"`
+- Pass story context and ask for:
+  - Existing similar implementations
+  - Reusable utilities/modules
+  - Architecture patterns in the codebase
+  - Potential conflicts or dependencies
 
 ### 1.2 Classify the Story
 
@@ -180,6 +187,7 @@ Reusable components found: [List from Explore agent]
 ```
 
 **If UNCERTAIN**, ask the user:
+
 - Show your reasoning for both classifications
 - Ask which approach they prefer
 - Wait for confirmation before proceeding
@@ -193,10 +201,11 @@ Use this for infrastructure, migrations, config changes, and other stories that 
 ### A1: Extract Implementation Steps
 
 1. **Create TodoWrite entries** directly from the story:
-  - List each task from the story's "Tasks" section
-  - Add verification as final task
-  - Mark first task as `in_progress`
-  - Tell the user what I am doing, and what it will achieve
+
+- List each task from the story's "Tasks" section
+- Add verification as final task
+- Mark first task as `in_progress`
+- Tell the user what I am doing, and what it will achieve
 
 **Example for Story 01 (postgres infrastructure):**
 
@@ -214,9 +223,9 @@ For each task:
 
 1. **Implement directly** following the story's specifications
 
-  - Use exact SQL, config, or commands provided
-  - Don't overthink or over-engineer
-  - The story IS the spec
+- Use exact SQL, config, or commands provided
+- Don't overthink or over-engineer
+- The story IS the spec
 
 2. **Mark task completed** and move to next
 
@@ -225,9 +234,10 @@ For each task:
 1. **Execute the verification commands** from the story's "Verification" or "Acceptance Criteria" section
 2. **Check all acceptance criteria** boxes
 3. **Document results**:
-  - What commands were run?
-  - Did they all pass?
-  - Any deviations from expected output?
+
+- What commands were run?
+- Did they all pass?
+- Any deviations from expected output?
 
 ### A4: Optional - Codify Verifications as Tests
 
@@ -235,9 +245,10 @@ For regression protection, consider:
 
 1. **Extract verification commands** into a test file
 2. **Create integration test** that:
-  - Runs the verification commands
-  - Asserts expected outputs
-  - Can be run in CI/CD
+
+- Runs the verification commands
+- Asserts expected outputs
+- Can be run in CI/CD
 
 This is OPTIONAL but recommended for critical infrastructure.
 
@@ -264,22 +275,22 @@ Use this for features with business logic, complex algorithms, or where design d
 
 1. **Launch Plan agent** with `subagent_type: "Plan"` and thoroughness `"medium"`:
 
-  - Pass the full story content
-  - Pass all referenced documentation
-  - Include findings from Explore agent (Step 1.1)
-  - Request it to:
-    - Break down into modules/components
-    - Identify design decisions needed
-    - Suggest which existing code to reuse
-    - Identify where FP patterns should be applied
+- Pass the full story content
+- Pass all referenced documentation
+- Include findings from Explore agent (Step 1.1)
+- Request it to:
+  - Break down into modules/components
+  - Identify design decisions needed
+  - Suggest which existing code to reuse
+  - Identify where FP patterns should be applied
 
 2. **Review the plan with the user**:
 
-  - Summarize the plan clearly
-  - Highlight any ambiguous points
-  - List assumptions that need validation
-  - Ask for user confirmation before proceeding
-  - Tell the user what you are doing and what it will achieve
+- Summarize the plan clearly
+- Highlight any ambiguous points
+- List assumptions that need validation
+- Ask for user confirmation before proceeding
+- Tell the user what you are doing and what it will achieve
 
 **STEP 2: Create comprehensive TodoWrite entries** in test-review-refactor cycles:
 
@@ -309,30 +320,31 @@ For each module/component:
 
 1. **Read the valuable unit test skill**:
 
-  - Read `.claude/skills/valuable-unit-tests/SKILL.md`
-  - Apply principles to this specific module
+- Read `.claude/skills/valuable-unit-tests/SKILL.md`
+- Apply principles to this specific module
 
 2. **Use qa-test-planner agent** (MANDATORY for all modules with logic):
 
-  - Launch with `subagent_type: "qa-test-planner"`
-  - Pass the module's planned behavior
-  - Get test plan identifying:
-    - The contract/promise of the module
-    - Highest-risk behaviors
-    - What NOT to test (avoid low-value tests)
-    - Edge cases and boundaries
+- Launch with `subagent_type: "qa-test-planner"`
+- Pass the module's planned behavior
+- Get test plan identifying:
+  - The contract/promise of the module
+  - Highest-risk behaviors
+  - What NOT to test (avoid low-value tests)
+  - Edge cases and boundaries
 
 3. **Update TodoWrite**:
-  - Mark "Plan tests for X" as `completed`
-  - Mark "Write tests for X" as `in_progress`
+
+- Mark "Plan tests for X" as `completed`
+- Mark "Write tests for X" as `in_progress`
 
 #### B2b. Write Failing Tests
 
 1. **Write tests that FAIL**:
 
-  - No implementation exists yet
-  - Focus on behavior/contract
-  - Follow Vitest conventions (colocated .test.js)
+- No implementation exists yet
+- Focus on behavior/contract
+- Follow Vitest conventions (colocated .test.js)
 
 2. **Run tests to confirm FAILURE**:
 
@@ -340,8 +352,8 @@ For each module/component:
    TZ=UTC npx vitest run path/to/test.test.js
    ```
 
-  - Must fail for the RIGHT reason
-  - If they pass, you're not testing the right thing
+- Must fail for the RIGHT reason
+- If they pass, you're not testing the right thing
 
 3. **Mark test-writing todo as completed**
 
@@ -349,13 +361,13 @@ For each module/component:
 
 1. **Update TodoWrite**:
 
-  - Mark "Implement X" as `in_progress`
+- Mark "Implement X" as `in_progress`
 
 2. **Write minimal implementation**:
 
-  - Make tests green
-  - Prefer functional style (pure functions, immutability, composition)
-  - Avoid premature optimization
+- Make tests green
+- Prefer functional style (pure functions, immutability, composition)
+- Avoid premature optimization
 
 3. **Run tests**:
 
@@ -363,8 +375,8 @@ For each module/component:
    TZ=UTC npx vitest run path/to/test.test.js
    ```
 
-  - All tests should PASS
-  - If not, continue implementing
+- All tests should PASS
+- If not, continue implementing
 
 4. **Mark implementation todo as completed**
 
@@ -374,28 +386,29 @@ For each module/component:
 
 1. **Update TodoWrite**:
 
-  - Mark "Review [module X] with code-reviewer" as `in_progress`
+- Mark "Review [module X] with code-reviewer" as `in_progress`
 
 2. **Launch code-reviewer agent** (MANDATORY):
 
-  - Use `subagent_type: "code-reviewer"`
-  - Pass the implemented module code
-  - Review for:
-    - Security issues
-    - Code quality violations
-    - Performance problems
-    - Missing error handling
-    - Violation of FP principles
+- Use `subagent_type: "code-reviewer"`
+- Pass the implemented module code
+- Review for:
+  - Security issues
+  - Code quality violations
+  - Performance problems
+  - Missing error handling
+  - Violation of FP principles
 
 3. **Address critical findings**:
 
-  - If bugs found: Use `/bug-fix` command
-  - If design issues found: Re-enter test-implement loop
-  - If minor issues: Fix immediately and rerun tests
+- If bugs found: Use `/bug-fix` command
+- If design issues found: Re-enter test-implement loop
+- If minor issues: Fix immediately and rerun tests
 
 4. **Update TodoWrite**:
-  - Mark "Review [module X]" as `completed`
-  - Move to next module or proceed to refactoring
+
+- Mark "Review [module X]" as `completed`
+- Move to next module or proceed to refactoring
 
 **Repeat B2a-B2d for each module/component before moving to B3.**
 
@@ -405,24 +418,24 @@ For each module/component:
 
 1. **Update TodoWrite**:
 
-  - Mark "Refactor all modules with refactoring-enforcer" as `in_progress`
+- Mark "Refactor all modules with refactoring-enforcer" as `in_progress`
 
 2. **Launch refactoring-enforcer agent** (MANDATORY):
 
-  - Use `subagent_type: "refactoring-enforcer"`
-  - Pass ALL implemented code from this story
-  - Request analysis for:
-    - FP violations (mutability, side effects, impure functions)
-    - Code duplication (DRY violations)
-    - Poor decomposition (functions doing too much)
-    - Missed opportunities for composition
+- Use `subagent_type: "refactoring-enforcer"`
+- Pass ALL implemented code from this story
+- Request analysis for:
+  - FP violations (mutability, side effects, impure functions)
+  - Code duplication (DRY violations)
+  - Poor decomposition (functions doing too much)
+  - Missed opportunities for composition
 
 3. **Apply refactorings** systematically:
 
-  - Make one change at a time
-  - Run tests after EACH change
-  - If tests fail, revert and try different approach
-  - Keep a running list of changes made
+- Make one change at a time
+- Run tests after EACH change
+- If tests fail, revert and try different approach
+- Keep a running list of changes made
 
 4. **Mark refactoring todo as completed**
 
@@ -430,7 +443,7 @@ For each module/component:
 
 1. **Update TodoWrite**:
 
-  - Mark "Retest after refactoring" as `in_progress`
+- Mark "Retest after refactoring" as `in_progress`
 
 2. **Run full test suite** for the story:
 
@@ -440,8 +453,8 @@ For each module/component:
 
 3. **Verify tests still pass**:
 
-  - All tests green? Proceed
-  - Tests failing? Debug and fix before moving on
+- All tests green? Proceed
+- Tests failing? Debug and fix before moving on
 
 4. **Mark retest todo as completed**
 
@@ -455,8 +468,8 @@ For each module/component:
 
 2. **Check acceptance criteria**:
 
-  - Does implementation meet all criteria?
-  - Run any end-to-end verification from story
+- Does implementation meet all criteria?
+- Run any end-to-end verification from story
 
 3. **Document results**
 
@@ -480,12 +493,13 @@ If a story has BOTH config/infra AND business logic:
 
 1. **Split into phases**:
 
-  - Phase 1: Use Workflow A for prescriptive parts
-  - Phase 2: Use Workflow B for exploratory parts
+- Phase 1: Use Workflow A for prescriptive parts
+- Phase 2: Use Workflow B for exploratory parts
 
 2. **Example** (Story 03: Migrate CHEDPP):
-  - Prescriptive: Add `pg` dependency, setup connection config
-  - Exploratory: Parse JSON, generate SQL, handle properties JSONB
+
+- Prescriptive: Add `pg` dependency, setup connection config
+- Exploratory: Parse JSON, generate SQL, handle properties JSONB
 
 ### Bug Fixes During Implementation
 
@@ -510,9 +524,11 @@ For stories that migrate data:
 
 1. **Treat migration script as code** (use Workflow B)
 2. **Write tests for**:
-  - Parsing logic
-  - Transformation functions
-  - Edge cases (null values, missing fields)
+
+- Parsing logic
+- Transformation functions
+- Edge cases (null values, missing fields)
+
 3. **Run verification commands** as integration test
 4. **Consider idempotency** (can script run multiple times safely?)
 
@@ -589,11 +605,13 @@ For stories that migrate data:
 ## Critical Success Factors
 
 1. **MANDATORY agent usage** - This is non-negotiable:
-  - **Explore agent**: At start, to find reusable code
-  - **Plan agent**: For all exploratory stories, to break down work
-  - **qa-test-planner agent**: For EVERY module with logic, to plan tests
-  - **code-reviewer agent**: For EVERY module after implementation
-  - **refactoring-enforcer agent**: After ALL modules are complete
+
+- **Explore agent**: At start, to find reusable code
+- **Plan agent**: For all exploratory stories, to break down work
+- **qa-test-planner agent**: For EVERY module with logic, to plan tests
+- **code-reviewer agent**: For EVERY module after implementation
+- **refactoring-enforcer agent**: After ALL modules are complete
+
 2. **Read the docs** - Always read referenced specifications before implementing
 3. **Choose the right workflow** - Don't test-first when spec is provided; don't spec-driven when design is needed
 4. **Keep tests green** - Never commit broken tests

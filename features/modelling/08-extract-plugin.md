@@ -14,7 +14,7 @@ Story 07 left `evaluation-engine/index.js` as the only file under
 `plugins/evaluation-engine/` — it contains the Hapi plugin
 registration, the `JOURNEYS` registry, and the `validateJourney`
 startup check. Today it imports engine logic directly. After this
-story it imports from `engine/*` and is purely *adaptation*: Hapi
+story it imports from `engine/*` and is purely _adaptation_: Hapi
 plugin lifecycle + journey lookup + `server.app.evaluationEngine`
 binding.
 
@@ -43,14 +43,15 @@ The file contains:
   function).
 - The `JOURNEYS` map (keyed by journey key, values are adapter
   modules).
-- The `validateJourney` function, *unchanged from today's behaviour*
+- The `validateJourney` function, _unchanged from today's behaviour_
   — same checks, same throw conditions, same wording.
 - The `server.app.evaluationEngine` facade: `evaluate(journeyKey,
-  notification)`, `getJourney(journeyKey)`, `listJourneys()`. These
+notification)`, `getJourney(journeyKey)`, `listJourneys()`. These
   signatures **do not change**; the explorer routes consume them as
   they do today.
 
 `evaluate(journeyKey, notification)` internally:
+
 1. Looks up the adapter by `journeyKey`.
 2. Builds the adapter record (or accesses the imported module's
    exports as the record — depending on how the journey module is
@@ -60,6 +61,7 @@ The file contains:
 4. Returns the result.
 
 Imports:
+
 - `evaluateWithTrace` from `engine/evaluate-with-trace.js`.
 - Each registered journey module (today: only `eu-live-animals`).
 
@@ -84,7 +86,7 @@ This story is a structural move. The test work is:
   resolves with the same surface as before.
 
 The framework-isolation test from Story 07 continues to pass —
-`plugin.js` lives *outside* `engine/`, so its Hapi import doesn't
+`plugin.js` lives _outside_ `engine/`, so its Hapi import doesn't
 break the engine boundary.
 
 A small additional test (if not already covered by an existing
@@ -101,20 +103,20 @@ that.
 ## Acceptance Criteria
 
 - [ ] `src/server/plugins/evaluation-engine/plugin.js` exists,
-  contains the Hapi plugin, the JOURNEYS map, and `validateJourney`.
+      contains the Hapi plugin, the JOURNEYS map, and `validateJourney`.
 - [ ] `plugin.js` imports engine functions from `engine/*`; no engine
-  logic is inlined.
+      logic is inlined.
 - [ ] `server.app.evaluationEngine` exposes the same surface as
-  before (`evaluate`, `getJourney`, `listJourneys`); route handlers
-  continue to work without modification.
+      before (`evaluate`, `getJourney`, `listJourneys`); route handlers
+      continue to work without modification.
 - [ ] `validateJourney` runs at plugin registration; existing
-  startup behaviour preserved (throws on missing required fields).
+      startup behaviour preserved (throws on missing required fields).
 - [ ] `src/server/plugins/evaluation-engine/index.js` is deleted.
 - [ ] The framework-isolation test (Story 07) still passes — `engine/`
-  has no Hapi imports.
+      has no Hapi imports.
 - [ ] All existing tests pass.
 - [ ] All four explorer views render correctly. `npm run dev` boots
-  cleanly.
+      cleanly.
 
 ## Verification
 

@@ -37,6 +37,7 @@ controller. Those become async in Story 02 once the patterns are
 proven here.
 
 Relevant existing files:
+
 - `src/server/plugins/evaluation-engine/plugin.js` — the facade
   every HTTP route delegates to. Untouched in this story.
 - `src/server/routes/journey-selection/controller.js` — the
@@ -83,10 +84,18 @@ Response shape:
 ```json
 {
   "journeys": [
-    { "key": "eu-live-animals", "name": "EU Live Animals",
-      "obligationCount": 23, "sectionCount": 6 },
-    { "key": "chedpp-plants", "name": "CHEDPP Plants",
-      "obligationCount": 28, "sectionCount": 7 }
+    {
+      "key": "eu-live-animals",
+      "name": "EU Live Animals",
+      "obligationCount": 23,
+      "sectionCount": 6
+    },
+    {
+      "key": "chedpp-plants",
+      "name": "CHEDPP Plants",
+      "obligationCount": 28,
+      "sectionCount": 7
+    }
   ]
 }
 ```
@@ -137,7 +146,7 @@ if (!config.get('apiBaseUrl')) {
 
 This lets production fall back to the running URL when `API_BASE_URL`
 isn't explicitly set. In tests, vitest's `globalSetup` (§5) sets
-`API_BASE_URL` *before* any test file imports the client, so convict
+`API_BASE_URL` _before_ any test file imports the client, so convict
 picks it up via its `env` declaration without needing the post-start
 hook. Both paths converge on the same effective value.
 
@@ -153,7 +162,7 @@ vitest's `globalSetup` hook. All test files share the same server.
 ```js
 export default defineConfig({
   test: {
-    globalSetup: ['./test-helpers/setup.js'],
+    globalSetup: ['./test-helpers/setup.js']
     // ... existing config
   }
 })
@@ -165,10 +174,10 @@ export default defineConfig({
 import { createServer } from '#server/server.js'
 
 export default async function setup() {
-  process.env.PORT ||= '3001'                    // avoid the dev server's 3000
+  process.env.PORT ||= '3001' // avoid the dev server's 3000
   const server = await createServer()
   await server.start()
-  process.env.API_BASE_URL = server.info.uri     // picked up by clients
+  process.env.API_BASE_URL = server.info.uri // picked up by clients
   return async () => server.stop({ timeout: 1000 })
 }
 ```
@@ -182,6 +191,7 @@ export default async function setup() {
 
 **Rationale for one shared server** (rather than per-file
 `bootServer()`):
+
 - Vitest runs test files in parallel workers. A per-file boot on a
   fixed port would collide; a per-file boot on port 0 would require
   `createServer` to accept an override it currently doesn't.
@@ -210,10 +220,7 @@ export const journeySelectionController = {
     return h.view('journey-selection/index', {
       pageTitle: 'Journey Selection',
       heading: 'Journey Selection',
-      breadcrumbs: [
-        { text: 'Home', href: '/' },
-        { text: 'Journey Selection' }
-      ],
+      breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Journey Selection' }],
       journeys,
       ...navContext(request)
     })
@@ -251,19 +258,25 @@ registration:
 import HapiSwagger from 'hapi-swagger'
 
 await server.register([
-  { plugin: HapiSwagger, options: {
-    info: {
-      title: 'Journey Configuration & Evaluation',
-      version: '0.1.0',
-      description: 'Two HTTP namespaces over the journey-evaluation engine.'
-    },
-    tags: [
-      { name: 'config', description: 'Read-only journey configuration' },
-      { name: 'engine', description: 'Evaluate notifications against journeys' }
-    ],
-    grouping: 'tags',
-    documentationPath: '/documentation'
-  }}
+  {
+    plugin: HapiSwagger,
+    options: {
+      info: {
+        title: 'Journey Configuration & Evaluation',
+        version: '0.1.0',
+        description: 'Two HTTP namespaces over the journey-evaluation engine.'
+      },
+      tags: [
+        { name: 'config', description: 'Read-only journey configuration' },
+        {
+          name: 'engine',
+          description: 'Evaluate notifications against journeys'
+        }
+      ],
+      grouping: 'tags',
+      documentationPath: '/documentation'
+    }
+  }
 ])
 ```
 
@@ -277,6 +290,7 @@ Test selection follows `.claude/skills/valuable-unit-tests/SKILL.md`.
 ### Route-level integration test — `src/server/plugins/http-api/plugin.test.js`
 
 Use `server.inject` (no real loopback needed at this layer). Covers:
+
 - `GET /api/config/journeys` returns 200 with `{ journeys: [...] }`.
 - Each entry has `key`, `name`, `obligationCount`, `sectionCount`.
 - Both registered journeys appear; counts match
@@ -287,6 +301,7 @@ Use `server.inject` (no real loopback needed at this layer). Covers:
 ### Client unit test — `src/server/clients/journey-api-client.test.js`
 
 Use `vitest-fetch-mock` (already in dev deps). Covers:
+
 - `client.listJourneys()` calls `${baseUrl}/api/config/journeys`.
 - `clientForRequest(request)` forwards `x-cdp-request-id` from the
   request headers as an outbound header.
@@ -309,6 +324,7 @@ Convert the existing test from direct facade access to using the
 globalSetup-booted server (the test reads `process.env.API_BASE_URL`
 or hits the route via `fetch`/`server.inject` against the shared
 server). Covers:
+
 - Page renders with title `"Journey Selection | …"`, heading
   `"Journey Selection"`, breadcrumbs, picker form.
 - Rendered HTML contains both journey keys (`eu-live-animals`,

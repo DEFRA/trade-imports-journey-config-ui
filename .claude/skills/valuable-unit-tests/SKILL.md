@@ -44,13 +44,16 @@ brittle tests — don't mock your way around a design problem.
 Produce this checklist before writing any test.
 
 ### Behavior & intent
+
 - **Domain goal**: what is the user/system trying to achieve?
 - **Observable outcome**: what change is visible to the caller?
 
 ### High-value cases (the "shoulds")
+
 List 2–5 cases. Each must cite a real risk, not coverage.
 
 ### Explicitly excluded (the "should-nots")
+
 List 2–3 low-value cases and say why you're rejecting each.
 
 ## Worked example — `src/config/nunjucks/filters/format-date.js`
@@ -61,11 +64,13 @@ the Nunjucks template layer.
 **Observable outcome**: the returned string matches the requested format.
 
 **High-value cases**:
+
 - ISO string input with the default format → `'Wed 1st February 2023'` (happy path).
 - `Date` object input → same result (proves the `isDate` branch).
 - Custom format string → output honours it (proves the pass-through).
 
 **Explicitly excluded**:
+
 - Calling `parseISO` directly — that's `date-fns`' contract, not ours.
 - A snapshot of every locale — unstable, review theater.
 - Testing that `format` is called — implementation detail, breaks on refactor.

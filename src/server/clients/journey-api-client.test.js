@@ -78,12 +78,15 @@ describe('createJourneyApiClient — listJourneys', () => {
       'http://localhost:3001/api-gateway/',
       'http://localhost:3001/api-gateway/api/config/journeys'
     ]
-  ])('joins baseUrl %s and path without duplicating slashes', async (baseUrl, expected) => {
-    okJson({ journeys: [] })
-    const client = createJourneyApiClient({ baseUrl })
-    await client.listJourneys()
-    expect(lastRequest().url).toBe(expected)
-  })
+  ])(
+    'joins baseUrl %s and path without duplicating slashes',
+    async (baseUrl, expected) => {
+      okJson({ journeys: [] })
+      const client = createJourneyApiClient({ baseUrl })
+      await client.listJourneys()
+      expect(lastRequest().url).toBe(expected)
+    }
+  )
 
   it('throws a clear error when baseUrl is empty and no API_BASE_URL is set', () => {
     expect(() => createJourneyApiClient({ baseUrl: '' })).toThrow(
@@ -164,7 +167,9 @@ describe('createJourneyApiClient — trace-id propagation', () => {
       traceId: 'abc-123'
     })
     await client.listJourneys()
-    expect(lastRequest().headers).toMatchObject({ 'x-cdp-request-id': 'abc-123' })
+    expect(lastRequest().headers).toMatchObject({
+      'x-cdp-request-id': 'abc-123'
+    })
   })
 
   it('omits the x-cdp-request-id header entirely when traceId is undefined', async () => {
@@ -193,11 +198,18 @@ describe('clientForRequest', () => {
 
 describe('createJourneyApiClient — getJourney', () => {
   it('GETs /api/config/journeys/{key} and returns the response body', async () => {
-    okJson({ key: 'eu-live-animals', obligations: [], journeyMap: {}, scenarios: {} })
+    okJson({
+      key: 'eu-live-animals',
+      obligations: [],
+      journeyMap: {},
+      scenarios: {}
+    })
     const client = createJourneyApiClient({ baseUrl: 'http://x' })
     const journey = await client.getJourney('eu-live-animals')
 
-    expect(lastRequest().url).toBe('http://x/api/config/journeys/eu-live-animals')
+    expect(lastRequest().url).toBe(
+      'http://x/api/config/journeys/eu-live-animals'
+    )
     expect(journey).toMatchObject({ key: 'eu-live-animals' })
   })
 
@@ -296,12 +308,12 @@ describe('createJourneyApiClient — getCommodityDetail', () => {
 
   it('throws when code is missing or empty', async () => {
     const client = createJourneyApiClient({ baseUrl: 'http://x' })
-    await expect(() => client.getCommodityDetail('eu-live-animals')).rejects.toThrow(
-      /code is required/
-    )
-    await expect(() => client.getCommodityDetail('eu-live-animals', '')).rejects.toThrow(
-      /code is required/
-    )
+    await expect(() =>
+      client.getCommodityDetail('eu-live-animals')
+    ).rejects.toThrow(/code is required/)
+    await expect(() =>
+      client.getCommodityDetail('eu-live-animals', '')
+    ).rejects.toThrow(/code is required/)
   })
 })
 
@@ -372,9 +384,9 @@ describe('createJourneyApiClient — getPageVariance', () => {
     await expect(() => client.getPageVariance('chedpp-plants')).rejects.toThrow(
       /code is required/
     )
-    await expect(() => client.getPageVariance('chedpp-plants', '')).rejects.toThrow(
-      /code is required/
-    )
+    await expect(() =>
+      client.getPageVariance('chedpp-plants', '')
+    ).rejects.toThrow(/code is required/)
   })
 })
 
@@ -386,7 +398,9 @@ describe('createJourneyApiClient — evaluate', () => {
     await client.evaluate('eu-live-animals', notif)
 
     const req = lastRequest()
-    expect(req.url).toBe('http://x/api/engine/journeys/eu-live-animals/evaluate')
+    expect(req.url).toBe(
+      'http://x/api/engine/journeys/eu-live-animals/evaluate'
+    )
     expect(req.method).toBe('POST')
   })
 

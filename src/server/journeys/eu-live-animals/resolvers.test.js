@@ -92,8 +92,9 @@ describe('tests.isTransit', () => {
 describe('tests.requiresIdentification', () => {
   it('is active for a commodity whose identifier set is not NONE (cattle)', () => {
     const cattle = { id: '102', species: { name: 'Bos taurus' } }
-    expect(resolvers.tests.requiresIdentification(cattle, refdata).active)
-      .toBe(true)
+    expect(resolvers.tests.requiresIdentification(cattle, refdata).active).toBe(
+      true
+    )
   })
 
   it('is inactive when the commodity has no refdata entry', () => {

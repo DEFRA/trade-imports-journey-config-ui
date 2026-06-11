@@ -1,12 +1,4 @@
-import {
-  describe,
-  test,
-  expect,
-  afterEach,
-  beforeEach,
-  vi
-} from 'vitest'
-
+import { describe, test, expect, afterEach, beforeEach, vi } from 'vitest'
 
 // Module-spy on the journey-api-client so navContext tests can override
 // listJourneys per-test. Default delegate is set in beforeEach.
@@ -53,7 +45,9 @@ describe('currentJourneyKey', () => {
 
   test('returns the session value when present', () => {
     config.set('journey', 'eu-live-animals')
-    expect(currentJourneyKey(stubRequest('chedpp-plants'))).toBe('chedpp-plants')
+    expect(currentJourneyKey(stubRequest('chedpp-plants'))).toBe(
+      'chedpp-plants'
+    )
   })
 
   test.each([null, undefined, ''])(

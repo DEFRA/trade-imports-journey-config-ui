@@ -1,4 +1,3 @@
-
 # Story 02: Derive the CHED-D notification shape from IPAFFS
 
 ## Goal
@@ -7,7 +6,7 @@ The CHED-D notification ontology — the shape obligations and scenarios are wri
 
 ## Why
 
-The journey's `obligations.json` and `scenarios.js` speak a *notification* ontology, distinct from the field-config ontology of the staging artifact. The other two journeys derived their shapes from IPAFFS into `features/notification-shape/01-target-shape.md`; CHED-D follows the same basis (decided: derive from IPAFFS, not invent). Doing this as its own story resolves the single biggest unknown before any obligation is authored, so story 03 can proceed without guesswork.
+The journey's `obligations.json` and `scenarios.js` speak a _notification_ ontology, distinct from the field-config ontology of the staging artifact. The other two journeys derived their shapes from IPAFFS into `features/notification-shape/01-target-shape.md`; CHED-D follows the same basis (decided: derive from IPAFFS, not invent). Doing this as its own story resolves the single biggest unknown before any obligation is authored, so story 03 can proceed without guesswork.
 
 Rejected during design (recorded so they aren't re-litigated): inventing a fresh CED shape without reconciling to IPAFFS; modelling the combo as four fields (`type/class/family/model`) — the canonical `CommodityComplement` carries a single `complementID`, so combo collapses to one path.
 
@@ -23,14 +22,14 @@ Write `features/notification-shape/04-migrate-chedd-products.md`, mirroring docs
 
 Confirmed mapping (from the canonical classes):
 
-| CED concept | IPAFFS canonical field | Shallow path |
-|---|---|---|
-| Intended-for / internal market | `Purpose.internalMarketPurpose` **or** `Commodities.commodityIntendedFor` | `purpose.subPurpose` (existing) — RECONCILE |
-| Commodity complement ("combo") | `CommodityComplement.complementID` (+ `complementName`) | `commodities[].complementId` (+ `.complementName`) — NEW |
-| Product description | `CommodityComplement.commodityDescription` | `commodities[].description` — NEW |
-| Packages / gross / net | `Commodities.numberOfPackages` / `totalGrossWeight` / `totalNetWeight` | `consignment.*` (existing) |
-| Per-line-item net weight | `ComplementParameterSet.keyDataPair` | `commodities[].parameters.keyDataPair` (existing) |
-| Origin country / region | `Commodities.countryOfOrigin` / `regionOfOrigin` | `origin.country` / `origin.region` (existing) |
+| CED concept                    | IPAFFS canonical field                                                    | Shallow path                                             |
+| ------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Intended-for / internal market | `Purpose.internalMarketPurpose` **or** `Commodities.commodityIntendedFor` | `purpose.subPurpose` (existing) — RECONCILE              |
+| Commodity complement ("combo") | `CommodityComplement.complementID` (+ `complementName`)                   | `commodities[].complementId` (+ `.complementName`) — NEW |
+| Product description            | `CommodityComplement.commodityDescription`                                | `commodities[].description` — NEW                        |
+| Packages / gross / net         | `Commodities.numberOfPackages` / `totalGrossWeight` / `totalNetWeight`    | `consignment.*` (existing)                               |
+| Per-line-item net weight       | `ComplementParameterSet.keyDataPair`                                      | `commodities[].parameters.keyDataPair` (existing)        |
+| Origin country / region        | `Commodities.countryOfOrigin` / `regionOfOrigin`                          | `origin.country` / `origin.region` (existing)            |
 
 Resolve the one reconciliation: read `Purpose.java`, `Commodities.commodityIntendedFor` (and its `CommodityIntention` type) and the relevant validators (e.g. `InternalMarketValidator`, `FreeCirculationPurposeValidator`), and diff their value sets against the staging `internalMarket_set_*` options ("Feedingstuff", "Human consumption", "Further process", "Other"). Record the decision: which path the conditional `intended-purpose` obligation targets (`purpose.subPurpose` vs a commodity-level field) and which value vocabulary the scenarios use, with a one-line justification citing the class/validator consulted. Set the notification discriminator `type: "CED"` (the IPAFFS `document_type`).
 

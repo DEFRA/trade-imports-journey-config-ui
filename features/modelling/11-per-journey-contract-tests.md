@@ -17,7 +17,7 @@ evaluate to a submittable state. If a scenario fails, either the
 scenario is wrong or the obligation/resolver/journey-map shape is
 broken — both are caught.
 
-It is the *reviewer's safety net* — a reviewer can verify journey
+It is the _reviewer's safety net_ — a reviewer can verify journey
 fitness without reading the entire adapter. It is also the
 real-data integration test from engine-design.md §6: it exercises
 the full engine pipeline (`evaluate` → `resolveScreens` →
@@ -95,7 +95,7 @@ against the existing test files for consistency.
 
 ## Tests
 
-This story *is* the test work. The acceptance is whether both
+This story _is_ the test work. The acceptance is whether both
 journeys' scenarios evaluate `submittable: true`.
 
 If any scenario fails:
@@ -113,13 +113,13 @@ test per scenario authoring. No need for additional shapes.
 ## Acceptance Criteria
 
 - [ ] `src/server/journeys/eu-live-animals/journey.contract.test.js`
-  exists and runs `test.each` over `adapter.scenarios`.
+      exists and runs `test.each` over `adapter.scenarios`.
 - [ ] `src/server/journeys/chedpp-plants/journey.contract.test.js`
-  exists and runs `test.each` over `adapter.scenarios`.
+      exists and runs `test.each` over `adapter.scenarios`.
 - [ ] Every scenario from both journeys evaluates
-  `summary.submittable === true`.
+      `summary.submittable === true`.
 - [ ] Both tests import `evaluate` from the canonical
-  `engine/evaluate.js` path.
+      `engine/evaluate.js` path.
 - [ ] `npm test` is green.
 - [ ] No existing tests change as part of this story.
 
@@ -140,7 +140,7 @@ npm run dev    # smoke the four eu-live-animals views (unchanged)
 ## What NOT to change
 
 - Don't modify any obligation, resolver, refdata, journey map, or
-  scenario file to *make* a failing scenario pass without diagnosing
+  scenario file to _make_ a failing scenario pass without diagnosing
   the cause. A failed scenario is a real signal.
 - Don't add tests at any other granularity in this story (no
   obligation-by-obligation tests; no module-internal tests). The

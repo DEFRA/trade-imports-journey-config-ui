@@ -10,7 +10,7 @@ This story is **additive**. The commodity-config controller is unchanged. It sti
 
 Splitting the work means the endpoints can be tested in Swagger and Postman before the controller changes. If the new endpoints have bugs, the page is unaffected because nothing on the page consumes them yet.
 
-`computePageVariance` is the SDUI primitive that backs *"pick a commodity → see what fields the page would show"*. Exposing it over HTTP is the SDUI shape made observable in the Network tab. Per the user's principle (`feedback_ui_http_first.md`): if the UI will eventually want this, the HTTP endpoint is the thing to add first.
+`computePageVariance` is the SDUI primitive that backs _"pick a commodity → see what fields the page would show"_. Exposing it over HTTP is the SDUI shape made observable in the Network tab. Per the user's principle (`feedback_ui_http_first.md`): if the UI will eventually want this, the HTTP endpoint is the thing to add first.
 
 ## Context
 
@@ -31,10 +31,10 @@ Create `src/server/analytics/page-variance.js`:
 
 ### 2. New endpoints
 
-| Method | Path | Returns |
-|---|---|---|
-| `GET` | `/api/config/journeys/{key}/commodities/{code}/page-variance` | `{ pageVariance: Array<...> }` |
-| `GET` | `/api/config/journeys/{key}/commodities/{code}/page-variance/species/{species}` | same shape, species-specific |
+| Method | Path                                                                            | Returns                        |
+| ------ | ------------------------------------------------------------------------------- | ------------------------------ |
+| `GET`  | `/api/config/journeys/{key}/commodities/{code}/page-variance`                   | `{ pageVariance: Array<...> }` |
+| `GET`  | `/api/config/journeys/{key}/commodities/{code}/page-variance/species/{species}` | same shape, species-specific   |
 
 Handlers live in `config-routes.js` (these are configuration descriptors, not engine compute). Reassemble the commodity key server-side from the path segments, then call `computePageVariance(journey, key, commodityKey)`.
 
@@ -133,4 +133,4 @@ curl "http://localhost:3000/api/config/journeys/chedpp-plants/commodities/080810
 
 ## Opened by this story
 
-- **Story 05b** — *"Switch the commodity-config controller to consume these endpoints over HTTP, drop the cross-commodity variance UI, and enforce the lift-out invariant via ESLint."*
+- **Story 05b** — _"Switch the commodity-config controller to consume these endpoints over HTTP, drop the cross-commodity variance UI, and enforce the lift-out invariant via ESLint."_

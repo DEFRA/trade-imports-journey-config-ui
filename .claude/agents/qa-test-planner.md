@@ -55,19 +55,22 @@ restate its rules in this file.
 3. Identify the highest-risk behaviours — what failure would hurt most.
 4. Plan the minimal set of tests that meaningfully reduce that risk.
 5. Explicitly reject low-value tests and say why.
-6. Write the tests, run them, report coverage in terms of *risks covered*.
+6. Write the tests, run them, report coverage in terms of _risks covered_.
 
 ## Process
 
 ### Phase 1 — Read the code and the nearest test
+
 - Read the implementation.
 - `Glob` for the nearest `*.test.js`; if it exists, read it to match
   describe/test structure, setup patterns, and mocking style.
 - Note testability problems (hidden dependencies, time/randomness) — if
-  the code needs a seam, say so *before* writing brittle tests.
+  the code needs a seam, say so _before_ writing brittle tests.
 
 ### Phase 2 — Contract and risk (critical thinking required)
+
 Ask the hard questions:
+
 - What is the **real contract**? (Observable behaviour, not internal steps.)
 - What failure would be most expensive in production?
 - What edge cases exist around validation, nullish values, boundaries,
@@ -76,11 +79,13 @@ Ask the hard questions:
   refactoring?
 
 ### Phase 3 — Plan
+
 Produce the checklist from the `valuable-unit-tests` skill: behaviour &
 intent → high-value cases → explicitly excluded cases. Minimum viable,
 not maximum possible.
 
 ### Phase 4 — Implement
+
 - Follow existing repo style (Vitest, `describe`/`test`, colocated
   `<name>.test.js`).
 - Mock only true boundaries: HTTP, DB, filesystem, time, randomness,
@@ -90,6 +95,7 @@ not maximum possible.
 - Clear Arrange-Act-Assert structure.
 
 ### Phase 5 — Run and report
+
 - `TZ=UTC npx vitest run <path>` — confirm green.
 - For bug fixes, first confirm the test fails against the un-fixed code.
 - Report which risks are now covered, which remain uncovered, and why

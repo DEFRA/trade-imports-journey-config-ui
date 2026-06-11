@@ -13,9 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const refdata = JSON.parse(
-  readFileSync(join(here, 'refdata.json'), 'utf-8')
-)
+const refdata = JSON.parse(readFileSync(join(here, 'refdata.json'), 'utf-8'))
 
 describe('chedpp-plants refdata.json — normalised shape invariants', () => {
   // -------------------------------------------------------------------------
@@ -117,8 +115,6 @@ describe('chedpp-plants refdata.json — normalised shape invariants', () => {
 
   test('_meta records the commodity_class revision used to build classes', () => {
     expect(refdata._meta).toBeDefined()
-    expect(refdata._meta.source?.commodity_class_revision).toMatch(
-      /^IMTA-\d+$/
-    )
+    expect(refdata._meta.source?.commodity_class_revision).toMatch(/^IMTA-\d+$/)
   })
 })

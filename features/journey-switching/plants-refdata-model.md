@@ -20,10 +20,10 @@ analysis is in `chedpp-journey-investigation.md` and
 The microservice keys its tables on **two different grains**, and that
 distinction is the single most important fact about this data:
 
-| Grain | Source tables | Facts |
-|---|---|---|
-| **commodity code** (8-digit, e.g. `0808108090`) | `commodity_group_commodity`, `commodity_configuration`, `commodity_attributes`, `commodity_class` | group; `requires_test_and_trial`; `requires_finished_or_propagated`; propagation; quality classes |
-| **species** = `commodity_code\|eppo_code` (e.g. `0808108090\|MABSD`) | `inspection_responsibility`, `hmi_marketing`, `commodity_eppo_variety` | regulatory authority (PHSI/HMI/JOINT); marketing standard (GMS/SMS); validity period; varieties |
+| Grain                                                                | Source tables                                                                                     | Facts                                                                                             |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **commodity code** (8-digit, e.g. `0808108090`)                      | `commodity_group_commodity`, `commodity_configuration`, `commodity_attributes`, `commodity_class` | group; `requires_test_and_trial`; `requires_finished_or_propagated`; propagation; quality classes |
+| **species** = `commodity_code\|eppo_code` (e.g. `0808108090\|MABSD`) | `inspection_responsibility`, `hmi_marketing`, `commodity_eppo_variety`                            | regulatory authority (PHSI/HMI/JOINT); marketing standard (GMS/SMS); validity period; varieties   |
 
 A commodity has many species; commodity-grain facts are shared by all of
 a commodity's species.
@@ -32,16 +32,16 @@ a commodity's species.
 
 From `chedpp-runtime-data-exploration.md`:
 
-| Dimension | Grain | Journey effect |
-|---|---|---|
-| regulatory authority | species | GMS-declaration visibility; custom doc code; validity default |
-| marketing standard | species | GMS-declaration page (HMI + GMS) |
-| validity period | species | certificate validity calc |
-| varieties + classes | species (varieties) / commodity (classes) | variety/class selection page when both present |
-| group | commodity | package-type dropdown; gates propagation lookup |
-| requires_finished_or_propagated | commodity | finished/propagating dropdown |
-| requires_test_and_trial | commodity | test-and-trial field |
-| propagation | commodity | intended-use (bulbs/plants) pages |
+| Dimension                       | Grain                                     | Journey effect                                                |
+| ------------------------------- | ----------------------------------------- | ------------------------------------------------------------- |
+| regulatory authority            | species                                   | GMS-declaration visibility; custom doc code; validity default |
+| marketing standard              | species                                   | GMS-declaration page (HMI + GMS)                              |
+| validity period                 | species                                   | certificate validity calc                                     |
+| varieties + classes             | species (varieties) / commodity (classes) | variety/class selection page when both present                |
+| group                           | commodity                                 | package-type dropdown; gates propagation lookup               |
+| requires_finished_or_propagated | commodity                                 | finished/propagating dropdown                                 |
+| requires_test_and_trial         | commodity                                 | test-and-trial field                                          |
+| propagation                     | commodity                                 | intended-use (bulbs/plants) pages                             |
 
 Distribution (production, from the exploration doc): **98.9% of species
 are PHSI** (no marketing implications); only ~5,321 species across 152
@@ -78,7 +78,7 @@ Problems this story fixes:
    routing entry (build script lines 256–260). A commodity with 75
    species stores them 75 times.
 2. **`has_gms` is a derived boolean, and a misnomer.**
-   `has_gms = marketing_standard != null` — it's `true` for *SMS* too
+   `has_gms = marketing_standard != null` — it's `true` for _SMS_ too
    (92 cases), so it means "has a marketing standard," not "is GMS." The
    resolver treats it as the GMS-declaration trigger. Whether that is
    wrong (and what the correct rule is) is a ~92% activation question
@@ -93,7 +93,7 @@ Problems this story fixes:
    linkage to commodities, so the variety/class page data can't be
    reconstructed.
 
-Net: `routing` is almost entirely *recomputable* from `content`,
+Net: `routing` is almost entirely _recomputable_ from `content`,
 `varieties`, and the commodity-grain flags. The redundancy is the
 denormalisation, and one stored flag (`has_gms`) is wrong.
 
@@ -146,13 +146,14 @@ moving the merge from build-time to read-time:
 const lookupRouting = (refdata, commodity) => {
   const code = commodity.id
   const eppo = commodity.species?.eppoCode ?? ''
-  const sp = refdata.species[`${code}|${eppo}`]   // undefined for PHSI-only
+  const sp = refdata.species[`${code}|${eppo}`] // undefined for PHSI-only
   const com = refdata.commodities[code]
   if (!sp && !com) return null
   return {
-    has_gms: sp?.marketing_standard != null,            // preserved as-is; correct rule under investigation
+    has_gms: sp?.marketing_standard != null, // preserved as-is; correct rule under investigation
     has_varieties: (sp?.varieties?.length ?? 0) > 0,
-    requires_finished_or_propagated: com?.requires_finished_or_propagated ?? false,
+    requires_finished_or_propagated:
+      com?.requires_finished_or_propagated ?? false,
     requires_test_and_trial: com?.requires_test_and_trial ?? false,
     propagation: com?.propagation ?? null,
     requires_billing: sp != null

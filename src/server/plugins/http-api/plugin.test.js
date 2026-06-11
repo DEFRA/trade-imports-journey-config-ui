@@ -117,22 +117,25 @@ describe('#http-api plugin — GET /api/config/journeys/{key}', () => {
     ['eu-live-animals', 23],
     ['chedpp-plants', 28],
     ['chedd-products', 18]
-  ])('returns 200 with full journey body (refdata stripped) for %s', async (key, obligationCount) => {
-    const { result, statusCode } = await server.inject({
-      method: 'GET',
-      url: `/api/config/journeys/${key}`
-    })
-    expect(statusCode).toBe(statusCodes.ok)
-    expect(result).toMatchObject({
-      key,
-      obligations: expect.any(Array),
-      journeyMap: expect.any(Object),
-      scenarios: expect.any(Object)
-    })
-    expect(result.obligations).toHaveLength(obligationCount)
-    // refdata MUST NOT appear in the response.
-    expect(result).not.toHaveProperty('refdata')
-  })
+  ])(
+    'returns 200 with full journey body (refdata stripped) for %s',
+    async (key, obligationCount) => {
+      const { result, statusCode } = await server.inject({
+        method: 'GET',
+        url: `/api/config/journeys/${key}`
+      })
+      expect(statusCode).toBe(statusCodes.ok)
+      expect(result).toMatchObject({
+        key,
+        obligations: expect.any(Array),
+        journeyMap: expect.any(Object),
+        scenarios: expect.any(Object)
+      })
+      expect(result.obligations).toHaveLength(obligationCount)
+      // refdata MUST NOT appear in the response.
+      expect(result).not.toHaveProperty('refdata')
+    }
+  )
 
   test('returns 404 for an unknown journey key', async () => {
     const { statusCode } = await server.inject({
@@ -240,8 +243,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/refdata-view', () 
   test('with commodity+species, returns resolved values and rows (plain data, no functions)', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/eu-live-animals/refdata-view?commodity=1063100&species=Strigiformes'
+      url: '/api/config/journeys/eu-live-animals/refdata-view?commodity=1063100&species=Strigiformes'
     })
     expect(statusCode).toBe(statusCodes.ok)
     expect(result.dimensions).toEqual(
@@ -278,8 +280,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/refdata-view', () 
   test('returns 400 when species is provided without commodity', async () => {
     const { statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/eu-live-animals/refdata-view?species=Strigiformes'
+      url: '/api/config/journeys/eu-live-animals/refdata-view?species=Strigiformes'
     })
     expect(statusCode).toBe(statusCodes.badRequest)
   })
@@ -391,8 +392,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
   test('returns species-level driver for animals 1063100 / Strigiformes', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/eu-live-animals/commodities/1063100/species/Strigiformes'
+      url: '/api/config/journeys/eu-live-animals/commodities/1063100/species/Strigiformes'
     })
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toMatchObject({
@@ -404,8 +404,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
   test('returns species-level driver for plants 0808108090 / MABSD with varieties intact', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/chedpp-plants/commodities/0808108090/species/MABSD'
+      url: '/api/config/journeys/chedpp-plants/commodities/0808108090/species/MABSD'
     })
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toMatchObject({
@@ -422,8 +421,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
     // detail, not a 404.
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/eu-live-animals/commodities/102/species/Nonexistent'
+      url: '/api/config/journeys/eu-live-animals/commodities/102/species/Nonexistent'
     })
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toMatchObject({
@@ -436,8 +434,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
   test('animals: 404 when both species-specific and species-agnostic miss', async () => {
     const { statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/eu-live-animals/commodities/99999/species/Nope'
+      url: '/api/config/journeys/eu-live-animals/commodities/99999/species/Nope'
     })
     expect(statusCode).toBe(statusCodes.notFound)
   })
@@ -448,8 +445,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
     // species row, so the species call returns null → 404.
     const { statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/chedpp-plants/commodities/0808108090/species/UNKNOWN'
+      url: '/api/config/journeys/chedpp-plants/commodities/0808108090/species/UNKNOWN'
     })
     expect(statusCode).toBe(statusCodes.notFound)
   })
@@ -532,12 +528,14 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
   })
 
   test('route is tagged "api" and "config" so it appears in the Swagger config group', () => {
-    const route = server.table().find(
-      (r) =>
-        r.path ===
-          '/api/config/journeys/{key}/commodities/{code}/page-variance' &&
-        r.method === 'get'
-    )
+    const route = server
+      .table()
+      .find(
+        (r) =>
+          r.path ===
+            '/api/config/journeys/{key}/commodities/{code}/page-variance' &&
+          r.method === 'get'
+      )
     expect(route).toBeDefined()
     expect(route.settings.tags).toEqual(
       expect.arrayContaining(['api', 'config'])
@@ -588,8 +586,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
     // which DOES 404.
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/chedpp-plants/commodities/0805108010/page-variance/species/UNKNOWN'
+      url: '/api/config/journeys/chedpp-plants/commodities/0805108010/page-variance/species/UNKNOWN'
     })
     expect(statusCode).toBe(statusCodes.ok)
     expect(result).toMatchObject({ pageVariance: expect.any(Array) })
@@ -600,8 +597,7 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
     // copy-paste failure where the species branch skips the check.
     const { statusCode } = await server.inject({
       method: 'GET',
-      url:
-        '/api/config/journeys/eu-live-animals/commodities/99999/page-variance/species/Bos%20taurus'
+      url: '/api/config/journeys/eu-live-animals/commodities/99999/page-variance/species/Bos%20taurus'
     })
     expect(statusCode).toBe(statusCodes.notFound)
   })

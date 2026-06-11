@@ -11,7 +11,11 @@ import {
   pageVarianceResponse,
   errorResponse
 } from './schemas.js'
-import { withJourney, notFound, noPipeParamFailAction } from './route-helpers.js'
+import {
+  withJourney,
+  notFound,
+  noPipeParamFailAction
+} from './route-helpers.js'
 
 // validateJourney (evaluation-engine plugin) guarantees journey.journeyMap
 // with journeyMap.sections (array) and journey.obligations (non-empty array)
@@ -210,7 +214,9 @@ export const configRoutes = [
       validate: {
         params: Joi.object({
           key: Joi.string().required(),
-          code: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required()
+          code: Joi.string()
+            .pattern(/^[^|]+$/, 'no-pipe')
+            .required()
         })
       },
       response: {
@@ -238,8 +244,12 @@ export const configRoutes = [
       validate: {
         params: Joi.object({
           key: Joi.string().required(),
-          code: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required(),
-          species: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required()
+          code: Joi.string()
+            .pattern(/^[^|]+$/, 'no-pipe')
+            .required(),
+          species: Joi.string()
+            .pattern(/^[^|]+$/, 'no-pipe')
+            .required()
         })
       },
       response: {
@@ -269,12 +279,14 @@ export const configRoutes = [
     path: '/api/config/journeys/{key}/commodities/{code}/page-variance',
     options: {
       description:
-        'Return the per-commodity page-variance: which screens this commodity drives, with each screen\'s drivers and activation reason.',
+        "Return the per-commodity page-variance: which screens this commodity drives, with each screen's drivers and activation reason.",
       tags: ['api', 'config'],
       validate: {
         params: Joi.object({
           key: Joi.string().required(),
-          code: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required()
+          code: Joi.string()
+            .pattern(/^[^|]+$/, 'no-pipe')
+            .required()
         }),
         failAction: noPipeParamFailAction
       },
@@ -291,11 +303,7 @@ export const configRoutes = [
         if (journey.commodityDetail(journey.refdata, code) === null) {
           return notFound(h, `Unknown commodity: "${code}" in journey "${key}"`)
         }
-        const pageVariance = computePageVariance(
-          journey,
-          key,
-          refdataKey(code)
-        )
+        const pageVariance = computePageVariance(journey, key, refdataKey(code))
         return h.response({ pageVariance }).code(statusCodes.ok)
       })
     }
@@ -310,8 +318,12 @@ export const configRoutes = [
       validate: {
         params: Joi.object({
           key: Joi.string().required(),
-          code: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required(),
-          species: Joi.string().pattern(/^[^|]+$/, 'no-pipe').required()
+          code: Joi.string()
+            .pattern(/^[^|]+$/, 'no-pipe')
+            .required(),
+          species: Joi.string()
+            .pattern(/^[^|]+$/, 'no-pipe')
+            .required()
         }),
         failAction: noPipeParamFailAction
       },

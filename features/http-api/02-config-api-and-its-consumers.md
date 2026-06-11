@@ -19,8 +19,8 @@ scenarios), refdata (bulk), the dimension-and-detail view used by
 the inspector, the commodity list, and — the new piece — the
 per-commodity driver.
 
-The per-commodity driver answers the FE's narrative question: *given
-this commodity, what does the rest of the journey look like?*
+The per-commodity driver answers the FE's narrative question: _given
+this commodity, what does the rest of the journey look like?_
 Specifically, "Routing Flags" (animals) or "regulatory authority +
 marketing standard + varieties + classes" (plants). It's how the
 demo can demonstrate the "origin → commodity → next pages"
@@ -58,6 +58,7 @@ Plants refdata layout: `commodities[code]` (group, grouping flags),
 varieties, validity period, classes available).
 
 Existing controllers that this story touches:
+
 - `src/server/routes/explorer/nav-context.js`
 - `src/server/routes/explorer/journey-controller.js`
 - `src/server/routes/explorer/tasklist-controller.js`
@@ -96,7 +97,9 @@ in code.
 //     content:        { identifiers, certification, weaningStatus, ... },
 //     identifierSet:  refdata.definitions.identifier_sets[content.identifiers]
 //   }
-export const commodityDetail = (refdata, code, species) => { /* ... */ }
+export const commodityDetail = (refdata, code, species) => {
+  /* ... */
+}
 ```
 
 `src/server/journeys/chedpp-plants/refdata-view.js` adds:
@@ -122,7 +125,9 @@ export const commodityDetail = (refdata, code, species) => { /* ... */ }
 //     validityPeriod,
 //     varieties
 //   }
-export const commodityDetail = (refdata, code, species) => { /* ... */ }
+export const commodityDetail = (refdata, code, species) => {
+  /* ... */
+}
 ```
 
 Each journey's `index.js` re-exports `commodityDetail`.
@@ -146,7 +151,9 @@ is the only place that knows about HTTP status codes.
 
 ```js
 if (typeof journey.commodityDetail !== 'function') {
-  throw new Error(`Journey "${key}": commodityDetail is missing or not a function`)
+  throw new Error(
+    `Journey "${key}": commodityDetail is missing or not a function`
+  )
 }
 ```
 
@@ -160,16 +167,17 @@ Extend `src/server/plugins/http-api/config-routes.js` with six
 routes (URL convention per D17 — separate path segments, no
 URL-encoded `|`):
 
-| Method | Path | Returns |
-|---|---|---|
-| `GET` | `/api/config/journeys/{key}` | `{ key, obligations, journeyMap, scenarios }` (refdata stripped) |
-| `GET` | `/api/config/journeys/{key}/refdata` | journey-specific refdata JSON (bulk; **no response validation** — see below) |
-| `GET` | `/api/config/journeys/{key}/refdata-view` | output of `journey.refdataView(refdata)` |
-| `GET` | `/api/config/journeys/{key}/commodities` | `{ commodities: [{ code, label, ... }] }` (output of `journey.commodityKeys(refdata)`) |
-| `GET` | `/api/config/journeys/{key}/commodities/{code}` | output of `journey.commodityDetail(refdata, code)` — commodity-level data |
-| `GET` | `/api/config/journeys/{key}/commodities/{code}/species/{species}` | output of `journey.commodityDetail(refdata, code, species)` — species-level data |
+| Method | Path                                                              | Returns                                                                                |
+| ------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `GET`  | `/api/config/journeys/{key}`                                      | `{ key, obligations, journeyMap, scenarios }` (refdata stripped)                       |
+| `GET`  | `/api/config/journeys/{key}/refdata`                              | journey-specific refdata JSON (bulk; **no response validation** — see below)           |
+| `GET`  | `/api/config/journeys/{key}/refdata-view`                         | output of `journey.refdataView(refdata)`                                               |
+| `GET`  | `/api/config/journeys/{key}/commodities`                          | `{ commodities: [{ code, label, ... }] }` (output of `journey.commodityKeys(refdata)`) |
+| `GET`  | `/api/config/journeys/{key}/commodities/{code}`                   | output of `journey.commodityDetail(refdata, code)` — commodity-level data              |
+| `GET`  | `/api/config/journeys/{key}/commodities/{code}/species/{species}` | output of `journey.commodityDetail(refdata, code, species)` — species-level data       |
 
 **Status codes:**
+
 - Unknown `{key}` → 404 with `{ error, message }`.
 - Unknown `{code}` or `{code}/species/{species}` (commodityDetail
   returns `null`) → route handler translates to 404 with
@@ -184,6 +192,7 @@ disambiguation lives inside `commodityDetail` against the
 `${code}|${species}` refdata key, not in the URL surface (D17).
 
 **Response validation policy:**
+
 - All endpoints except the bulk-refdata one: Joi schemas validate
   responses. Schemas for journey-shaped responses
   (`refdataView`, `commodityDetail`) use `Joi.object().unknown(true)`
@@ -225,7 +234,7 @@ export const navContext = async (request) => {
   const currentKey = currentJourneyKey(request)
   return {
     journeys,
-    journeyKey: currentKey,
+    journeyKey: currentKey
     // ... other existing fields
   }
 }
@@ -328,6 +337,7 @@ realistic request payload + expected response.
 ### Client unit — extend `src/server/clients/journey-api-client.test.js`
 
 For each new client method:
+
 - Calls the correct URL.
 - Forwards trace id.
 - Surfaces non-2xx as `ApiError` with `.status` and `.body`.
@@ -432,6 +442,7 @@ curl -i http://localhost:3000/api/config/journeys/chedpp-plants/commodities/UNKN
 ## Known unknowns
 
 None resolved-blocking. Worth flagging:
+
 - The exact field names in each journey's per-commodity response are
   decided by the Plan agent during implementation. They must be
   documented in the journey's Swagger example so reviewers can see

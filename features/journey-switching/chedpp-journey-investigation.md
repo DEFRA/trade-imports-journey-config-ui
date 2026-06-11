@@ -14,18 +14,18 @@
 
 CHEDPP has exactly 1 field config record (commodity code `00`). 10 pages, 88 components:
 
-| Page | Part | Components |
-|------|------|------------|
-| Commodity | one | 8 |
-| Purpose | one | 12 |
-| References | one | 5 |
-| Traders | one | 11 |
-| Transport | one | 6 |
-| Acceptance | two | 6 |
-| Checks | two | 11 |
-| Control Authority | two | 3 |
-| Laboratory Tests | two | 12 |
-| Refusal | two | 14 |
+| Page              | Part | Components |
+| ----------------- | ---- | ---------- |
+| Commodity         | one  | 8          |
+| Purpose           | one  | 12         |
+| References        | one  | 5          |
+| Traders           | one  | 11         |
+| Transport         | one  | 6          |
+| Acceptance        | two  | 6          |
+| Checks            | two  | 11         |
+| Control Authority | two  | 3          |
+| Laboratory Tests  | two  | 12         |
+| Refusal           | two  | 14         |
 
 Part "one" pages (Commodity through Transport) are field config's contribution to the importer journey. Part "two" pages are inspector-facing and out of scope for this investigation.
 
@@ -68,7 +68,7 @@ Most of these pages are **NOT** in field config. They are structural pages drive
 **What to extract:**
 
 1. The complete ordered list of page keys in the routing table
-2. For each page entry: the conditions under which it routes to the *next* page (these reveal conditional page skipping)
+2. For each page entry: the conditions under which it routes to the _next_ page (these reveal conditional page skipping)
 3. Any CHEDPP-specific branching (check for `notification.type === 'CHEDPP'` conditions)
 
 **Output format:**
@@ -107,12 +107,12 @@ handler: consignment_purpose
 route: /create-notification/:id/purpose
 applies_to_chedpp: true
 fetches_field_config: true (getFieldConfigNoComplementName)
-field_config_page_queried: "Purpose"
+field_config_page_queried: 'Purpose'
 visibility: always (in routing table, no skip condition)
 data_sources:
   - field_config: Purpose page radio_buttons values
   - notification: selected purpose stored on notification
-other_notes: "No complementName passed for CHEDPP"
+other_notes: 'No complementName passed for CHEDPP'
 ```
 
 ---
@@ -123,17 +123,17 @@ The screenshots show pages that field config doesn't define. For each of these, 
 
 **Pages to investigate:**
 
-| Screenshot Page | Likely Handler | Key Questions |
-|----------------|----------------|---------------|
-| What are you importing | `type_selection` or similar | How does the user arrive? Always first? |
-| Origin country | `country_origin` or `origin` | Where does country list come from? MDM? |
-| Commodity search | `commodity_search` | How does search work? What API? |
-| GMS Declaration | `gms` or `goods_movement_service` | What is GMS? When is it visible? |
-| Contact details | `contact_details` | Always visible or conditional? |
-| Nominated contacts | `nominated_contacts` | What are these? Visibility rules? |
-| Documents | `documents` or `phyto_certificate` | Phytosanitary cert upload? Always required? |
-| Billing | `billing` | Who pays? Visibility? |
-| Review/Submit | `review`, `declaration` | What sections appear on review? |
+| Screenshot Page        | Likely Handler                     | Key Questions                               |
+| ---------------------- | ---------------------------------- | ------------------------------------------- |
+| What are you importing | `type_selection` or similar        | How does the user arrive? Always first?     |
+| Origin country         | `country_origin` or `origin`       | Where does country list come from? MDM?     |
+| Commodity search       | `commodity_search`                 | How does search work? What API?             |
+| GMS Declaration        | `gms` or `goods_movement_service`  | What is GMS? When is it visible?            |
+| Contact details        | `contact_details`                  | Always visible or conditional?              |
+| Nominated contacts     | `nominated_contacts`               | What are these? Visibility rules?           |
+| Documents              | `documents` or `phyto_certificate` | Phytosanitary cert upload? Always required? |
+| Billing                | `billing`                          | Who pays? Visibility?                       |
+| Review/Submit          | `review`, `declaration`            | What sections appear on review?             |
 
 **For each page, document:**
 
@@ -178,16 +178,16 @@ Produce a matrix showing which pages are visible under which conditions for CHED
 
 **Format:**
 
-| Page | Visible When | Driven By | Notes |
-|------|-------------|-----------|-------|
-| Type selection | Always (entry point) | Code | First page in journey |
-| Origin | Always | Code | After type selection |
-| Commodity search | Always | Code | After origin |
-| Purpose | Always | Routing table | Field config provides options |
-| Transport | Always | Routing table | Field config provides transport type options |
-| GMS | [condition?] | [source?] | May depend on entry point |
-| Documents | [condition?] | [source?] | Phytosanitary cert |
-| ... | ... | ... | ... |
+| Page             | Visible When         | Driven By     | Notes                                        |
+| ---------------- | -------------------- | ------------- | -------------------------------------------- |
+| Type selection   | Always (entry point) | Code          | First page in journey                        |
+| Origin           | Always               | Code          | After type selection                         |
+| Commodity search | Always               | Code          | After origin                                 |
+| Purpose          | Always               | Routing table | Field config provides options                |
+| Transport        | Always               | Routing table | Field config provides transport type options |
+| GMS              | [condition?]         | [source?]     | May depend on entry point                    |
+| Documents        | [condition?]         | [source?]     | Phytosanitary cert                           |
+| ...              | ...                  | ...           | ...                                          |
 
 **Conditions to watch for:**
 
@@ -204,14 +204,14 @@ For each Part 1 page, produce a complete list of every data source it consults.
 
 **Categories:**
 
-| Source | Examples | How to Find |
-|--------|----------|-------------|
-| Field Config | Radio options, field visibility | `getFieldConfig*()` calls in handler |
-| MDM | BCPs, inspection locations | HTTP calls to MDM endpoints |
-| Reference Data | Country lists, commodity tree | Calls to reference data service |
-| Notification State | Previously entered data | `request.notification.*` access |
-| Session/Auth | User org, user role | `request.auth.*` or session access |
-| Hardcoded | Static option lists | Constants/enums in code |
+| Source             | Examples                        | How to Find                          |
+| ------------------ | ------------------------------- | ------------------------------------ |
+| Field Config       | Radio options, field visibility | `getFieldConfig*()` calls in handler |
+| MDM                | BCPs, inspection locations      | HTTP calls to MDM endpoints          |
+| Reference Data     | Country lists, commodity tree   | Calls to reference data service      |
+| Notification State | Previously entered data         | `request.notification.*` access      |
+| Session/Auth       | User org, user role             | `request.auth.*` or session access   |
+| Hardcoded          | Static option lists             | Constants/enums in code              |
 
 ---
 
@@ -222,6 +222,7 @@ After completing Tasks 1–6, the team should be able to produce:
 ### 1. Journey Map (page sequence diagram)
 
 A sequential diagram of every page in the CHEDPP Part 1 journey, with:
+
 - Entry conditions
 - Exit routes (which page comes next, and under what condition)
 - Skip conditions (when this page is bypassed)
@@ -233,6 +234,7 @@ For each page: what data it needs, where that data comes from, and whether the d
 ### 3. Obligations File (what the importer must provide)
 
 Derived from the journey map + data config: every piece of information the importer must supply, mapped to:
+
 - Which page collects it
 - Whether it's mandatory or conditional
 - What drives the condition (commodity, purpose, origin, etc.)
@@ -241,17 +243,17 @@ Derived from the journey map + data config: every piece of information the impor
 
 ## Key Files in ipaffs-frontend-notification
 
-| Purpose | Path |
-|---------|------|
-| Default routing table | `service/src/routes/next_page_routing_tables/routing_table_default.js` |
-| CHED-A routing table (reference) | `service/src/routes/next_page_routing_tables/routing_table_cheda.js` |
-| Next page router | `service/src/routes/next_page_router.js` |
-| Part 1 handlers | `service/src/routes/handlers/importer/` |
-| Field config utility | `service/src/utils/fieldconfig.js` |
-| Field config API client | `service/src/integration/field_config.js` |
-| Handlebars helpers (field config) | `service/src/utils/handlebars.js` |
-| View templates | `service/src/views/` |
-| Review page manager | `service/src/routes/handlers/importer/page_managers/review.js` |
+| Purpose                           | Path                                                                   |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| Default routing table             | `service/src/routes/next_page_routing_tables/routing_table_default.js` |
+| CHED-A routing table (reference)  | `service/src/routes/next_page_routing_tables/routing_table_cheda.js`   |
+| Next page router                  | `service/src/routes/next_page_router.js`                               |
+| Part 1 handlers                   | `service/src/routes/handlers/importer/`                                |
+| Field config utility              | `service/src/utils/fieldconfig.js`                                     |
+| Field config API client           | `service/src/integration/field_config.js`                              |
+| Handlebars helpers (field config) | `service/src/utils/handlebars.js`                                      |
+| View templates                    | `service/src/views/`                                                   |
+| Review page manager               | `service/src/routes/handlers/importer/page_managers/review.js`         |
 
 ---
 

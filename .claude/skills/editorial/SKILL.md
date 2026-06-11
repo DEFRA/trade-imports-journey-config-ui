@@ -35,15 +35,15 @@ When the question feels answered, ask once more. The first answer is usually the
 
 **Worked example B.** A statement is written "adds typeCode + urlId (D23B unece:typeCode)":
 
-- *Why is this a question?* What am I trying to say? Why would a reader care? Does my reader know about typeCodes, or D23B? 
-- *What should have been written*: Vet handling and inspection regimes differ for live animals vs semen vs embryos vs ova. The CN commodity code does not always discriminate form, the urlId is added to the typeCode so we can tell the difference. UN/CEFACT uses these properties within the TradeProduct to convey this information.
+- _Why is this a question?_ What am I trying to say? Why would a reader care? Does my reader know about typeCodes, or D23B?
+- _What should have been written_: Vet handling and inspection regimes differ for live animals vs semen vs embryos vs ova. The CN commodity code does not always discriminate form, the urlId is added to the typeCode so we can tell the difference. UN/CEFACT uses these properties within the TradeProduct to convey this information.
 
 **Worked example.** An open question started as "is `private_transporter_approval_number` a real Defra scheme?". Drilling:
 
-- *Why is this a question?* We used the name in samples without registering it.
-- *Why does that matter?* Consumers can't dereference an unregistered scheme name.
-- *Why is there no way?* No mechanism exists for Defra-side scheme IDs that aren't in TRACES.
-- *Other examples?* `cph_number`, `bcp_reference`, per-animal identifier types.
+- _Why is this a question?_ We used the name in samples without registering it.
+- _Why does that matter?_ Consumers can't dereference an unregistered scheme name.
+- _Why is there no way?_ No mechanism exists for Defra-side scheme IDs that aren't in TRACES.
+- _Other examples?_ `cph_number`, `bcp_reference`, per-animal identifier types.
 
 The surface question was about one scheme. The real question was the codelist mechanism.
 
@@ -142,8 +142,8 @@ Mechanical rules. Apply without thinking.
 
 ### Code examples
 
-- JSON with `//` comments → unmarked code fence ``` ``` ``` (a ```` ```json ```` fence trips linters).
-- Pure JSON → ```` ```json ```` is fine.
+- JSON with `//` comments → unmarked code fence ` ` ` (a ```` `json ```` fence trips linters).
+- Pure JSON → ` ```json ` is fine.
 
 ### References
 

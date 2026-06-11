@@ -35,7 +35,7 @@ This is the bulk of the deliverable, delivered register-once (decided: no minima
 
 **5. Add chedd to the facade-vs-HTTP parity matrix.** In `src/server/plugins/http-api/parity.test.js`, add a `chedd-products` entry to the hardcoded `journeys` array (`{ key, scenarios, adapter }`, lines 54-65). The matrix then round-trips every chedd scenario through both the facade and HTTP automatically; story 04's added scenarios flow through with no further edit.
 
-**Journey picker — automatic; this story only verifies it.** No picker code change: `nav-context.js` maps `listJourneys()` → `journeyOptions` (raw key as label) and `journey-picker-controller.js` validates the switch target against the same live list, so registering in step 2 makes `chedd-products` appear and be switchable. The existing `nav-context.test.js` *stubs* the journey list, so it does not break. This story asserts (AC) and manually verifies that the picker lists and switches to `chedd-products`.
+**Journey picker — automatic; this story only verifies it.** No picker code change: `nav-context.js` maps `listJourneys()` → `journeyOptions` (raw key as label) and `journey-picker-controller.js` validates the switch target against the same live list, so registering in step 2 makes `chedd-products` appear and be switchable. The existing `nav-context.test.js` _stubs_ the journey list, so it does not break. This story asserts (AC) and manually verifies that the picker lists and switches to `chedd-products`.
 
 The HTTP/config and engine routes and navigation auto-discover the journey via `listJourneys()` — no edits there.
 
@@ -72,4 +72,4 @@ npm run lint
 
 ## What NOT to change
 
-The engine (`src/server/engine/*`), the HTTP route definitions, and the `eu-live-animals` / `chedpp-plants` journeys. `validateJourney` itself — if the new module needs adjustment to pass, adjust the *module*, not the validator (per story 09's precedent). The `refdata.json` from story 01 (consumed read-only). Part 2 / inspector pages — out of scope.
+The engine (`src/server/engine/*`), the HTTP route definitions, and the `eu-live-animals` / `chedpp-plants` journeys. `validateJourney` itself — if the new module needs adjustment to pass, adjust the _module_, not the validator (per story 09's precedent). The `refdata.json` from story 01 (consumed read-only). Part 2 / inspector pages — out of scope.

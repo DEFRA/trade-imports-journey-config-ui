@@ -13,6 +13,9 @@ export const mapKeysDeep = (value) => {
   if (Array.isArray(value)) return value.map(mapKeysDeep)
   if (!isPlainObject(value)) return value
   return Object.fromEntries(
-    Object.entries(value).map(([key, val]) => [camelCase(key), mapKeysDeep(val)])
+    Object.entries(value).map(([key, val]) => [
+      camelCase(key),
+      mapKeysDeep(val)
+    ])
   )
 }

@@ -32,11 +32,11 @@ plant-specific.
   produce.
 - **SMS** — Specific Marketing Standards. Product-specific, tighter
   rules for certain commodities (apples, pears, citrus, etc.).
-- *absent* — no marketing standard applies (always the case for
+- _absent_ — no marketing standard applies (always the case for
   PHSI-only species).
 
 The **GMS declaration** page is where the importer attests:
-*"this consignment complies with the General Marketing Standards."*
+_"this consignment complies with the General Marketing Standards."_
 IPAFFS asks for it only when the rules apply (HMI authority) **and**
 the General set is the one that applies (GMS, not SMS).
 
@@ -45,13 +45,13 @@ the General set is the one that applies (GMS, not SMS).
 Counts are production species-pair counts (each row = a distinct
 `(commodity_code, eppo_code)` combination).
 
-| Authority | Marketing standard | Production pairs | GMS page fires? | Notes |
-|---|---|---|---|---|
-| PHSI | — (absent) | ~480,505 | no | Phyto-only baseline. No marketing process. |
-| HMI | GMS | **409** | **yes** | **The only combination that fires the GMS page.** |
-| HMI | SMS | 38 | no | HMI inspects, but the *Specific* rules apply — handled outside the GMS declaration. |
-| JOINT | GMS | 4,820 | no | Both authorities inspect, but the GMS page is gated strictly on `HMI`, not `JOINT`. JOINT cases route through the JOINT custom-doc-code flow instead. |
-| JOINT | SMS | 54 | no | Same JOINT routing; Specific standard not via GMS declaration. |
+| Authority | Marketing standard | Production pairs | GMS page fires? | Notes                                                                                                                                                 |
+| --------- | ------------------ | ---------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PHSI      | — (absent)         | ~480,505         | no              | Phyto-only baseline. No marketing process.                                                                                                            |
+| HMI       | GMS                | **409**          | **yes**         | **The only combination that fires the GMS page.**                                                                                                     |
+| HMI       | SMS                | 38               | no              | HMI inspects, but the _Specific_ rules apply — handled outside the GMS declaration.                                                                   |
+| JOINT     | GMS                | 4,820            | no              | Both authorities inspect, but the GMS page is gated strictly on `HMI`, not `JOINT`. JOINT cases route through the JOINT custom-doc-code flow instead. |
+| JOINT     | SMS                | 54               | no              | Same JOINT routing; Specific standard not via GMS declaration.                                                                                        |
 
 **Totals.** Marketing-bearing pairs: 5,321 (HMI 447 + JOINT 4,874).
 PHSI baseline: ~480,505. Only **409** species-pairs (~30 commodity
@@ -60,7 +60,7 @@ codes) actually trigger the GMS declaration page.
 ## The non-obvious bit
 
 It is tempting to read "HMI is involved" as "HMI **or** JOINT," since
-JOINT *includes* HMI inspection. The verified IPAFFS predicate is
+JOINT _includes_ HMI inspection. The verified IPAFFS predicate is
 **strict-equal `HMI`**, not "any HMI involvement." JOINT cases — even
 JOINT+GMS — route through a different document-code path
 (`HMI`/`JOINT`/`EU` CHEDPP custom-doc codes in

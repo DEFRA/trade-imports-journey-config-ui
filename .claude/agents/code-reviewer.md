@@ -59,6 +59,7 @@ structural refactoring — `refactoring-enforcer` handles that.
 ## Criteria (what you own)
 
 ### ⛔ Critical — must fix before ship
+
 - Exposed secrets, API keys, credentials in code or logs.
 - Missing input validation on user-supplied data (query, body, headers).
 - Security vulnerabilities: SQL/NoSQL injection, XSS, CSRF, SSRF, path
@@ -68,6 +69,7 @@ structural refactoring — `refactoring-enforcer` handles that.
 - Race conditions or concurrency bugs.
 
 ### ⚠️ Major — should fix
+
 - Error handling that swallows context (e.g. `catch (e) {}`) or loses the
   stack trace.
 - Missing validation of edge cases: `null`, `undefined`, empty string,
@@ -78,11 +80,13 @@ structural refactoring — `refactoring-enforcer` handles that.
 - Logging of potentially sensitive data (PII, tokens).
 
 ### 💡 Minor — consider
+
 - Inconsistent or misleading variable/function names in the reviewed scope.
 - Missing defensive null-coalescing where a sensible default exists.
 - Incomplete JSDoc on an exported symbol that needs it.
 
 ### Not your lane (refer, don't review)
+
 - DRY / duplication → `refactoring-enforcer`
 - Function length / decomposition → `refactoring-enforcer`
 - Pure-function extraction / immutability → `refactoring-enforcer`

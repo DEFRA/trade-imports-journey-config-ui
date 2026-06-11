@@ -41,8 +41,9 @@ export const refdataView = (refdata) => {
         id: 'internalMarket',
         name: 'Internal market',
         valuesFor: (k) =>
-          definitions.internal_market_sets[content[codeOf(k)]?.internal_market] ??
-          [],
+          definitions.internal_market_sets[
+            content[codeOf(k)]?.internal_market
+          ] ?? [],
         sourceFor: (k) => content[codeOf(k)]?.internal_market ?? null
       },
       {
@@ -68,9 +69,18 @@ export const refdataView = (refdata) => {
         rowsFor: (k) => {
           const c = content[codeOf(k)]
           return [
-            { label: 'Product description', value: c?.product_description ?? null },
-            { label: 'Line item complement', value: c?.line_item_complement ?? null },
-            { label: 'Combo complement id', value: c?.combo_complement_id ?? null }
+            {
+              label: 'Product description',
+              value: c?.product_description ?? null
+            },
+            {
+              label: 'Line item complement',
+              value: c?.line_item_complement ?? null
+            },
+            {
+              label: 'Combo complement id',
+              value: c?.combo_complement_id ?? null
+            }
           ]
         }
       },

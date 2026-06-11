@@ -46,14 +46,17 @@ describe('parseCommodityKey', () => {
 describe('formatCommodityLabel', () => {
   test('formats commodity with species using en-dash separator', () => {
     expect(
-      formatCommodityLabel({ commodityID: '0101', speciesName: 'Equus caballus' })
+      formatCommodityLabel({
+        commodityID: '0101',
+        speciesName: 'Equus caballus'
+      })
     ).toBe('0101 – Equus caballus')
   })
 
   test('formats commodity without species as (no species)', () => {
-    expect(
-      formatCommodityLabel({ commodityID: '0101', speciesName: '' })
-    ).toBe('0101 (no species)')
+    expect(formatCommodityLabel({ commodityID: '0101', speciesName: '' })).toBe(
+      '0101 (no species)'
+    )
   })
 })
 

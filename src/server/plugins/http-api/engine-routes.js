@@ -76,7 +76,9 @@ export const engineRoutes = [
             request.params.key,
             request.payload ?? {}
           )
-          const payload = wantsTrace(request.query) ? result : stripTrace(result)
+          const payload = wantsTrace(request.query)
+            ? result
+            : stripTrace(result)
           return h.response(payload).code(statusCodes.ok)
         })
       )

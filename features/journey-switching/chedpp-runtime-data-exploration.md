@@ -3,6 +3,7 @@
 **Context:** The CHEDPP journey investigation revealed that commodity-level variance is overwhelmingly runtime-driven, fetched from the `ipaffs-commoditycode-microservice` per `(commodityCode, eppoCode)` pair. This document plans how to explore that data to understand its structure and magnitude.
 
 **Goal:** Answer three questions:
+
 1. What is the **shape** of the runtime data? (What fields, what cardinalities, what relationships?)
 2. What is the **magnitude**? (How many commodity codes, EPPO codes, combinations, varieties?)
 3. What does it **drive** in the journey? (Which journey branches depend on which data dimensions?)
@@ -15,16 +16,16 @@
 
 The commodity-code service has **8 core tables** relevant to CHEDPP:
 
-| Table | Key | Rows (test data) | Purpose |
-|-------|-----|-------------------|---------|
-| `inspection_responsibility` | `(commodity_code, eppo_code)` | 58 | Maps each commodity+species to PHSI/HMI/JOINT |
-| `hmi_marketing` | `(commodity_code, eppo_code, variety)` | 67 | Marketing standard (GMS/SMS) + validity period per variety |
-| `commodity_eppo_variety` | `(commodity_code, eppo_code, variety)` | 450 | Which varieties exist for each commodity+species |
-| `commodity_class` | `(commodity_code, class)` | 82 | Quality classes (Extra Class, Class I, Class II) per commodity |
-| `commodity_configuration` | `(commodity_code, type)` | 172 | Boolean flags: `requiresTestAndTrial`, `requiresFinishedOrPropagated` |
-| `commodity_group_commodity` | `(commodity_code, group_code)` | 468 | Maps commodities to groups (Vegetables, Fruit, Plants for Planting, etc.) |
-| `commodity_attributes` | `(commodity_code)` | 6 | Propagation type (bulb/plant) — very sparse |
-| `article_72_commodities` | `(commodity_code, eppo_code, commodity_group)` | 2,101 | Low-risk Article 72 lookup |
+| Table                       | Key                                            | Rows (test data) | Purpose                                                                   |
+| --------------------------- | ---------------------------------------------- | ---------------- | ------------------------------------------------------------------------- |
+| `inspection_responsibility` | `(commodity_code, eppo_code)`                  | 58               | Maps each commodity+species to PHSI/HMI/JOINT                             |
+| `hmi_marketing`             | `(commodity_code, eppo_code, variety)`         | 67               | Marketing standard (GMS/SMS) + validity period per variety                |
+| `commodity_eppo_variety`    | `(commodity_code, eppo_code, variety)`         | 450              | Which varieties exist for each commodity+species                          |
+| `commodity_class`           | `(commodity_code, class)`                      | 82               | Quality classes (Extra Class, Class I, Class II) per commodity            |
+| `commodity_configuration`   | `(commodity_code, type)`                       | 172              | Boolean flags: `requiresTestAndTrial`, `requiresFinishedOrPropagated`     |
+| `commodity_group_commodity` | `(commodity_code, group_code)`                 | 468              | Maps commodities to groups (Vegetables, Fruit, Plants for Planting, etc.) |
+| `commodity_attributes`      | `(commodity_code)`                             | 6                | Propagation type (bulb/plant) — very sparse                               |
+| `article_72_commodities`    | `(commodity_code, eppo_code, commodity_group)` | 2,101            | Low-risk Article 72 lookup                                                |
 
 Plus reference tables: `species` (1,008 rows), `commodity_nomenclature` (27,089 rows).
 
@@ -32,27 +33,27 @@ Plus reference tables: `species` (1,008 rows), `commodity_nomenclature` (27,089 
 
 Five APIs serve CHEDPP-relevant data to the notification frontend:
 
-| API | Frontend call | Returns |
-|-----|---------------|---------|
-| `GET /.../supplemental-data?speciesName=X` | `getCommoditySupplementalData` | `regulatoryAuthority`, `marketingStandard`, `validityPeriod`, `varieties[]`, `classes[]` |
-| `GET /chedpp/commodity-configuration?commodityCodes=` | `getChedppCommodityConfiguration` | `requiresTestAndTrial`, `requiresFinishedOrPropagated` per commodity |
-| `GET /chedpp/commodity-attributes?commodityCodes=` | `getChedppCommodityAttributes` | `propagation` (bulb/plant) per commodity |
-| `GET /groups?commodityCodes=` | `getCommodityGroups` | Group names per commodity |
-| `POST /article-72` | `getArticle72CommodityData` | `isLowRiskArticle72` boolean |
+| API                                                   | Frontend call                     | Returns                                                                                  |
+| ----------------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
+| `GET /.../supplemental-data?speciesName=X`            | `getCommoditySupplementalData`    | `regulatoryAuthority`, `marketingStandard`, `validityPeriod`, `varieties[]`, `classes[]` |
+| `GET /chedpp/commodity-configuration?commodityCodes=` | `getChedppCommodityConfiguration` | `requiresTestAndTrial`, `requiresFinishedOrPropagated` per commodity                     |
+| `GET /chedpp/commodity-attributes?commodityCodes=`    | `getChedppCommodityAttributes`    | `propagation` (bulb/plant) per commodity                                                 |
+| `GET /groups?commodityCodes=`                         | `getCommodityGroups`              | Group names per commodity                                                                |
+| `POST /article-72`                                    | `getArticle72CommodityData`       | `isLowRiskArticle72` boolean                                                             |
 
 ### What Each Dimension Drives
 
-| Dimension | Journey effect |
-|-----------|---------------|
+| Dimension                              | Journey effect                                                            |
+| -------------------------------------- | ------------------------------------------------------------------------- |
 | `regulatoryAuthority` (PHSI/HMI/JOINT) | Custom document code; GMS declaration visibility; validity period default |
-| `marketingStandard` (GMS/SMS) | GMS declaration page appears if any species has HMI + GMS |
-| `validityPeriod` | Certificate validity calculation |
-| `varieties[]` + `classes[]` | If both non-empty → variety/class selection page shown |
-| `commodityGroups` | Gates propagation attribute lookup; populates package-type dropdown |
-| `requiresFinishedOrPropagated` | Finished/propagating dropdown on bulk-details |
-| `requiresTestAndTrial` | Test-and-trial field on bulk-details |
-| `propagation` | Routes to intended-use-bulbs/plants pages |
-| `lowRiskArticle72` | Affects BCP filtering and transport routing |
+| `marketingStandard` (GMS/SMS)          | GMS declaration page appears if any species has HMI + GMS                 |
+| `validityPeriod`                       | Certificate validity calculation                                          |
+| `varieties[]` + `classes[]`            | If both non-empty → variety/class selection page shown                    |
+| `commodityGroups`                      | Gates propagation attribute lookup; populates package-type dropdown       |
+| `requiresFinishedOrPropagated`         | Finished/propagating dropdown on bulk-details                             |
+| `requiresTestAndTrial`                 | Test-and-trial field on bulk-details                                      |
+| `propagation`                          | Routes to intended-use-bulbs/plants pages                                 |
+| `lowRiskArticle72`                     | Affects BCP filtering and transport routing                               |
 
 ---
 
@@ -62,23 +63,23 @@ A critical distinction: some data is **fully available in the repo**, and some i
 
 ### Fully available (data-upload files = production-ready datasets)
 
-| Dataset | File | Rows | Complete? |
-|---------|------|------|-----------|
-| commodity_configuration | `data-upload/commodity_configuration/commodity_configuration-IMTA-12483.dat` | 171 | Yes — bulk-loaded to DB |
-| commodity_group_commodity | `data-upload/commodity_group/commodity_group_commodity-IMTA-9254.tab` | 526 | Yes — bulk-loaded to DB |
-| commodity_group | `data-upload/commodity_group/commodity_group-IMTA-9254.tab` | 11 | Yes — 11 groups total |
-| article_72_commodities | `data-upload/article_72_commodities/article_72_commodities-IMTA-14490.tab` | 2,101 | Yes — bulk-loaded to DB |
+| Dataset                   | File                                                                         | Rows  | Complete?               |
+| ------------------------- | ---------------------------------------------------------------------------- | ----- | ----------------------- |
+| commodity_configuration   | `data-upload/commodity_configuration/commodity_configuration-IMTA-12483.dat` | 171   | Yes — bulk-loaded to DB |
+| commodity_group_commodity | `data-upload/commodity_group/commodity_group_commodity-IMTA-9254.tab`        | 526   | Yes — bulk-loaded to DB |
+| commodity_group           | `data-upload/commodity_group/commodity_group-IMTA-9254.tab`                  | 11    | Yes — 11 groups total   |
+| article_72_commodities    | `data-upload/article_72_commodities/article_72_commodities-IMTA-14490.tab`   | 2,101 | Yes — bulk-loaded to DB |
 
 ### Test fixtures only (representative subset, not production)
 
-| Dataset | File | Rows | What's missing |
-|---------|------|------|----------------|
-| inspection_responsibility | `test/.../inspection_responsibility.csv` | 58 | Only 3 commodity codes covered |
-| hmi_marketing | `test/.../hmi_marketing.csv` | 67 | Only 3 commodity codes covered |
-| commodity_eppo_variety | `test/.../commodity_eppo_variety.csv` | 450 | Only 31 commodity codes covered |
-| commodity_class | `test/.../commodity_class.csv` | 82 | Only ~30 commodity codes |
-| commodity_attributes | `test/.../commodity_attributes.csv` | 6 | Only 6 entries — may be near-complete |
-| species | `test/.../species.csv` | 1,008 | Probably near-complete (EPPO codes are finite) |
+| Dataset                   | File                                     | Rows  | What's missing                                 |
+| ------------------------- | ---------------------------------------- | ----- | ---------------------------------------------- |
+| inspection_responsibility | `test/.../inspection_responsibility.csv` | 58    | Only 3 commodity codes covered                 |
+| hmi_marketing             | `test/.../hmi_marketing.csv`             | 67    | Only 3 commodity codes covered                 |
+| commodity_eppo_variety    | `test/.../commodity_eppo_variety.csv`    | 450   | Only 31 commodity codes covered                |
+| commodity_class           | `test/.../commodity_class.csv`           | 82    | Only ~30 commodity codes                       |
+| commodity_attributes      | `test/.../commodity_attributes.csv`      | 6     | Only 6 entries — may be near-complete          |
+| species                   | `test/.../species.csv`                   | 1,008 | Probably near-complete (EPPO codes are finite) |
 
 **The gap:** The three tables that define CHEDPP's dominant runtime variance (`inspection_responsibility`, `hmi_marketing`, `commodity_eppo_variety`) are only available as test fixtures covering ~3 commodity codes. Production data is managed by an external sync process and isn't in this repo.
 
@@ -116,7 +117,7 @@ LEFT JOIN commodity_group_commodity cgc ON cc.commodity_code = cgc.traces_commod
 WHERE cc.type = 'CHED-PP';
 
 -- Q3: Overlap between test-and-trial and finished-or-propagated
-SELECT requires_test_and_trial, requires_finished_or_propagated, COUNT(*) 
+SELECT requires_test_and_trial, requires_finished_or_propagated, COUNT(*)
 FROM commodity_configuration WHERE type = 'CHED-PP'
 GROUP BY requires_test_and_trial, requires_finished_or_propagated;
 
@@ -151,19 +152,19 @@ ORDER BY total_entries DESC;
 
 ```sql
 -- Q6: Shape of supplemental data per (commodity, eppo)
-SELECT ir.traces_commodity_code, ir.eppo_code, 
+SELECT ir.traces_commodity_code, ir.eppo_code,
        ir.inspection_responsibility as reg_authority,
        hm.hmi_marketing_standard as mkt_standard,
        hm.certificate_validity_period as validity,
        COUNT(DISTINCT cev.variety) as variety_count
 FROM inspection_responsibility ir
-LEFT JOIN hmi_marketing hm 
-  ON ir.traces_commodity_code = hm.traces_commodity_code 
+LEFT JOIN hmi_marketing hm
+  ON ir.traces_commodity_code = hm.traces_commodity_code
   AND ir.eppo_code = hm.eppo_code
-LEFT JOIN commodity_eppo_variety cev 
+LEFT JOIN commodity_eppo_variety cev
   ON ir.traces_commodity_code = cev.traces_commodity_code
   AND ir.eppo_code = cev.eppo_code
-GROUP BY ir.traces_commodity_code, ir.eppo_code, 
+GROUP BY ir.traces_commodity_code, ir.eppo_code,
          ir.inspection_responsibility, hm.hmi_marketing_standard,
          hm.certificate_validity_period
 ORDER BY variety_count DESC;
@@ -198,6 +199,7 @@ ORDER BY species_count DESC;
 ```
 
 **What this tells us:**
+
 - The **cardinality pattern**: Does each commodity have 5 species or 500? The test data shows one commodity (`0808108090`, apples) with 55 species — so potentially large.
 - The **variety depth**: The test data shows 60+ apple varieties for a single species (MABSD). If this pattern holds, the total variety space is in the thousands.
 - The **regulatory authority distribution**: Test data shows PHSI dominates (56/58), with JOINT (2) and HMI (1) as minority cases. If this holds across all commodities, the GMS declaration page is triggered rarely.
@@ -207,14 +209,14 @@ ORDER BY species_count DESC;
 
 After Phases 1-2, synthesise the findings:
 
-| Question | Data source | Expected answer |
-|----------|-------------|-----------------|
-| Total CHEDPP commodity codes | Phase 1, Q1 | ~500-600 |
-| Codes with test-and-trial or finished-or-propagated flags | Phase 1, Q2 | ~172 |
-| Codes in "Plants for Planting" or "Seed & Tissue Culture" | Phase 1, Q1 | ~91 (41 + 50) |
-| Estimated (commodity, eppo) pairs in production | Phase 2, Q10 extrapolated | Thousands |
-| Estimated total varieties | Phase 2, Q7 extrapolated | Thousands |
-| Percentage of species with HMI regulatory authority | Phase 2, Q9 | Small (~2%?) |
+| Question                                                  | Data source               | Expected answer |
+| --------------------------------------------------------- | ------------------------- | --------------- |
+| Total CHEDPP commodity codes                              | Phase 1, Q1               | ~500-600        |
+| Codes with test-and-trial or finished-or-propagated flags | Phase 1, Q2               | ~172            |
+| Codes in "Plants for Planting" or "Seed & Tissue Culture" | Phase 1, Q1               | ~91 (41 + 50)   |
+| Estimated (commodity, eppo) pairs in production           | Phase 2, Q10 extrapolated | Thousands       |
+| Estimated total varieties                                 | Phase 2, Q7 extrapolated  | Thousands       |
+| Percentage of species with HMI regulatory authority       | Phase 2, Q9               | Small (~2%?)    |
 
 **Decision point:** Based on these numbers, choose between:
 
@@ -234,28 +236,28 @@ Phases 1 and 2 have been run against the data available in the repo. Results bel
 
 **482 distinct commodity codes** across 11 groups (some codes appear in multiple groups, yielding 526 group assignments):
 
-| Group | Commodity codes |
-|-------|----------------|
-| Vegetables | 105 |
-| Seed & Tissue Culture | 99 |
-| Fruit and nuts | 96 |
-| Wood and articles of wood | 82 |
-| Plants for Planting | 65 |
-| Machinery and vehicles | 26 |
-| Other vegetable products | 21 |
-| Grain | 17 |
-| Cut Flowers and flower buds | 10 |
-| Foliage | 3 |
-| Other | 2 |
+| Group                       | Commodity codes |
+| --------------------------- | --------------- |
+| Vegetables                  | 105             |
+| Seed & Tissue Culture       | 99              |
+| Fruit and nuts              | 96              |
+| Wood and articles of wood   | 82              |
+| Plants for Planting         | 65              |
+| Machinery and vehicles      | 26              |
+| Other vegetable products    | 21              |
+| Grain                       | 17              |
+| Cut Flowers and flower buds | 10              |
+| Foliage                     | 3               |
+| Other                       | 2               |
 
 ### Configuration Flags (Complete — 172 Codes)
 
 Two mutually exclusive flag patterns:
 
-| Pattern | Count | Effect |
-|---------|-------|--------|
-| `requiresTestAndTrial=true`, `requiresFinishedOrPropagated=false` | 110 | Test-and-trial field shown on bulk-details |
-| `requiresTestAndTrial=false`, `requiresFinishedOrPropagated=true` | 62 | Finished/propagating dropdown on bulk-details |
+| Pattern                                                           | Count | Effect                                        |
+| ----------------------------------------------------------------- | ----- | --------------------------------------------- |
+| `requiresTestAndTrial=true`, `requiresFinishedOrPropagated=false` | 110   | Test-and-trial field shown on bulk-details    |
+| `requiresTestAndTrial=false`, `requiresFinishedOrPropagated=true` | 62    | Finished/propagating dropdown on bulk-details |
 
 No commodity code has both flags. 310 commodity codes (482 - 172) have neither — they skip both fields entirely.
 
@@ -263,10 +265,10 @@ No commodity code has both flags. 310 commodity codes (482 - 172) have neither �
 
 Only 6 commodity codes have explicit propagation types (all in "Plants for Planting"):
 
-| Code | Propagation |
-|------|-------------|
-| 06011010, 06011020 | bulb |
-| 06012010, 0601209010, 06024000, 0602300010 | plant |
+| Code                                       | Propagation |
+| ------------------------------------------ | ----------- |
+| 06011010, 06011020                         | bulb        |
+| 06012010, 0601209010, 06024000, 0602300010 | plant       |
 
 The intended-use-bulbs and intended-use-plants pages are triggered by a very small subset of commodities.
 
@@ -274,10 +276,10 @@ The intended-use-bulbs and intended-use-plants pages are triggered by a very sma
 
 **2,102 entries** across 85 commodity codes and 1,528 distinct EPPO codes:
 
-| Group | Commodities | EPPO codes | Entries |
-|-------|-------------|------------|---------|
-| Fruit and nuts | 38 | 956 | 1,286 |
-| Vegetables | 47 | 577 | 816 |
+| Group          | Commodities | EPPO codes | Entries |
+| -------------- | ----------- | ---------- | ------- |
+| Fruit and nuts | 38          | 956        | 1,286   |
+| Vegetables     | 47          | 577        | 816     |
 
 Species per commodity ranges dramatically: one commodity (`0810907590`) has **539 species**, while the average is **24.7**. The top commodity has a species-to-commodity ratio 22× the average.
 
@@ -287,13 +289,13 @@ Species per commodity ranges dramatically: one commodity (`0810907590`) has **53
 
 From the test fixture covering 3 commodity codes and 58 (commodity, species) pairs:
 
-| What | Count | Percentage |
-|------|-------|------------|
-| Total (commodity, species) pairs | 58 | 100% |
-| PHSI regulatory authority | 55 | 95% |
-| HMI or JOINT (GMS-relevant) | 3 | 5% |
-| Species with marketing standard data | 3 | 5% |
-| Species with variety data | ~7 | ~12% |
+| What                                 | Count | Percentage |
+| ------------------------------------ | ----- | ---------- |
+| Total (commodity, species) pairs     | 58    | 100%       |
+| PHSI regulatory authority            | 55    | 95%        |
+| HMI or JOINT (GMS-relevant)          | 3     | 5%         |
+| Species with marketing standard data | 3     | 5%         |
+| Species with variety data            | ~7    | ~12%       |
 
 **95% of species are PHSI-only.** For these, the supplemental data response is just `{ regulatoryAuthority: "PHSI" }` — no marketing standard, no validity period, no varieties, no classes. The complex sub-journeys (GMS declaration, variety selection) only trigger for the small minority with HMI or JOINT authority.
 
@@ -301,31 +303,34 @@ Variety counts where they exist are substantial: 66 varieties for one apple spec
 
 ### Scale Extrapolation
 
-| Dimension | Known | Estimated production | Confidence |
-|-----------|-------|---------------------|------------|
-| Total CHEDPP commodity codes | 482 | **~500** | High (production upload data) |
-| Total (commodity, species) pairs | 58 (test) | **~12,000** | Medium (482 codes × avg 25 species) |
-| Pairs triggering GMS/variety | 3 of 58 (5%) | **~600** | Low (sample is small) |
-| Total varieties | 450 (test) | **~5,000-10,000** | Low (depends on HMI/JOINT prevalence) |
-| Config flag coverage | 172 of 482 | **172 (exact)** | High (production upload data) |
+| Dimension                        | Known        | Estimated production | Confidence                            |
+| -------------------------------- | ------------ | -------------------- | ------------------------------------- |
+| Total CHEDPP commodity codes     | 482          | **~500**             | High (production upload data)         |
+| Total (commodity, species) pairs | 58 (test)    | **~12,000**          | Medium (482 codes × avg 25 species)   |
+| Pairs triggering GMS/variety     | 3 of 58 (5%) | **~600**             | Low (sample is small)                 |
+| Total varieties                  | 450 (test)   | **~5,000-10,000**    | Low (depends on HMI/JOINT prevalence) |
+| Config flag coverage             | 172 of 482   | **172 (exact)**      | High (production upload data)         |
 
 ### What This Means for plants-config.json
 
 Three tiers of data clarity:
 
 **Tier 1 — Fully enumerable now (no API needed):**
+
 - 482 commodity codes with group assignments
-- 172 commodity codes with test-and-trial / finished-or-propagated flags  
+- 172 commodity codes with test-and-trial / finished-or-propagated flags
 - 6 commodity codes with propagation attributes
 - 2,102 Article 72 (commodity, eppo, group) entries
 
 **Tier 2 — Enumerable with production DB export:**
+
 - inspection_responsibility: Full (commodity, eppo) → regulatory authority mapping
 - hmi_marketing: (commodity, eppo, variety) → marketing standard + validity period
 - commodity_eppo_variety: (commodity, eppo) → variety list
 - commodity_class: commodity → quality class list
 
 **Tier 3 — Only knowable at runtime:**
+
 - Nothing, actually. All the data is in the database. The question is whether we can get a snapshot.
 
 **Revised assessment:** The findings doc said "runtime-only by design" for supplemental data. But having seen the database schema, this data IS static — it's loaded via bulk upload and sync processes. It just isn't available in a flat file in this repo. If we can get a CSV export of the three supplemental data tables from any environment, we can enumerate the complete CHEDPP variance surface.
@@ -337,7 +342,7 @@ Three tiers of data clarity:
 **Get a CSV export of three tables from any non-production environment:**
 
 1. `inspection_responsibility` — Full (commodity_code, eppo_code, authority) mapping
-2. `hmi_marketing` — Full (commodity_code, eppo_code, variety, marketing_standard, validity) mapping  
+2. `hmi_marketing` — Full (commodity_code, eppo_code, variety, marketing_standard, validity) mapping
 3. `commodity_eppo_variety` — Full (commodity_code, eppo_code, variety) mapping
 
 With these three tables plus what we already have, the entire CHEDPP variance surface is enumerable. We can then produce a complete `plants-config.json` equivalent that covers ALL dimensions — not just the "partial static" version the findings doc described.
@@ -352,17 +357,18 @@ Production CSV exports were obtained for all three tables. Results below.
 
 ### Raw Scale
 
-| Table | Rows | Distinct commodity codes | Distinct EPPO codes |
-|-------|------|------------------------|---------------------|
-| `inspection_responsibility` | 485,826 | 389 | 42,990 |
-| `hmi_marketing` | 5,783 | 152 | 3,317 |
-| `commodity_eppo_variety` | 548 | 37 | 56 |
+| Table                       | Rows    | Distinct commodity codes | Distinct EPPO codes |
+| --------------------------- | ------- | ------------------------ | ------------------- |
+| `inspection_responsibility` | 485,826 | 389                      | 42,990              |
+| `hmi_marketing`             | 5,783   | 152                      | 3,317               |
+| `commodity_eppo_variety`    | 548     | 37                       | 56                  |
 
 The inspection_responsibility table is far larger than expected — **486K rows**. This is because a small number of "Plants for Planting" commodity codes each have tens of thousands of species mapped. One commodity code (`06029050`) maps to **41,971 species**.
 
 ### The Distribution is Extremely Skewed
 
 Species per commodity code:
+
 - **min=1, median=7, p75=27, p95=9,333, max=41,971, avg=1,249**
 
 The top 10 commodity codes (all "Plants for Planting" or "Foliage") account for the vast majority of rows. The median commodity has just 7 species.
@@ -370,26 +376,26 @@ The top 10 commodity codes (all "Plants for Planting" or "Foliage") account for 
 ### Regulatory Authority: 98.9% PHSI
 
 | Authority | (commodity, eppo) pairs | % of total | Commodity codes | EPPO codes |
-|-----------|------------------------|-----------|-----------------|------------|
-| PHSI | 480,505 | 98.9% | 238 | 42,990 |
-| JOINT | 4,874 | 1.0% | 105 | 3,127 |
-| HMI | 447 | 0.1% | 48 | 368 |
+| --------- | ----------------------- | ---------- | --------------- | ---------- |
+| PHSI      | 480,505                 | 98.9%      | 238             | 42,990     |
+| JOINT     | 4,874                   | 1.0%       | 105             | 3,127      |
+| HMI       | 447                     | 0.1%       | 48              | 368        |
 
 **237 commodities are PHSI-only** (no GMS/marketing implications at all). Only **2 commodities** have mixed authorities (different species mapped to different authorities).
 
 ### Authority by Commodity Group
 
-| Group | PHSI only | HMI only | JOINT only | Mixed |
-|-------|-----------|----------|------------|-------|
-| Plants for Planting | 36 | 3 | 15 | — |
-| Seed & Tissue Culture | 79 | 1 | 7 | — |
-| Vegetables | 36 | 11 | 43 | 1 |
-| Fruit and nuts | 16 | 26 | 40 | 1 |
-| Cut Flowers | 10 | — | — | — |
-| Foliage | 3 | — | — | — |
-| Grain | 14 | — | — | — |
-| Wood | — | — | — | — |
-| Machinery | 26 | — | — | — |
+| Group                 | PHSI only | HMI only | JOINT only | Mixed |
+| --------------------- | --------- | -------- | ---------- | ----- |
+| Plants for Planting   | 36        | 3        | 15         | —     |
+| Seed & Tissue Culture | 79        | 1        | 7          | —     |
+| Vegetables            | 36        | 11       | 43         | 1     |
+| Fruit and nuts        | 16        | 26       | 40         | 1     |
+| Cut Flowers           | 10        | —        | —          | —     |
+| Foliage               | 3         | —        | —          | —     |
+| Grain                 | 14        | —        | —          | —     |
+| Wood                  | —         | —        | —          | —     |
+| Machinery             | 26        | —        | —          | —     |
 
 Key pattern: **Fruit and Vegetables** are where HMI/JOINT authority concentrates. Plants for Planting, Seed, Cut Flowers, Foliage, Grain, Wood, Machinery are overwhelmingly or exclusively PHSI.
 
@@ -397,10 +403,10 @@ Key pattern: **Fruit and Vegetables** are where HMI/JOINT authority concentrates
 
 5,783 rows covering 5,321 distinct (commodity, eppo) pairs. Marketing standard distribution:
 
-| Standard | Pairs |
-|----------|-------|
-| GMS | 5,229 (98.3%) |
-| SMS | 92 (1.7%) |
+| Standard | Pairs         |
+| -------- | ------------- |
+| GMS      | 5,229 (98.3%) |
+| SMS      | 92 (1.7%)     |
 
 Validity period: **2 months** dominates (5,158 of 5,321 pairs = 97%).
 
@@ -409,6 +415,7 @@ Validity period: **2 months** dominates (5,158 of 5,321 pairs = 97%).
 ### GMS Declaration Trigger
 
 The GMS declaration page appears when any species on the notification has HMI authority + GMS marketing standard:
+
 - **409 (commodity, eppo) pairs** would trigger it
 - Across **30 distinct commodity codes**
 
@@ -429,13 +436,13 @@ Only **548 rows** across 86 (commodity, eppo) pairs and 37 commodity codes. 209 
 
 The production data changes the picture significantly from what we estimated:
 
-| Dimension | Test estimate | Production reality |
-|-----------|---------------|-------------------|
-| (commodity, eppo) pairs | ~12,000 | **485,826** |
-| PHSI-only pairs | 95% | **98.9%** |
-| Pairs with marketing data | 5% | **1.1%** |
-| Pairs with variety data | small | **0.02%** (86 of 486K) |
-| GMS-triggerable pairs | — | **409** (0.08%) |
+| Dimension                 | Test estimate | Production reality     |
+| ------------------------- | ------------- | ---------------------- |
+| (commodity, eppo) pairs   | ~12,000       | **485,826**            |
+| PHSI-only pairs           | 95%           | **98.9%**              |
+| Pairs with marketing data | 5%            | **1.1%**               |
+| Pairs with variety data   | small         | **0.02%** (86 of 486K) |
+| GMS-triggerable pairs     | —             | **409** (0.08%)        |
 
 **A static config IS feasible, but the representation must handle the skew.** You can't put 486K rows in a flat file and call it a config — but you can represent the structure as:
 

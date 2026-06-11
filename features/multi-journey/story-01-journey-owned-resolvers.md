@@ -19,15 +19,15 @@ notification structure (the `notification.partOne.*` shape). This couples the
 engine to one schema. We need to support a second journey
 (`gb-import-notification-v1`) that has a fundamentally different structure:
 
-| Concept | eu-live-animals (IPAFFS) | gb-import-notification-v1 |
-|---|---|---|
-| Purpose | `partOne.purpose.purposeGroup` | `ukRegulatoryFields.purpose.purposeGroup` |
-| Commodity | `partOne.commodities.commodityComplement[0]` | `consignment.goods[0]` |
-| Commodity code field | `.commodityID` | `.commodityCode` |
-| Species field | `.speciesName` | `.species.scientificName` |
-| Submission date | `partOne.submissionDate` | `notificationMetadata.submissionDate` |
-| Transit purposes | `'For Transhipment to'`, `'For Transit to 3rd Country'` | `'For Transit'` |
-| CPH number | routing flag in refdata | explicit field at `ukRegulatoryFields.cphNumber` |
+| Concept              | eu-live-animals (IPAFFS)                                | gb-import-notification-v1                        |
+| -------------------- | ------------------------------------------------------- | ------------------------------------------------ |
+| Purpose              | `partOne.purpose.purposeGroup`                          | `ukRegulatoryFields.purpose.purposeGroup`        |
+| Commodity            | `partOne.commodities.commodityComplement[0]`            | `consignment.goods[0]`                           |
+| Commodity code field | `.commodityID`                                          | `.commodityCode`                                 |
+| Species field        | `.speciesName`                                          | `.species.scientificName`                        |
+| Submission date      | `partOne.submissionDate`                                | `notificationMetadata.submissionDate`            |
+| Transit purposes     | `'For Transhipment to'`, `'For Transit to 3rd Country'` | `'For Transit'`                                  |
+| CPH number           | routing flag in refdata                                 | explicit field at `ukRegulatoryFields.cphNumber` |
 
 This is not cosmetic renaming — it is different nesting, different array
 shapes, and different domain semantics. A config-driven approach would
@@ -201,10 +201,7 @@ const lookupRefdata = (table, commodity) => {
 
 // -- Condition tests --
 
-const TRANSIT_PURPOSES = [
-  'For Transhipment to',
-  'For Transit to 3rd Country'
-]
+const TRANSIT_PURPOSES = ['For Transhipment to', 'For Transit to 3rd Country']
 
 const IDENTIFIER_NONE = 'NONE'
 
@@ -218,10 +215,12 @@ const tests = {
 
   requiresIdentification: (commodity, refdata) => {
     const content = lookupRefdata(refdata.content, commodity)
-    if (!content) return { active: false, reason: 'no refdata content for commodity' }
+    if (!content)
+      return { active: false, reason: 'no refdata content for commodity' }
     const idRef = content.identifiers
     const idSet = refdata.definitions?.identifier_sets?.[idRef]
-    if (!idSet) return { active: false, reason: `identifier set ${idRef} not found` }
+    if (!idSet)
+      return { active: false, reason: `identifier set ${idRef} not found` }
     const isNone = idSet.length === 1 && idSet[0] === IDENTIFIER_NONE
     return {
       active: !isNone,
@@ -231,11 +230,21 @@ const tests = {
     }
   },
 
-  requiresCertification: (commodity, refdata) => { /* ... same as current ... */ },
-  requiresWeaningStatus: (commodity, refdata) => { /* ... same as current ... */ },
-  requiresPermanentAddress: (commodity, refdata) => { /* ... same as current ... */ },
-  requiresCphNumber: (commodity, refdata) => { /* ... same as current ... */ },
-  requiresTransporter: (commodity, refdata) => { /* ... same as current ... */ }
+  requiresCertification: (commodity, refdata) => {
+    /* ... same as current ... */
+  },
+  requiresWeaningStatus: (commodity, refdata) => {
+    /* ... same as current ... */
+  },
+  requiresPermanentAddress: (commodity, refdata) => {
+    /* ... same as current ... */
+  },
+  requiresCphNumber: (commodity, refdata) => {
+    /* ... same as current ... */
+  },
+  requiresTransporter: (commodity, refdata) => {
+    /* ... same as current ... */
+  }
 }
 
 // -- Submission date path --
@@ -248,8 +257,12 @@ export const resolvers = { facts, tests, submissionDatePath }
 
 // Re-export internals for testing
 export {
-  facts, tests, buildRefdataKey, lookupRefdata,
-  TRANSIT_PURPOSES, IDENTIFIER_NONE
+  facts,
+  tests,
+  buildRefdataKey,
+  lookupRefdata,
+  TRANSIT_PURPOSES,
+  IDENTIFIER_NONE
 }
 ```
 
@@ -306,7 +319,10 @@ The `evaluateSatisfaction` function gains a `resolvers` parameter:
 ```javascript
 const evaluateSatisfaction = (id, schemaPaths, notification, resolvers) => {
   if (!schemaPaths || schemaPaths.length === 0) {
-    const submissionDate = resolvePath(notification, resolvers.submissionDatePath)
+    const submissionDate = resolvePath(
+      notification,
+      resolvers.submissionDatePath
+    )
     if (!isEmpty(submissionDate)) {
       return { id, status: 'satisfied', missingPaths: [] }
     }
@@ -345,15 +361,23 @@ where it currently accesses the module-level `facts` and `tests` imports.
 The import changes from:
 
 ```javascript
-import { evaluateObligations, facts, tests, resolvePath, isEmpty }
-  from './evaluate-obligations.js'
+import {
+  evaluateObligations,
+  facts,
+  tests,
+  resolvePath,
+  isEmpty
+} from './evaluate-obligations.js'
 ```
 
 to:
 
 ```javascript
-import { evaluateObligations, resolvePath, isEmpty }
-  from './evaluate-obligations.js'
+import {
+  evaluateObligations,
+  resolvePath,
+  isEmpty
+} from './evaluate-obligations.js'
 ```
 
 `facts` and `tests` are no longer imported — they come from the `resolvers`

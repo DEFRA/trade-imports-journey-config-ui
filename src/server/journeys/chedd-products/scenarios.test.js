@@ -94,6 +94,8 @@ describe('chedd-products — combo-outlier override', () => {
   test('commodity 200710 surfaces its multi-option combo override', () => {
     const detail = commodityDetail(refdata, '200710')
     expect(detail.comboType.length).toBeGreaterThan(1)
-    expect(detail.comboType.every((o) => 'text' in o && 'value' in o)).toBe(true)
+    expect(detail.comboType.every((o) => 'text' in o && 'value' in o)).toBe(
+      true
+    )
   })
 })

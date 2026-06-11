@@ -12,8 +12,7 @@
 import { OBLIGATION_STATUS } from './types.js'
 import { resolvePath, isEmpty } from './path.js'
 
-const isNonNullObject = (value) =>
-  value !== null && typeof value === 'object'
+const isNonNullObject = (value) => value !== null && typeof value === 'object'
 
 /**
  * Evaluate all obligations against the current notification state.
@@ -69,14 +68,18 @@ const evaluateOne = (obligation, notification, refdata, journeyResolver) => {
  * short-circuits, or `null` to indicate the obligation is active and
  * should proceed to satisfaction.
  */
-const resolveCondition = (id, condition, notification, refdata, journeyResolver) => {
+const resolveCondition = (
+  id,
+  condition,
+  notification,
+  refdata,
+  journeyResolver
+) => {
   const { fact, test } = condition
 
   const factExtractor = journeyResolver.facts[fact]
   if (!factExtractor) {
-    throw new Error(
-      `Obligation "${id}" references unknown fact: "${fact}"`
-    )
+    throw new Error(`Obligation "${id}" references unknown fact: "${fact}"`)
   }
 
   const factValue = factExtractor(notification)
@@ -90,9 +93,7 @@ const resolveCondition = (id, condition, notification, refdata, journeyResolver)
 
   const testFn = journeyResolver.tests[test]
   if (!testFn) {
-    throw new Error(
-      `Obligation "${id}" references unknown test: "${test}"`
-    )
+    throw new Error(`Obligation "${id}" references unknown test: "${test}"`)
   }
 
   const resolution = testFn(factValue, refdata)
@@ -108,7 +109,12 @@ const resolveCondition = (id, condition, notification, refdata, journeyResolver)
  * action-only obligations (empty schemaPaths) the submission date acts
  * as the satisfaction signal.
  */
-const evaluateSatisfaction = (id, schemaPaths, notification, journeyResolver) => {
+const evaluateSatisfaction = (
+  id,
+  schemaPaths,
+  notification,
+  journeyResolver
+) => {
   if (!schemaPaths || schemaPaths.length === 0) {
     const submissionDate = resolvePath(
       notification,

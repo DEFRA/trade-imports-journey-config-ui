@@ -14,18 +14,19 @@ pattern. Every later module repeats this same shape.
 `protocol.md` §5.1 declares the exact contract: `evaluate(notification,
 adapter) → EvaluationResult`. Today the equivalent function is
 `evaluateObligations(notification, obligations, refdata, resolvers)`
-with positional parameters that *flatten* what should be one adapter
+with positional parameters that _flatten_ what should be one adapter
 record.
 
 Landing the new shape first, with a shim preserving the old caller
 signature, proves the branch-by-abstraction pattern works:
+
 - New file beside old; old file becomes the shim.
 - Public contract tests anchor the new shape.
 - Existing tests against the old shape continue passing through the
   shim.
 - Subsequent stories repeat this with confidence.
 
-Doing this as the *fourth* story (after preflight + types + path) is
+Doing this as the _fourth_ story (after preflight + types + path) is
 deliberate — Stories 01-03 provide the dependencies this story
 consumes (`summary` in the return; `OBLIGATION_STATUS` constants;
 shared `resolvePath`/`isEmpty`).
@@ -64,6 +65,7 @@ summary calculation. `evaluateSatisfaction` and the summary reduction
 stay inside this module as private helpers.
 
 Imports:
+
 - `resolvePath`, `isEmpty` from `engine/path.js` (Story 03).
 - `OBLIGATION_STATUS` from `engine/types.js` (Story 02).
 
@@ -75,7 +77,12 @@ import { evaluate } from '#server/engine/evaluate.js'
 // Adapt the old positional signature to the new adapter form so
 // existing callers (route handlers, trace evaluator) keep working
 // without modification.
-export const evaluateObligations = (notification, obligations, refdata, resolvers) =>
+export const evaluateObligations = (
+  notification,
+  obligations,
+  refdata,
+  resolvers
+) =>
   evaluate(notification, {
     obligations,
     refdata,
@@ -99,6 +106,7 @@ New `src/server/engine/evaluate.test.js` — owns protocol.md §5.1 in
 full. Per `.claude/skills/valuable-unit-tests.md`:
 
 **State the behaviour and risks (≤5 lines):**
+
 > The function classifies each obligation as one of four statuses
 > based on (a) condition fact/test resolution and (b) schema-path
 > population; emits a summary with exact invariants. Risks: shape
@@ -121,7 +129,7 @@ full. Per `.claude/skills/valuable-unit-tests.md`:
   rule). Already covered by Story 01's extension, but this story
   re-asserts via the new module's surface.
 - Every committed eu-live-animals scenario evaluates `submittable:
-  true` (real-data integration).
+true` (real-data integration).
 - Throws: each of the five conditions in §5.1, asserted by message
   pattern.
 
@@ -139,13 +147,13 @@ shim — no test changes there.
 
 - [ ] `engine/evaluate.js` exists and exports `evaluate(notification, adapter)`.
 - [ ] Return shape, throw conditions, and status semantics match
-  protocol.md §5.1 exactly.
+      protocol.md §5.1 exactly.
 - [ ] `evaluate-obligations.js` is a thin shim that adapts the old
-  positional signature to the new adapter form.
+      positional signature to the new adapter form.
 - [ ] Existing route handlers (in `routes/explorer/*`) and the trace
-  evaluator continue to work without modification.
+      evaluator continue to work without modification.
 - [ ] `engine/evaluate.test.js` covers every §5.1 contract case
-  (variants, summary invariants, throws, real-data smoke).
+      (variants, summary invariants, throws, real-data smoke).
 - [ ] All existing tests continue to pass.
 - [ ] All four explorer views render correctly.
 

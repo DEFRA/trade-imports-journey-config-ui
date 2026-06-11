@@ -77,10 +77,12 @@ export const not = (test) => {
  * @param {string} [reason='always active']
  * @returns {import('./types.js').ConditionTest}
  */
-export const always = (reason = 'always active') => () => ({
-  active: true,
-  reason
-})
+export const always =
+  (reason = 'always active') =>
+  () => ({
+    active: true,
+    reason
+  })
 
 /**
  * Constant ConditionTest that is always inactive.
@@ -88,7 +90,9 @@ export const always = (reason = 'always active') => () => ({
  * @param {string} [reason='always inactive']
  * @returns {import('./types.js').ConditionTest}
  */
-export const never = (reason = 'always inactive') => () => ({
-  active: false,
-  reason
-})
+export const never =
+  (reason = 'always inactive') =>
+  () => ({
+    active: false,
+    reason
+  })

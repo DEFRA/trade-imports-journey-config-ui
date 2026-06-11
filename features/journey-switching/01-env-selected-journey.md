@@ -35,7 +35,7 @@ The audience for this story is **non-engineer stakeholders who need to
 see engine reuse in the actual UI**. Engineers already have the
 node-script proof; this makes it clickable.
 
-We deliberately build the *smallest* thing that achieves that:
+We deliberately build the _smallest_ thing that achieves that:
 restart-to-switch. No UI picker, no path-parameter routing, no live
 in-session switching — those are heavier, separately-scoped options
 (see the journey-switching comparison in conversation history).
@@ -100,7 +100,7 @@ concern, not an engine one — the engine stays selection-agnostic. So
 the fail-fast check lives in the **explorer plugin's `register`**
 (`src/server/routes/explorer/index.js`), not the engine plugin.
 
-This works because `server.js` registers `evaluationEngine` *before*
+This works because `server.js` registers `evaluationEngine` _before_
 `router` (which registers `explorer`), and `server.app` is shared
 server-wide — so `server.app.evaluationEngine` is already bound when
 the explorer plugin registers. Assert at the top of `register(server)`:
@@ -114,14 +114,14 @@ const known = server.app.evaluationEngine.listJourneys()
 if (!known.includes(configured)) {
   throw new Error(
     `Configured JOURNEY "${configured}" is not registered. ` +
-    `Known journeys: ${known.join(', ')}`
+      `Known journeys: ${known.join(', ')}`
   )
 }
 ```
 
 A bad `JOURNEY` must crash boot with a clear message — never silently
 fall back to the default (that would mislead a demo). This runs at
-plugin registration, which happens *inside* `createServer()` — so the
+plugin registration, which happens _inside_ `createServer()` — so the
 fail-fast test must `config.set('journey', …)` **before** calling
 `createServer()` (see §Tests).
 
@@ -148,7 +148,7 @@ pass `journeyKey` to the facade: `evaluate(journeyKey, …)` /
 
 - **`journey-controller.js`** — drop `import { scenarios }`; use
   `getJourney(journeyKey).scenarios` for the dropdown. (This is what
-  makes the dropdown show *plants* scenarios when `JOURNEY=chedpp-plants`.)
+  makes the dropdown show _plants_ scenarios when `JOURNEY=chedpp-plants`.)
 - **`debug-controller.js`** — drop `import { obligations }`; pass the
   configured journey's `obligations` + `scenarios` into
   `generateObligationFragments(...)`.
@@ -163,7 +163,7 @@ returns **one** hit — `commodity-config-controller.js` (deferred, §7).
 ### 6. Thread `journeyKey` + `showCommodityConfig` into every view context
 
 The nav is a **shared partial** (`explorer-nav.njk`) rendered on every
-explorer page, so the data it needs must be present in *every*
+explorer page, so the data it needs must be present in _every_
 view controller's context. This is **one named threading task**, not a
 per-page afterthought. Each of the four view controllers
 (`journey-controller`, `tasklist-controller`, `debug-controller`,
@@ -198,7 +198,7 @@ and 02 is flexible (see story 02's "Relationship to story 01"). For
 this story:
 
 `commodity-config-controller.js` reads `config.get('journey')`
-per-request to decide gate-vs-render; its *data* still comes from its
+per-request to decide gate-vs-render; its _data_ still comes from its
 (deferred) direct `eu-live-animals` refdata import. The decoupling of
 that import is 02's job, not this story's.
 
@@ -234,7 +234,7 @@ generalise it here.
 - **New — unknown journey fails fast:** `config.set('journey', 'nope')`
   **before** calling `createServer()`, then assert `createServer()`
   rejects with the §2 message. Validation runs at explorer-plugin
-  registration, which happens *inside* `createServer()` — so setting the
+  registration, which happens _inside_ `createServer()` — so setting the
   config after server creation would be too late. Reset config in
   `afterEach`/`afterAll`.
 - **New — commodity-config gating:** with journey chedpp-plants,
@@ -276,44 +276,44 @@ commodity-config gate. Don't re-test the engine — stories 01–11 own it.
 ## Acceptance criteria
 
 - [ ] `config.js` has a `journey` setting (`env: JOURNEY`, default
-  `eu-live-animals`).
+      `eu-live-animals`).
 - [ ] Plugin startup throws a clear error if `JOURNEY` names an
-  unregistered journey.
+      unregistered journey.
 - [ ] Controllers read `config.get('journey')` per-request (not at
-  module load).
+      module load).
 - [ ] The three hardcoded `'eu-live-animals'` literals are replaced with
-  the configured key.
+      the configured key.
 - [ ] The three direct journey-data imports (`journey-controller`
-  scenarios, `debug-controller` obligations, `obligation-fragments`) are
-  re-sourced via the facade. `grep -rn "journeys/eu-live-animals"
-  src/server/routes/` → only `commodity-config-controller.js` remains.
+      scenarios, `debug-controller` obligations, `obligation-fragments`) are
+      re-sourced via the facade. `grep -rn "journeys/eu-live-animals"
+src/server/routes/` → only `commodity-config-controller.js` remains.
 - [ ] `generateObligationFragments(obligations, scenarios)` takes its
-  data as arguments.
+      data as arguments.
 - [ ] With `JOURNEY=chedpp-plants`: `/explorer`, `/explorer/tasklist`,
-  `/explorer/debug` render plants obligations + scenarios; an
-  animals-only obligation does not appear.
+      `/explorer/debug` render plants obligations + scenarios; an
+      animals-only obligation does not appear.
 - [ ] Every view controller threads `journeyKey` + `showCommodityConfig`
-  into its view context; nav shows the active journey key.
+      into its view context; nav shows the active journey key.
 - [ ] commodity-config: unchanged for eu-live-animals; nav-hidden +
-  notice for other journeys. Its refdata import is NOT decoupled.
+      notice for other journeys. Its refdata import is NOT decoupled.
 - [ ] Default boot (no env) is functionally unchanged; all existing
-  tests pass (no nav-markup assertion exists today, so none needs
-  updating).
+      tests pass (no nav-markup assertion exists today, so none needs
+      updating).
 - [ ] New tests: non-default-journey render (incl. animals-only absent),
-  scenario-param mismatch, unknown-journey fail-fast, commodity-config
-  gate.
+      scenario-param mismatch, unknown-journey fail-fast, commodity-config
+      gate.
 
 ## Risks and pre-emptive mitigations
 
-| # | Risk | Mitigation |
-|---|---|---|
-| R1 | The three direct imports are module-level statics; reading `config.get('journey')` at module top-level would bind the journey at import time and break both switching and testability. | §3 — resolve journey data **inside the request handler** via the facade. `obligation-fragments` takes data as args, holding no journey state. |
-| R2 | commodity-config silently renders blank for non-animals (animals-specific refdata vocabulary — confirmed: plants refdata has no `purpose`/`identifiers`/`quantity` or the three animals routing flags). | §7 — gate it: hide nav item + render an explicit notice for non-animals. Do not generalise (separate investigation). |
-| R3 | An unknown `JOURNEY` silently serves the default, confusing a demo. | §2 — fail fast at boot, listing known journeys. |
-| R4 | The `dev` script chain (`npm run server:watch` → nodemon → node) doesn't propagate the env var. | Verify `JOURNEY=chedpp-plants npm run dev` actually reaches `config` (verification step). |
-| R5 | Stale notification from a previous run leaks across journeys. | Non-issue: `yar` is in-memory, wiped on restart. Documented so no one adds spurious session-clearing. |
-| R6 | A reader assumes live multi-journey switching exists. | Story + nav indicator make it explicit: one process, one journey, chosen at boot. |
-| R7 | `journey-controller`'s reverse scenario-match (`JSON.stringify` equality of session notification vs each scenario) behaves oddly across journeys. | Pre-existing behaviour; the scenario-param-mismatch test pins the empty-state outcome. Not introduced by this story. |
+| #   | Risk                                                                                                                                                                                                    | Mitigation                                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | The three direct imports are module-level statics; reading `config.get('journey')` at module top-level would bind the journey at import time and break both switching and testability.                  | §3 — resolve journey data **inside the request handler** via the facade. `obligation-fragments` takes data as args, holding no journey state. |
+| R2  | commodity-config silently renders blank for non-animals (animals-specific refdata vocabulary — confirmed: plants refdata has no `purpose`/`identifiers`/`quantity` or the three animals routing flags). | §7 — gate it: hide nav item + render an explicit notice for non-animals. Do not generalise (separate investigation).                          |
+| R3  | An unknown `JOURNEY` silently serves the default, confusing a demo.                                                                                                                                     | §2 — fail fast at boot, listing known journeys.                                                                                               |
+| R4  | The `dev` script chain (`npm run server:watch` → nodemon → node) doesn't propagate the env var.                                                                                                         | Verify `JOURNEY=chedpp-plants npm run dev` actually reaches `config` (verification step).                                                     |
+| R5  | Stale notification from a previous run leaks across journeys.                                                                                                                                           | Non-issue: `yar` is in-memory, wiped on restart. Documented so no one adds spurious session-clearing.                                         |
+| R6  | A reader assumes live multi-journey switching exists.                                                                                                                                                   | Story + nav indicator make it explicit: one process, one journey, chosen at boot.                                                             |
+| R7  | `journey-controller`'s reverse scenario-match (`JSON.stringify` equality of session notification vs each scenario) behaves oddly across journeys.                                                       | Pre-existing behaviour; the scenario-param-mismatch test pins the empty-state outcome. Not introduced by this story.                          |
 
 ## Verification
 
@@ -355,7 +355,7 @@ JOURNEY=does-not-exist npm run dev
 
 **`02-journey-agnostic-variance.md`** — makes commodity-config render
 for both journeys via a per-journey **refdata-view descriptor** (two
-rendering concepts: variance-annotated *dimensions* + as-is *details*
+rendering concepts: variance-annotated _dimensions_ + as-is _details_
 for non-variance data like quantity and routing flags), removing this
 story's §7 interim gate **and its gate tests**. Each journey declares
 its own `refdata-view.js`; the already-generic annotate/classify/absent

@@ -25,8 +25,8 @@ Story 04 placed the picker inside `explorer-nav.njk` so it appeared
 above the scenario dropdown on every explorer page. In use, that's
 the wrong place:
 
-- It draws attention to journey *switching* on a page whose primary
-  job is to interact with the *current* journey.
+- It draws attention to journey _switching_ on a page whose primary
+  job is to interact with the _current_ journey.
 - A control that mutates session state and clears the loaded
   notification deserves a deliberate destination, not nav-bar
   prominence.
@@ -61,11 +61,11 @@ Today (post-Story 04):
 
 **Plugin / middleware availability** (load-bearing for §1):
 
-- `server.js:58-70` registers `sessionCache` (yar) *before* `router`,
+- `server.js:58-70` registers `sessionCache` (yar) _before_ `router`,
   so `request.yar` is global — available on the new Journey
   Selection route.
-- `server.js:68-69` registers `evaluationEngine` *immediately
-  before* `router`, so `request.server.app.evaluationEngine` is
+- `server.js:68-69` registers `evaluationEngine` _immediately
+  before_ `router`, so `request.server.app.evaluationEngine` is
   populated by the time any route handler runs.
 - Therefore the Journey Selection controller can call
   `navContext(request)` directly — no guards, no fallbacks, no
@@ -84,7 +84,7 @@ Test surface that touches the relevant strings (the critique's
   currently satisfied because the picker's `<option value="chedpp-plants">`
   is in the rendered HTML. After picker removal, satisfaction comes
   only from the new text indicator. §Tests below tightens this
-  assertion *during* this story rather than relying on incidental
+  assertion _during_ this story rather than relying on incidental
   substring match.
 
 ## Specification
@@ -127,10 +127,7 @@ export const journeySelectionController = {
     return h.view('journey-selection/index', {
       pageTitle: 'Journey Selection',
       heading: 'Journey Selection',
-      breadcrumbs: [
-        { text: 'Home', href: '/' },
-        { text: 'Journey Selection' }
-      ],
+      breadcrumbs: [{ text: 'Home', href: '/' }, { text: 'Journey Selection' }],
       ...navContext(request)
     })
   }
@@ -196,7 +193,7 @@ without putting the form there.
 
 **Same-journey POST behaviour** (raised by the critique): the
 `journeyPickerController` (Story 04) zeroes `yar.notification` on
-*any* valid POST, including a POST where the target equals the
+_any_ valid POST, including a POST where the target equals the
 current journey. That stays. Rationale: a user who clicks Switch
 without changing the dropdown is signalling "I want to start clean
 on this journey" — clearing notification matches that intent and
@@ -221,7 +218,7 @@ incidental — see §AC.
 `action="/explorer/journey"` is unchanged. After a successful
 switch, the handler still redirects to `/explorer` (not back to
 `/journey-selection`, not to the referer) — the user came to
-Journey Selection to *pick*, not to *land*. Landing on `/explorer`
+Journey Selection to _pick_, not to _land_. Landing on `/explorer`
 immediately exercises the new journey.
 
 This is fully covered by the existing
@@ -288,7 +285,7 @@ Strictly retained:
   to `expect(result).toEqual(expect.stringContaining('Journey: <strong>chedpp-plants</strong>'))`
   (or the equivalent stricter substring). The current loose
   assertion will silently re-pass on any incidental match if the
-  indicator markup ever drifts — fix during *this* story, not "if
+  indicator markup ever drifts — fix during _this_ story, not "if
   it breaks".
 
 ### New tests
@@ -331,46 +328,46 @@ Strictly retained:
 ## Acceptance criteria
 
 - [ ] `/about` returns 404; `/journey-selection` returns 200 with
-  the picker form rendered.
+      the picker form rendered.
 - [ ] No file or symbol named `about` survives in
-  `src/server/routes/`. The folder is `journey-selection/`; the
-  exports are `journeySelection` / `journeySelectionController`;
-  the plugin's `name` is `'journey-selection'`.
+      `src/server/routes/`. The folder is `journey-selection/`; the
+      exports are `journeySelection` / `journeySelectionController`;
+      the plugin's `name` is `'journey-selection'`.
 - [ ] `src/server/plugins/router.js` imports and registers the
-  renamed `journeySelection` plugin.
+      renamed `journeySelection` plugin.
 - [ ] Top-nav link text is "Journey Selection" with href
-  `/journey-selection`.
+      `/journey-selection`.
 - [ ] No `/explorer/*` page renders the picker form
-  (`action="/explorer/journey"` does NOT appear in those
-  responses).
+      (`action="/explorer/journey"` does NOT appear in those
+      responses).
 - [ ] Every `/explorer/*` page renders the active-journey text
-  indicator: `Journey: <strong>{{ journeyKey }}</strong>` with a
-  "Change" link to `/journey-selection`.
+      indicator: `Journey: <strong>{{ journeyKey }}</strong>` with a
+      "Change" link to `/journey-selection`.
 - [ ] POST `/explorer/journey` continues to redirect to
-  `/explorer` (covered by existing `journey-picker.test.js`
-  happy-path; no new test required).
+      `/explorer` (covered by existing `journey-picker.test.js`
+      happy-path; no new test required).
 - [ ] Same-journey POST (`journey=<current>`) clears
-  `yar.notification` (regression test under §New tests).
+      `yar.notification` (regression test under §New tests).
 - [ ] Story 04 zero-on-change cross-journey test unchanged and
-  green.
+      green.
 - [ ] Story 04 stale-session unit test (`nav-context.test.js`)
-  unchanged and green.
+      unchanged and green.
 - [ ] Story 01 fail-fast boot guard unchanged and green.
 - [ ] `journey-switching.test.js:59` now asserts the tightened
-  indicator-aware substring (not the loose `'chedpp-plants'`).
+      indicator-aware substring (not the loose `'chedpp-plants'`).
 - [ ] `npm test` green; `npm run lint` clean.
 
 ## Risks and pre-emptive mitigations
 
-| # | Risk | Mitigation |
-|---|---|---|
-| R1 | Four-plus files assert the old `'About'` / `/about` strings; missing one leaves the suite green while the user-visible link still reads "About". | §Verification grep: zero hits for `\bAbout\b\|\b/about\b` in production code AND zero hits in `*.test.js` outside the new `journey-selection/` directory. Run before claiming AC done. |
-| R2 | The text indicator depends on `journeyKey` being in every explorer view context. A controller that forgets to spread `navContext` silently renders `Journey: <strong></strong>`. | New per-page indicator `test.each` (§New tests) catches it. |
-| R3 | A future bookmark to `/about` 404s. | Theoretical for the spike; the page had no content. If a stable `/about` URL is ever wanted, add an explicit redirect — out of scope here. |
-| R4 | `routes/journey-selection/controller.js` cross-imports `routes/explorer/nav-context.js` — a non-explorer page reaching into explorer internals. | Acceptable for the spike. **Ratchet**: the *next* route that wants `navContext` triggers a promotion to `src/server/common/`. This ratchet is recorded here so the next implementer doesn't repeat the smell. |
-| R5 | The "Change" link is a plain `<a>` — clicking it navigates without clearing notification state. A user might expect Change-link semantics to mirror the picker (which *does* clear on submit). | Intended behaviour: navigation alone preserves state; only the POST switches journeys. The picker-zero-on-change semantics still fire when the user submits. No state surprise — the user has to *commit* a switch to lose state. |
-| R6 | The picker partial currently has no contextualising prose; on a dedicated page it'd look bare. | §2 adds an explanatory paragraph above the picker. |
-| R7 | A test asserts the literal indicator markup (`Journey: <strong>{{ journeyKey }}</strong>`). If the indicator's exact markup drifts later, the substring assertion silently re-passes on any incidental match. | The tightened §Tests assertion uses the full literal substring `'Journey: <strong>chedpp-plants</strong>'`, so a markup drift forces a test update — exactly what we want. |
+| #   | Risk                                                                                                                                                                                                          | Mitigation                                                                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | Four-plus files assert the old `'About'` / `/about` strings; missing one leaves the suite green while the user-visible link still reads "About".                                                              | §Verification grep: zero hits for `\bAbout\b\|\b/about\b` in production code AND zero hits in `*.test.js` outside the new `journey-selection/` directory. Run before claiming AC done.                                            |
+| R2  | The text indicator depends on `journeyKey` being in every explorer view context. A controller that forgets to spread `navContext` silently renders `Journey: <strong></strong>`.                              | New per-page indicator `test.each` (§New tests) catches it.                                                                                                                                                                       |
+| R3  | A future bookmark to `/about` 404s.                                                                                                                                                                           | Theoretical for the spike; the page had no content. If a stable `/about` URL is ever wanted, add an explicit redirect — out of scope here.                                                                                        |
+| R4  | `routes/journey-selection/controller.js` cross-imports `routes/explorer/nav-context.js` — a non-explorer page reaching into explorer internals.                                                               | Acceptable for the spike. **Ratchet**: the _next_ route that wants `navContext` triggers a promotion to `src/server/common/`. This ratchet is recorded here so the next implementer doesn't repeat the smell.                     |
+| R5  | The "Change" link is a plain `<a>` — clicking it navigates without clearing notification state. A user might expect Change-link semantics to mirror the picker (which _does_ clear on submit).                | Intended behaviour: navigation alone preserves state; only the POST switches journeys. The picker-zero-on-change semantics still fire when the user submits. No state surprise — the user has to _commit_ a switch to lose state. |
+| R6  | The picker partial currently has no contextualising prose; on a dedicated page it'd look bare.                                                                                                                | §2 adds an explanatory paragraph above the picker.                                                                                                                                                                                |
+| R7  | A test asserts the literal indicator markup (`Journey: <strong>{{ journeyKey }}</strong>`). If the indicator's exact markup drifts later, the substring assertion silently re-passes on any incidental match. | The tightened §Tests assertion uses the full literal substring `'Journey: <strong>chedpp-plants</strong>'`, so a markup drift forces a test update — exactly what we want.                                                        |
 
 **Inherent limitations (not "risks we've handled" — design properties):**
 

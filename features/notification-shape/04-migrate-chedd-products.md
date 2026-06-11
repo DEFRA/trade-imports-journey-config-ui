@@ -1,6 +1,6 @@
 # CHED-D (chedd-products) notification shape
 
-> **Status:** Derivation, not migration. Unlike `02`/`03` (which rewrote an *existing* journey's `obligations.json` from the old IPAFFS `notification.partOne.*` paths to the shape in `01-target-shape.md`), CHED-D is a **new** journey with no prior obligations. This document is the **source-of-truth path table** that story `features/chedd-config/03-journey-live.md` authors `chedd-products/obligations.json`, `resolvers.js`, and `scenarios.js` from. Derived from the canonical IPAFFS schema (`imports/ipaffs-imports-notification-schema/notification-schema-java`) and the CHED-D Part-1 field-config→UI mapping (`cdp-fieldconfig-analysis-frontend/analysis/field-config-to-ui-mapping.md`).
+> **Status:** Derivation, not migration. Unlike `02`/`03` (which rewrote an _existing_ journey's `obligations.json` from the old IPAFFS `notification.partOne.*` paths to the shape in `01-target-shape.md`), CHED-D is a **new** journey with no prior obligations. This document is the **source-of-truth path table** that story `features/chedd-config/03-journey-live.md` authors `chedd-products/obligations.json`, `resolvers.js`, and `scenarios.js` from. Derived from the canonical IPAFFS schema (`imports/ipaffs-imports-notification-schema/notification-schema-java`) and the CHED-D Part-1 field-config→UI mapping (`cdp-fieldconfig-analysis-frontend/analysis/field-config-to-ui-mapping.md`).
 
 ## What CHED-D is
 
@@ -21,12 +21,12 @@ So CHED-D's "intended for" is a **consignment-level** field (one per notificatio
 
 Four leaves CHED-D adds to the shared shape, all confirmed **absent** from `01-target-shape.md`:
 
-| New path | Type | From (IPAFFS) | Why here |
-|---|---|---|---|
-| `consignment.intendedFor` | enum `human`\|`feedingstuff`\|`further`\|`other` | `Commodities.commodityIntendedFor` (`CommodityIntention`) | Shipment-wide use; sibling of the consignment totals. Distinct from animals' `purpose.subPurpose`. |
-| `commodities[].complementId` | string | `CommodityComplement.complementID` | The selected commodity complement ("combo"). Per-line-item. |
-| `commodities[].complementName` | string (optional) | `CommodityComplement.complementName` | Human label for the complement. |
-| `commodities[].description` | string (free text) | `CommodityComplement.commodityDescription` | CED's per-line-item product description. |
+| New path                       | Type                                             | From (IPAFFS)                                             | Why here                                                                                           |
+| ------------------------------ | ------------------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `consignment.intendedFor`      | enum `human`\|`feedingstuff`\|`further`\|`other` | `Commodities.commodityIntendedFor` (`CommodityIntention`) | Shipment-wide use; sibling of the consignment totals. Distinct from animals' `purpose.subPurpose`. |
+| `commodities[].complementId`   | string                                           | `CommodityComplement.complementID`                        | The selected commodity complement ("combo"). Per-line-item.                                        |
+| `commodities[].complementName` | string (optional)                                | `CommodityComplement.complementName`                      | Human label for the complement.                                                                    |
+| `commodities[].description`    | string (free text)                               | `CommodityComplement.commodityDescription`                | CED's per-line-item product description.                                                           |
 
 Everything else reuses shared paths. **No engine change** — `engine/path.js#resolvePath` already walks these.
 
@@ -36,37 +36,37 @@ The source-of-truth for `chedd-products/obligations.json` `schemaPaths`. CHED-D 
 
 ### Shared (reused from `01-target-shape.md`)
 
-| CHED-D field-config | IPAFFS path | New path |
-|---|---|---|
-| (notification type) | `documentType` | `type` (`"CED"`) |
-| `localReferenceNumber` | `partOne.importerLocalReferenceNumber` | `importerLocalRef` |
-| `countryOfOrigin` | `partOne.commodities.countryOfOrigin` | `origin.country` |
-| `regionOfOrigin` | `partOne.commodities.regionOfOrigin` | `origin.region` |
-| `commodityCode` | `partOne.commodities.commodityComplement[].commodityID` | `commodities[].id` |
-| `purpose` (Purpose page radio) | `partOne.purpose.purposeGroup` | `purpose.group` |
-| `numberPackages` | `partOne.commodities.numberOfPackages` | `consignment.numberOfPackages` |
-| `productGrossWeight` | `partOne.commodities.totalGrossWeight` | `consignment.totalGrossWeight` |
-| `productNetWeight` | `partOne.commodities.totalNetWeight` | `consignment.totalNetWeight` |
-| `subtotalNetWeights[0]` / `identificationCommodity` (line items) | `partOne.commodities.complementParameterSet[].keyDataPair` | `commodities[].parameters.keyDataPair` |
-| `accompanyingDocument[0].documentNumber` | `partOne.…accompanyingDocuments[].documentReference` | `documents.accompanying[].reference` |
-| `accompanyingDocument[0].dateOfIssue` | `partOne.…accompanyingDocuments[].documentIssueDate` | `documents.accompanying[].issueDate` |
-| `meansOfTransport*` (to port of entry) | `partOne.meansOfTransportFromEntryPoint` | `entry.transportType` |
-| `arrivalDate` | `partOne.arrivalDate` | `entry.arrivalDate` |
-| `arrivalTime` | `partOne.arrivalTime` | `entry.arrivalTime` |
-| (point of entry) | `partOne.pointOfEntry` | `entry.bcp` |
-| `Consignor` | `partOne.consignor` | `parties.consignor` |
-| `Consignee` | `partOne.consignee` | `parties.consignee` |
-| `Importer` | `partOne.importer` | `parties.importer` |
-| Place of Destination | `partOne.placeOfDestination` | `destination` |
-| nominated contacts | `partOne.nominatedContacts[]` | `contacts[]` |
-| (submission marker) | `partOne.submissionDate` | `submittedAt` (resolver `submissionDatePath`) |
+| CHED-D field-config                                              | IPAFFS path                                                | New path                                      |
+| ---------------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------- |
+| (notification type)                                              | `documentType`                                             | `type` (`"CED"`)                              |
+| `localReferenceNumber`                                           | `partOne.importerLocalReferenceNumber`                     | `importerLocalRef`                            |
+| `countryOfOrigin`                                                | `partOne.commodities.countryOfOrigin`                      | `origin.country`                              |
+| `regionOfOrigin`                                                 | `partOne.commodities.regionOfOrigin`                       | `origin.region`                               |
+| `commodityCode`                                                  | `partOne.commodities.commodityComplement[].commodityID`    | `commodities[].id`                            |
+| `purpose` (Purpose page radio)                                   | `partOne.purpose.purposeGroup`                             | `purpose.group`                               |
+| `numberPackages`                                                 | `partOne.commodities.numberOfPackages`                     | `consignment.numberOfPackages`                |
+| `productGrossWeight`                                             | `partOne.commodities.totalGrossWeight`                     | `consignment.totalGrossWeight`                |
+| `productNetWeight`                                               | `partOne.commodities.totalNetWeight`                       | `consignment.totalNetWeight`                  |
+| `subtotalNetWeights[0]` / `identificationCommodity` (line items) | `partOne.commodities.complementParameterSet[].keyDataPair` | `commodities[].parameters.keyDataPair`        |
+| `accompanyingDocument[0].documentNumber`                         | `partOne.…accompanyingDocuments[].documentReference`       | `documents.accompanying[].reference`          |
+| `accompanyingDocument[0].dateOfIssue`                            | `partOne.…accompanyingDocuments[].documentIssueDate`       | `documents.accompanying[].issueDate`          |
+| `meansOfTransport*` (to port of entry)                           | `partOne.meansOfTransportFromEntryPoint`                   | `entry.transportType`                         |
+| `arrivalDate`                                                    | `partOne.arrivalDate`                                      | `entry.arrivalDate`                           |
+| `arrivalTime`                                                    | `partOne.arrivalTime`                                      | `entry.arrivalTime`                           |
+| (point of entry)                                                 | `partOne.pointOfEntry`                                     | `entry.bcp`                                   |
+| `Consignor`                                                      | `partOne.consignor`                                        | `parties.consignor`                           |
+| `Consignee`                                                      | `partOne.consignee`                                        | `parties.consignee`                           |
+| `Importer`                                                       | `partOne.importer`                                         | `parties.importer`                            |
+| Place of Destination                                             | `partOne.placeOfDestination`                               | `destination`                                 |
+| nominated contacts                                               | `partOne.nominatedContacts[]`                              | `contacts[]`                                  |
+| (submission marker)                                              | `partOne.submissionDate`                                   | `submittedAt` (resolver `submissionDatePath`) |
 
 ### CHED-D-specific (the new leaves)
 
-| CHED-D field-config | IPAFFS path | New path |
-|---|---|---|
-| `internalMarket` ("intended for") | `partOne.commodities.commodityIntendedFor` | `consignment.intendedFor` |
-| `productDescription` | `partOne.commodities.commodityComplement[].commodityDescription` | `commodities[].description` |
+| CHED-D field-config                                       | IPAFFS path                                                                   | New path                                                        |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `internalMarket` ("intended for")                         | `partOne.commodities.commodityIntendedFor`                                    | `consignment.intendedFor`                                       |
+| `productDescription`                                      | `partOne.commodities.commodityComplement[].commodityDescription`              | `commodities[].description`                                     |
 | `comboType` / `comboClass` / `comboFamily` / `comboModel` | `partOne.commodities.commodityComplement[].complementID` (+ `complementName`) | `commodities[].complementId` (+ `commodities[].complementName`) |
 
 ### Dropped (animals/plants-only — NOT in CHED-D Part 1)
@@ -99,7 +99,9 @@ These CHED-D field-config components carry **no** notification obligation (match
       "description": "1001 Wheat and meslin",
       "complementId": "151100",
       "complementName": "Wheat",
-      "parameters": { "keyDataPair": [ { "key": "net_weight", "data": "12000" } ] }
+      "parameters": {
+        "keyDataPair": [{ "key": "net_weight", "data": "12000" }]
+      }
     }
   ],
   "consignment": {
@@ -109,18 +111,27 @@ These CHED-D field-config components carry **no** notification obligation (match
     "totalNetWeight": 12000
   },
   "parties": {
-    "importer":  { "name": "Test Importer",  "address": { "country": "GB" } },
+    "importer": { "name": "Test Importer", "address": { "country": "GB" } },
     "consignor": { "name": "Test Consignor", "address": { "country": "FR" } },
     "consignee": { "name": "Test Consignee", "address": { "country": "GB" } }
   },
   "destination": { "name": "Mill Co", "address": { "country": "GB" } },
-  "entry": { "bcp": "GBLHR1", "arrivalDate": "2026-04-15", "arrivalTime": "10:00", "transportType": "Road" },
+  "entry": {
+    "bcp": "GBLHR1",
+    "arrivalDate": "2026-04-15",
+    "arrivalTime": "10:00",
+    "transportType": "Road"
+  },
   "documents": {
     "accompanying": [
-      { "type": "Commercial Invoice", "reference": "INV-2026-1001", "issueDate": "2026-04-10" }
+      {
+        "type": "Commercial Invoice",
+        "reference": "INV-2026-1001",
+        "issueDate": "2026-04-10"
+      }
     ]
   },
-  "contacts": [ { "name": "Jane Doe", "email": "jane@example.com" } ]
+  "contacts": [{ "name": "Jane Doe", "email": "jane@example.com" }]
 }
 ```
 

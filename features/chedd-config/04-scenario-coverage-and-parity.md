@@ -13,7 +13,7 @@ Story 03 ships the journey live and correct on representative scenarios; this st
 - Scenario builder idiom: `src/server/journeys/eu-live-animals/scenarios.js` (the `buildNotification({…})` factory + fragment helpers; the `scenarioMap` keyed by URL-safe name, richest path first because the debug page uses the first scenario as its representative example).
 - The obligation graph and the one conditional come from story 03's `obligations.json`; the notification shape from story 02.
 - Real CHED-D commodity codes for the fixtures, from `features/chedd-config/chedd-products-staging.json`: food commodities, the 31 anomalies (no internal market), the 9 combo outliers.
-- The facade-vs-HTTP parity test: `src/server/plugins/http-api/parity.test.js` (a hardcoded `journeys` array; matrix = scenarios × journeys × trace on/off). The per-journey scenario template: `src/server/journeys/chedpp-plants/scenarios.test.js` (its three blocks). Note `eu-live-animals` has *no* `scenarios.test.js` — `chedpp-plants` is the fuller, current pattern to follow.
+- The facade-vs-HTTP parity test: `src/server/plugins/http-api/parity.test.js` (a hardcoded `journeys` array; matrix = scenarios × journeys × trace on/off). The per-journey scenario template: `src/server/journeys/chedpp-plants/scenarios.test.js` (its three blocks). Note `eu-live-animals` has _no_ `scenarios.test.js` — `chedpp-plants` is the fuller, current pattern to follow.
 
 ## Specification
 
@@ -30,7 +30,7 @@ Anomaly scenarios omit the intended-for field so the conditional resolves inacti
 
 ## Tests
 
-> Behaviour and risks: every fixture is submittable across the full obligation graph; the conditional behaves for both internal-market and anomaly commodities; the combo-outlier resolves its override. Risks: a scenario silently *deferring* an obligation (mis-shaped notification path); the empty-notification wrapper trap (silent satisfaction).
+> Behaviour and risks: every fixture is submittable across the full obligation graph; the conditional behaves for both internal-market and anomaly commodities; the combo-outlier resolves its override. Risks: a scenario silently _deferring_ an obligation (mis-shaped notification path); the empty-notification wrapper trap (silent satisfaction).
 
 High-value cases (in `scenarios.test.js`, per the `chedpp-plants` template): each fixture `submittable` with `unsatisfied: 0` / `deferred: 0`; per-status count pins derived from the green run; the empty-notification inverse. Parity over all three journeys is provided by `parity.test.js` once story 03 adds chedd to its `journeys` array — not re-implemented here. Selection follows `.claude/skills/valuable-unit-tests/SKILL.md`.
 

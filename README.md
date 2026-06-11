@@ -4,7 +4,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DEFRA_trade-imports-journey-config-ui&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=DEFRA_trade-imports-journey-config-ui)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=DEFRA_trade-imports-journey-config-ui&metric=coverage)](https://sonarcloud.io/summary/new_code?id=DEFRA_trade-imports-journey-config-ui)
 
-A demonstration of journey configuration and obligation evaluation surfaced as HTTP APIs. The journey-config service answers *"what is the journey?"*; the engine service answers *"how does this notification evaluate against the journey?"*. A Hapi UI consumes both over loopback, so the architecture is visible in the browser Network tab and reproducible from `curl` or Postman. For the deeper architecture story, see [SOLUTION.md](./SOLUTION.md).
+A demonstration of journey configuration and obligation evaluation surfaced as HTTP APIs. The journey-config service answers _"what is the journey?"_; the engine service answers _"how does this notification evaluate against the journey?"_. A Hapi UI consumes both over loopback, so the architecture is visible in the browser Network tab and reproducible from `curl` or Postman. For the deeper architecture story, see [SOLUTION.md](./SOLUTION.md).
 
 ## Quick start
 
@@ -22,11 +22,11 @@ npm run dev        # http://localhost:3000
 
 One Hapi process exposes three URL namespaces. UI routes consume them over `fetch` (loopback). An ESLint rule plus a transitive-import isolation test enforce that no UI route reaches the engine in-process; the codebase could be lifted to a separate deployment and pointed at a different host via `apiBaseUrl`.
 
-| Namespace | Question it answers | Headline endpoints |
-| --- | --- | --- |
-| `/api/config/*` | What is the journey? | `GET /api/config/journeys`, `GET /api/config/journeys/{key}/commodities/{code}` |
-| `/api/engine/*` | How does this notification evaluate? | `POST /api/engine/journeys/{key}/evaluate`, `.../sections`, `.../screens` |
-| `/ui/session/*` | UI state ("in-memory database" for cross-page flows) | `PUT /ui/session/notification` |
+| Namespace       | Question it answers                                  | Headline endpoints                                                              |
+| --------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `/api/config/*` | What is the journey?                                 | `GET /api/config/journeys`, `GET /api/config/journeys/{key}/commodities/{code}` |
+| `/api/engine/*` | How does this notification evaluate?                 | `POST /api/engine/journeys/{key}/evaluate`, `.../sections`, `.../screens`       |
+| `/ui/session/*` | UI state ("in-memory database" for cross-page flows) | `PUT /ui/session/notification`                                                  |
 
 ## Exploring the API
 

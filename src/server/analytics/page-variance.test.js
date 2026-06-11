@@ -50,9 +50,7 @@ describe('buildCommodityValue', () => {
   test('unknown journey key throws a named error', () => {
     expect(() =>
       buildCommodityValue('not-a-journey', '102|Bos taurus')
-    ).toThrow(
-      "buildCommodityValue: unknown journey 'not-a-journey'"
-    )
+    ).toThrow("buildCommodityValue: unknown journey 'not-a-journey'")
   })
 })
 
@@ -123,15 +121,17 @@ describe('computePageVariance', () => {
     // animal-weaning-status). The panel must emit one row, not two,
     // and its `activates` must be `drivers.some(d => d.active)`.
     const journey = engine.getJourney('eu-live-animals')
-    const rows = computePageVariance(journey, 'eu-live-animals', '102|Bos taurus')
+    const rows = computePageVariance(
+      journey,
+      'eu-live-animals',
+      '102|Bos taurus'
+    )
     const additional = findScreen(rows, 'Additional details')
     expect(additional).toBeDefined()
     expect(additional.drivers).toHaveLength(2)
     const ids = additional.drivers.map((d) => d.id).sort()
     expect(ids).toEqual(['animal-certification', 'animal-weaning-status'])
-    expect(additional.activates).toBe(
-      additional.drivers.some((d) => d.active)
-    )
+    expect(additional.activates).toBe(additional.drivers.some((d) => d.active))
   })
 
   test('obligation referencing an unknown resolver test throws with a named error', () => {
@@ -156,7 +156,11 @@ describe('computePageVariance', () => {
 
   test('animals routing flags map cleanly to the three single-driver screens, and purpose-conditionals do not appear', () => {
     const journey = engine.getJourney('eu-live-animals')
-    const rows = computePageVariance(journey, 'eu-live-animals', '102|Bos taurus')
+    const rows = computePageVariance(
+      journey,
+      'eu-live-animals',
+      '102|Bos taurus'
+    )
 
     // Per `eu-live-animals/refdata.json` for 102|Bos taurus:
     // cph_number=true, permanent_address=false, transporter_address=true.

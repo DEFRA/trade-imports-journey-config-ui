@@ -1,6 +1,10 @@
 import { describe, test, expect } from 'vitest'
 import { evaluate as evaluateAdapter } from '#server/engine/evaluate.js'
-import { obligations, refdata, resolvers } from '../../journeys/eu-live-animals/index.js'
+import {
+  obligations,
+  refdata,
+  resolvers
+} from '../../journeys/eu-live-animals/index.js'
 import {
   importSemen,
   importOwls,

@@ -51,11 +51,11 @@ npm run format       # Prettier
 
 Three peer agents run at defined points in the development workflow:
 
-| Agent                    | Owns                        | Does NOT own          |
-|--------------------------|-----------------------------|-----------------------|
-| `code-reviewer`          | Correctness, security       | Tests, structure      |
-| `qa-test-planner`        | Test planning, test code    | Fixes, refactoring    |
-| `refactoring-enforcer`   | Decomposition, naming, FP   | Correctness, tests    |
+| Agent                  | Owns                      | Does NOT own       |
+| ---------------------- | ------------------------- | ------------------ |
+| `code-reviewer`        | Correctness, security     | Tests, structure   |
+| `qa-test-planner`      | Test planning, test code  | Fixes, refactoring |
+| `refactoring-enforcer` | Decomposition, naming, FP | Correctness, tests |
 
 They are invoked by the `/implement-story` command at explicit gate
 points. Do not skip them.

@@ -12,19 +12,13 @@
       "id": "consignment-origin",
       "name": "Consignment Origin",
       "rationale": "Traceability: country of origin and consigning country determine applicable phytosanitary rules and risk profile.",
-      "schemaPaths": [
-        "origin.country",
-        "origin.consignedCountry"
-      ]
+      "schemaPaths": ["origin.country", "origin.consignedCountry"]
     },
     {
       "id": "import-purpose",
       "name": "Import Purpose",
       "rationale": "Determines regulatory pathway: different purposes (import, transit, transhipment, non-conforming) carry different inspection requirements.",
-      "schemaPaths": [
-        "purpose.group",
-        "purpose.forImportOrAdmission"
-      ]
+      "schemaPaths": ["purpose.group", "purpose.forImportOrAdmission"]
     },
     {
       "id": "transit-routing",
@@ -50,18 +44,13 @@
         "test": "isTranshipment",
         "description": "Active when purposeGroup is 'For Transhipment to'."
       },
-      "schemaPaths": [
-        "purpose.finalBIP",
-        "purpose.thirdCountryTranshipment"
-      ]
+      "schemaPaths": ["purpose.finalBIP", "purpose.thirdCountryTranshipment"]
     },
     {
       "id": "commodity-selection",
       "name": "Commodity Selection",
       "rationale": "Identifies the commodity being imported. The commodity code is the key fact that drives all downstream variance via refdata lookup.",
-      "schemaPaths": [
-        "commodities[].id"
-      ]
+      "schemaPaths": ["commodities[].id"]
     },
     {
       "id": "species-identification",
@@ -78,9 +67,7 @@
       "id": "commodity-complement-detail",
       "name": "Commodity Complement Detail",
       "rationale": "Per-line-item data: net weight, package count and type, quantity, commodity group. Populated via keyDataPair entries.",
-      "schemaPaths": [
-        "commodities[].parameters.keyDataPair"
-      ]
+      "schemaPaths": ["commodities[].parameters.keyDataPair"]
     },
     {
       "id": "consignment-totals",
@@ -108,42 +95,31 @@
       "id": "seal-containers",
       "name": "Seal and Container Numbers",
       "rationale": "Tamper evidence: seal and container numbers prove consignment integrity between loading and inspection.",
-      "schemaPaths": [
-        "sealsContainers[]"
-      ]
+      "schemaPaths": ["sealsContainers[]"]
     },
     {
       "id": "goods-movement-services",
       "name": "Goods Movement Services",
       "rationale": "GVMS route and CTC MRN provision determine customs movement handling at the border.",
-      "schemaPaths": [
-        "ctcMrn",
-        "entry.isGVMS"
-      ]
+      "schemaPaths": ["ctcMrn", "entry.isGVMS"]
     },
     {
       "id": "contact-details",
       "name": "Contact Details",
       "rationale": "Operational: person to be contacted if there is an issue with the consignment.",
-      "schemaPaths": [
-        "contactDetails"
-      ]
+      "schemaPaths": ["contactDetails"]
     },
     {
       "id": "nominated-contacts",
       "name": "Nominated Contacts",
       "rationale": "Operational: nominated contacts receive text and email notifications about consignment status.",
-      "schemaPaths": [
-        "contacts[]"
-      ]
+      "schemaPaths": ["contacts[]"]
     },
     {
       "id": "accompanying-documents",
       "name": "Accompanying Documents",
       "rationale": "Phytosanitary certificates and commercial documents that must accompany the consignment.",
-      "schemaPaths": [
-        "documents.accompanying[]"
-      ]
+      "schemaPaths": ["documents.accompanying[]"]
     },
     {
       "id": "consignor-identification",
@@ -190,9 +166,7 @@
         "test": "requiresGmsDeclaration",
         "description": "Active when the commodity's species is HMI-inspected with a GMS marketing standard."
       },
-      "schemaPaths": [
-        "declarations.gmsAccepted"
-      ]
+      "schemaPaths": ["declarations.gmsAccepted"]
     },
     {
       "id": "variety-class",
@@ -203,9 +177,7 @@
         "test": "requiresVarietyClass",
         "description": "Active when the commodity's species has varieties defined in refdata."
       },
-      "schemaPaths": [
-        "commodities[].parameters.keyDataPair"
-      ],
+      "schemaPaths": ["commodities[].parameters.keyDataPair"],
       "note": "Satisfied when keyDataPair contains entries with keys 'variety' and 'class'. The evaluator checks keyDataPair presence; the resolver gates activation on the species' varieties list (derived at read time in resolvers.js#lookupRouting from species.varieties)."
     },
     {
@@ -217,9 +189,7 @@
         "test": "requiresFinishedOrPropagated",
         "description": "Active when the commodity requires finished-or-propagated classification (commodity-level flag in refdata)."
       },
-      "schemaPaths": [
-        "commodities[].parameters.keyDataPair"
-      ],
+      "schemaPaths": ["commodities[].parameters.keyDataPair"],
       "note": "Satisfied when keyDataPair contains an entry with key 'finished_or_propagated'. Uses commodity-level fallback key in refdata lookup."
     },
     {
@@ -231,9 +201,7 @@
         "test": "requiresTestAndTrial",
         "description": "Active when the commodity requires test-and-trial data (commodity-level flag in refdata)."
       },
-      "schemaPaths": [
-        "commodities[].parameters.keyDataPair"
-      ],
+      "schemaPaths": ["commodities[].parameters.keyDataPair"],
       "note": "Satisfied when keyDataPair contains an entry with key 'for_test_and_trial'. Uses commodity-level fallback key in refdata lookup."
     },
     {
@@ -245,9 +213,7 @@
         "test": "requiresIntendedUse",
         "description": "Active when the commodity has a propagation attribute (bulb, plant, seed, tissue) in refdata."
       },
-      "schemaPaths": [
-        "commodities[].parameters.keyDataPair"
-      ],
+      "schemaPaths": ["commodities[].parameters.keyDataPair"],
       "note": "Satisfied when keyDataPair contains an entry with key 'propagation'. Uses commodity-level fallback key in refdata lookup."
     },
     {
@@ -259,9 +225,7 @@
         "test": "requiresBilling",
         "description": "Active when the commodity requires billing information. May be feature-flag-gated."
       },
-      "schemaPaths": [
-        "billing"
-      ]
+      "schemaPaths": ["billing"]
     },
     {
       "id": "legal-declaration",

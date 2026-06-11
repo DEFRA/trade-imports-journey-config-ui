@@ -54,9 +54,24 @@ describe('evaluateWithTrace — throws (inherited from §5.1)', () => {
   }
 
   it.each([
-    ['null notification', null, validAdapter, 'notification must be a non-null object'],
-    ['undefined notification', undefined, validAdapter, 'notification must be a non-null object'],
-    ['string notification', 'oops', validAdapter, 'notification must be a non-null object'],
+    [
+      'null notification',
+      null,
+      validAdapter,
+      'notification must be a non-null object'
+    ],
+    [
+      'undefined notification',
+      undefined,
+      validAdapter,
+      'notification must be a non-null object'
+    ],
+    [
+      'string notification',
+      'oops',
+      validAdapter,
+      'notification must be a non-null object'
+    ],
     ['null adapter', {}, null, 'adapter must be a non-null object'],
     ['undefined adapter', {}, undefined, 'adapter must be a non-null object'],
     [
@@ -66,7 +81,9 @@ describe('evaluateWithTrace — throws (inherited from §5.1)', () => {
       'adapter.obligations must be an array'
     ]
   ])('%s throws "%s"', (_label, notification, adapter, expectedMessage) => {
-    expect(() => evaluateWithTrace(notification, adapter)).toThrow(expectedMessage)
+    expect(() => evaluateWithTrace(notification, adapter)).toThrow(
+      expectedMessage
+    )
   })
 
   it('unknown fact throws with protocol-exact message', () => {
@@ -126,7 +143,10 @@ describe('evaluateWithTrace — terminal step ↔ status correspondence', () => 
       // satisfaction-check missing===0 → status satisfied
       { id: 'sat-complete', schemaPaths: ['notification.partOne.cphNumber'] },
       // satisfaction-check missing>0   → status unsatisfied
-      { id: 'sat-incomplete', schemaPaths: ['notification.partOne.absentField'] },
+      {
+        id: 'sat-incomplete',
+        schemaPaths: ['notification.partOne.absentField']
+      },
       // deferred (fact null)           → status deferred
       {
         id: 'cond-deferred',
@@ -329,10 +349,7 @@ describe('evaluateWithTrace — trace.type and trace.condition discrimination', 
     const result = evaluateWithTrace({}, adapter)
     const { trace } = result.obligations[0]
 
-    expect(trace.steps.map((s) => s.step)).toEqual([
-      'extract-fact',
-      'deferred'
-    ])
+    expect(trace.steps.map((s) => s.step)).toEqual(['extract-fact', 'deferred'])
     expect(trace.steps[0]).toMatchObject({
       step: 'extract-fact',
       fact: 'purposeGroup',
@@ -366,15 +383,20 @@ describe('evaluateWithTrace — status equivalence with evaluate()', () => {
       key,
       notification
     ])
-  ])('%s: traced status matches canonical for every obligation', (_label, notification) => {
-    const canonical = evaluate(notification, adapter)
-    const traced = evaluateWithTrace(notification, adapter)
+  ])(
+    '%s: traced status matches canonical for every obligation',
+    (_label, notification) => {
+      const canonical = evaluate(notification, adapter)
+      const traced = evaluateWithTrace(notification, adapter)
 
-    expect(traced.obligations.map((o) => ({ id: o.id, status: o.status }))).toEqual(
-      canonical.obligations.map((o) => ({ id: o.id, status: o.status }))
-    )
-    expect(traced.summary).toEqual(canonical.summary)
-  })
+      expect(
+        traced.obligations.map((o) => ({ id: o.id, status: o.status }))
+      ).toEqual(
+        canonical.obligations.map((o) => ({ id: o.id, status: o.status }))
+      )
+      expect(traced.summary).toEqual(canonical.summary)
+    }
+  )
 })
 
 // ---------------------------------------------------------------------------
@@ -413,6 +435,8 @@ describe('evaluateWithTrace — status mismatch throw (§5.2 safety net)', () =>
 
     expect(() =>
       evaluateWithTrace({ partOne: { submissionDate: '2026-05-20' } }, adapter)
-    ).toThrow('Status mismatch for "flaky": Traced: inactive, Canonical: satisfied')
+    ).toThrow(
+      'Status mismatch for "flaky": Traced: inactive, Canonical: satisfied'
+    )
   })
 })

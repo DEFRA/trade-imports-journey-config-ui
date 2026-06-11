@@ -33,7 +33,7 @@ The plumbing is already there:
 - The engine facade (`getJourney(journeyKey)`) resolves all journey
   data per-request.
 
-The only boot-bound piece left is *where the journey key comes from*.
+The only boot-bound piece left is _where the journey key comes from_.
 This story replaces that single source.
 
 ## Context
@@ -45,7 +45,7 @@ What's already per-request (no change needed):
   `api-controller.js` all call `config.get('journey')` inside the
   handler.
 - `getJourney(journeyKey)` returns `{ obligations, refdata, journeyMap,
-  scenarios, resolvers, refdataView, commodityKeys }` per journey key.
+scenarios, resolvers, refdataView, commodityKeys }` per journey key.
 - The session only stores one journey-specific key today:
   `yar.notification` (a notification fixture loaded via `?scenario=…` or
   posted from `/explorer/debug/evaluate`).
@@ -230,7 +230,7 @@ return h.view('explorer/...', { ..., ...ctx })
 `api-controller.js` (returns JSON, no view) doesn't need the picker
 options — it calls `currentJourneyKey(request)` directly.
 
-Update `explorer-nav.njk` to include the picker partial *and* drop the
+Update `explorer-nav.njk` to include the picker partial _and_ drop the
 now-redundant `Journey: <key>` text indicator — the picker's
 selected-option already names the active journey:
 
@@ -337,49 +337,49 @@ Existing tests:
 ## Acceptance criteria
 
 - [ ] `nav-context.js` is rewritten in place to export
-  `currentJourneyKey(request)` + `navContext(request)` — no parallel
-  `current-journey.js` left behind.
+      `currentJourneyKey(request)` + `navContext(request)` — no parallel
+      `current-journey.js` left behind.
 - [ ] All five view controllers (journey, tasklist, debug,
-  commodity-config, api) source the journey key via the new helper; no
-  controller calls `config.get('journey')` directly.
+      commodity-config, api) source the journey key via the new helper; no
+      controller calls `config.get('journey')` directly.
 - [ ] `import { config } from '#config/config.js'` is removed from
-  every view controller (verified by
-  `grep -n "config\." src/server/routes/explorer/*-controller.js`
-  returning zero hits).
+      every view controller (verified by
+      `grep -n "config\." src/server/routes/explorer/*-controller.js`
+      returning zero hits).
 - [ ] `explorer-nav.njk` no longer renders the standalone
-  `Journey: <key>` text block — the picker's selected option is the
-  indicator.
+      `Journey: <key>` text block — the picker's selected option is the
+      indicator.
 - [ ] `chedpp-plants/README.md` "Scrutinising the scenarios" section
-  mentions the picker; `JOURNEY=…` is documented as the boot default.
+      mentions the picker; `JOURNEY=…` is documented as the boot default.
 - [ ] POST `/explorer/journey` is registered, validates against
-  `listJourneys()`, and **always redirects to `/explorer`** (no
-  referer-based redirect).
+      `listJourneys()`, and **always redirects to `/explorer`** (no
+      referer-based redirect).
 - [ ] On successful POST, `yar.notification` is cleared (zero-on-
-  change).
+      change).
 - [ ] Stale session journey (not in `listJourneys()`) falls back to
-  the boot default; covered by a unit test on `currentJourneyKey`.
+      the boot default; covered by a unit test on `currentJourneyKey`.
 - [ ] `journey-picker.njk` is included in the explorer nav; appears
-  on every explorer page (journey / tasklist / debug / commodity-
-  config).
+      on every explorer page (journey / tasklist / debug / commodity-
+      config).
 - [ ] **The picker has no inline `<script>`** — uses an explicit
-  submit button. `index.test.js` CSP-compliance assertions still pass
-  unmodified.
+      submit button. `index.test.js` CSP-compliance assertions still pass
+      unmodified.
 - [ ] Existing tests (`index.test.js`, `journey-switching.test.js`,
-  `journey-fail-fast.test.js`) pass unmodified.
+      `journey-fail-fast.test.js`) pass unmodified.
 - [ ] New `journey-picker.test.js` (integration) + `current-journey.test.js`
-  (unit) cover the behaviours listed under §Tests.
+      (unit) cover the behaviours listed under §Tests.
 - [ ] Story 01's fail-fast boot guard remains intact (a bad `JOURNEY=`
-  still crashes the boot with the §2 message).
+      still crashes the boot with the §2 message).
 - [ ] Full `npm test` green.
 
 ## Risks and pre-emptive mitigations
 
-| # | Risk | Mitigation |
-|---|---|---|
-| R1 | A stale `yar.journey` value pointing at a removed journey would crash `getJourney` if no fallback. | `currentJourneyKey` validates against `listJourneys()` and falls through to the boot default. Covered by the unit test on `currentJourneyKey`. |
-| R2 | CSRF: the picker is a POST that mutates session. Without a token an attacker could trigger a journey switch via a malicious form on another origin. | yar's session cookie is same-origin; the existing CSP + the spike's localhost-only deployment make this academic. Production use would need a CSRF token — noted in "What NOT to change". |
-| R3 | `JOURNEY=…` env var no longer feels like the "real" source — confusion about which source wins. | The story explicitly states: session wins; env is the boot default. Documented in `current-journey.js`. CI runs with no session, so env still drives. The fail-fast boot guard still catches typos. |
-| R4 | Removing the `Journey: <key>` text indicator changes the default-journey page rendering — any test checking that exact string would fail. | No existing test checks `Journey:` as a literal substring (`journey-switching.test.js` checks `chedpp-plants` which still appears as a picker option). Implementer to grep at start; update assertions in the picker test if any tighten. |
+| #   | Risk                                                                                                                                                | Mitigation                                                                                                                                                                                                                                |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | A stale `yar.journey` value pointing at a removed journey would crash `getJourney` if no fallback.                                                  | `currentJourneyKey` validates against `listJourneys()` and falls through to the boot default. Covered by the unit test on `currentJourneyKey`.                                                                                            |
+| R2  | CSRF: the picker is a POST that mutates session. Without a token an attacker could trigger a journey switch via a malicious form on another origin. | yar's session cookie is same-origin; the existing CSP + the spike's localhost-only deployment make this academic. Production use would need a CSRF token — noted in "What NOT to change".                                                 |
+| R3  | `JOURNEY=…` env var no longer feels like the "real" source — confusion about which source wins.                                                     | The story explicitly states: session wins; env is the boot default. Documented in `current-journey.js`. CI runs with no session, so env still drives. The fail-fast boot guard still catches typos.                                       |
+| R4  | Removing the `Journey: <key>` text indicator changes the default-journey page rendering — any test checking that exact string would fail.           | No existing test checks `Journey:` as a literal substring (`journey-switching.test.js` checks `chedpp-plants` which still appears as a picker option). Implementer to grep at start; update assertions in the picker test if any tighten. |
 
 **Inherent limitations (not "risks we've handled" — design properties):**
 

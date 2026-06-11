@@ -2,19 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { mapKeysDeep } from './snake-to-camel.js'
 
 describe('mapKeysDeep', () => {
-  it.each([
-    null,
-    undefined,
-    0,
-    1,
-    -1,
-    '',
-    'snake_case_string',
-    false,
-    true
-  ])('returns the primitive %p unchanged', (value) => {
-    expect(mapKeysDeep(value)).toBe(value)
-  })
+  it.each([null, undefined, 0, 1, -1, '', 'snake_case_string', false, true])(
+    'returns the primitive %p unchanged',
+    (value) => {
+      expect(mapKeysDeep(value)).toBe(value)
+    }
+  )
 
   it('camelCases object keys and recurses into values', () => {
     expect(
@@ -38,19 +31,11 @@ describe('mapKeysDeep', () => {
         null,
         { regulatory_authority: 'JOINT' }
       ])
-    ).toEqual([
-      'snake_case_string',
-      42,
-      null,
-      { regulatoryAuthority: 'JOINT' }
-    ])
+    ).toEqual(['snake_case_string', 42, null, { regulatoryAuthority: 'JOINT' }])
   })
 
   it('handles arrays-of-arrays', () => {
-    expect(mapKeysDeep([[{ a_b: 1 }], [2, 3]])).toEqual([
-      [{ aB: 1 }],
-      [2, 3]
-    ])
+    expect(mapKeysDeep([[{ a_b: 1 }], [2, 3]])).toEqual([[{ aB: 1 }], [2, 3]])
   })
 
   it('preserves null and undefined values inside objects', () => {

@@ -34,7 +34,10 @@ const minimalResolver = {
     isTransit: (value) =>
       value === 'Transit'
         ? { active: true, reason: 'transit purpose' }
-        : { active: false, reason: `purposeGroup "${value}" is not a transit purpose` }
+        : {
+            active: false,
+            reason: `purposeGroup "${value}" is not a transit purpose`
+          }
   },
   submissionDatePath: 'notification.partOne.submissionDate'
 }
@@ -51,9 +54,24 @@ describe('evaluate — throws', () => {
   }
 
   it.each([
-    ['null notification', null, validAdapter, 'notification must be a non-null object'],
-    ['undefined notification', undefined, validAdapter, 'notification must be a non-null object'],
-    ['string notification', 'oops', validAdapter, 'notification must be a non-null object'],
+    [
+      'null notification',
+      null,
+      validAdapter,
+      'notification must be a non-null object'
+    ],
+    [
+      'undefined notification',
+      undefined,
+      validAdapter,
+      'notification must be a non-null object'
+    ],
+    [
+      'string notification',
+      'oops',
+      validAdapter,
+      'notification must be a non-null object'
+    ],
     ['null adapter', {}, null, 'adapter must be a non-null object'],
     ['undefined adapter', {}, undefined, 'adapter must be a non-null object'],
     ['string adapter', {}, 'oops', 'adapter must be a non-null object'],

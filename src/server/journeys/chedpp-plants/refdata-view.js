@@ -36,8 +36,7 @@ const lookupAsList = (field, source) => (k) => {
 export const refdataView = (refdata) => {
   const { species, commodities } = refdata
   const sp = (field) => lookupAsList(field, (k) => species[k])
-  const com = (field) =>
-    lookupAsList(field, (k) => commodities[codeOf(k)])
+  const com = (field) => lookupAsList(field, (k) => commodities[codeOf(k)])
 
   return {
     dimensions: [

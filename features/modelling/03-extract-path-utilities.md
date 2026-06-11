@@ -34,7 +34,7 @@ import from a settled location.
 **1. Create `src/server/engine/path.js`.**
 
 Move `resolvePath` and `isEmpty` from `evaluate-obligations.js` to the
-new file, *verbatim*. Both are exported.
+new file, _verbatim_. Both are exported.
 
 Behaviour preserved:
 
@@ -90,11 +90,11 @@ Existing tests pass unmodified.
 
 - [ ] `src/server/engine/path.js` exports `resolvePath` and `isEmpty`.
 - [ ] `evaluate-obligations.js` has no local `resolvePath` or
-  `isEmpty` definition; it imports both from `engine/path.js`.
+      `isEmpty` definition; it imports both from `engine/path.js`.
 - [ ] `trace-evaluate-obligations.js` imports `resolvePath` and
-  `isEmpty` from `engine/path.js` (not from the evaluator module).
+      `isEmpty` from `engine/path.js` (not from the evaluator module).
 - [ ] `engine/path.test.js` passes for both functions, covering the
-  table above.
+      table above.
 - [ ] All existing tests pass unmodified.
 - [ ] All four explorer views render correctly.
 

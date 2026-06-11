@@ -47,11 +47,14 @@ describe('rollUpToSections — throws (§5.4 exact text)', () => {
     ['undefined', undefined],
     ['string', 'oops'],
     ['object', { not: 'an array' }]
-  ])('%s input throws "rollUpToSections: screens must be an array"', (_label, input) => {
-    expect(() => rollUpToSections(input)).toThrow(
-      'rollUpToSections: screens must be an array'
-    )
-  })
+  ])(
+    '%s input throws "rollUpToSections: screens must be an array"',
+    (_label, input) => {
+      expect(() => rollUpToSections(input)).toThrow(
+        'rollUpToSections: screens must be an array'
+      )
+    }
+  )
 
   it('missing sectionName on first appearance throws with exact §5.4 wording', () => {
     const screens = [
@@ -77,8 +80,16 @@ describe('rollUpToSections — throws (§5.4 exact text)', () => {
 describe('rollUpToSections — section status derivation table (§5.4)', () => {
   it.each([
     // [label, child screen statuses, expected section status]
-    ['any incomplete → incomplete', ['complete', 'incomplete', 'cannotStartYet'], 'incomplete'],
-    ['no incomplete, any cannotStartYet → cannotStartYet', ['complete', 'cannotStartYet'], 'cannotStartYet'],
+    [
+      'any incomplete → incomplete',
+      ['complete', 'incomplete', 'cannotStartYet'],
+      'incomplete'
+    ],
+    [
+      'no incomplete, any cannotStartYet → cannotStartYet',
+      ['complete', 'cannotStartYet'],
+      'cannotStartYet'
+    ],
     ['all complete → complete', ['complete', 'complete'], 'complete']
   ])('%s', (_label, statuses, expectedStatus) => {
     const screens = statuses.map((status, i) =>
@@ -188,7 +199,10 @@ describe('rollUpToSections — real-data composition with resolveScreens (eu-liv
   })
 
   it('composes with resolveScreens over import-semen: every section is complete, notApplicable screens are filtered, no empty sections', () => {
-    const evalResult = evaluate(scenarioMap['import-semen'].notification, adapter)
+    const evalResult = evaluate(
+      scenarioMap['import-semen'].notification,
+      adapter
+    )
     const screens = resolveScreens(evalResult, journeyMap)
     const sections = rollUpToSections(screens)
 

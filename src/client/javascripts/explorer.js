@@ -47,7 +47,14 @@ const validateEvaluationResult = (result) => {
     return { valid: false, error: 'Result.summary must be an object' }
   }
 
-  const requiredSummaryFields = ['satisfied', 'unsatisfied', 'deferred', 'inactive', 'total', 'submittable']
+  const requiredSummaryFields = [
+    'satisfied',
+    'unsatisfied',
+    'deferred',
+    'inactive',
+    'total',
+    'submittable'
+  ]
   for (const field of requiredSummaryFields) {
     if (!(field in result.summary)) {
       return { valid: false, error: `Result.summary.${field} is required` }
@@ -167,7 +174,9 @@ const evaluateNotification = async (notification) => {
     )
 
     if (!response.ok) {
-      throw new Error(`Evaluation failed: ${response.status} ${response.statusText}`)
+      throw new Error(
+        `Evaluation failed: ${response.status} ${response.statusText}`
+      )
     }
 
     const result = await response.json()
@@ -181,7 +190,9 @@ const evaluateNotification = async (notification) => {
     return result
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network error: Unable to evaluate notification. Check your connection.')
+      throw new Error(
+        'Network error: Unable to evaluate notification. Check your connection.'
+      )
     }
     throw error
   }
@@ -371,7 +382,8 @@ const evaluateAndNotify = async (notification) => {
     const landscapePanel = document.getElementById('landscape-panel')
     const tracePanel = document.getElementById('trace-panel')
 
-    const errorMessage = error.message || 'An unexpected error occurred during evaluation'
+    const errorMessage =
+      error.message || 'An unexpected error occurred during evaluation'
     renderErrorInPanel(landscapePanel, errorMessage)
     renderErrorInPanel(tracePanel, errorMessage)
   }
@@ -541,7 +553,8 @@ const initializeEditor = async () => {
   } catch (error) {
     console.error('Failed to initialize explorer:', error)
 
-    const errorMessage = error.message || 'Failed to initialize the Obligation Explorer'
+    const errorMessage =
+      error.message || 'Failed to initialize the Obligation Explorer'
     renderErrorInPanel(editorPanel, errorMessage)
     renderErrorInPanel(landscapePanel, errorMessage)
     renderErrorInPanel(tracePanel, errorMessage)
@@ -582,7 +595,7 @@ const statusToTagClass = (status) => {
 const formatObligationId = (id) => {
   return id
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
 
@@ -697,7 +710,8 @@ const renderStatusGroup = (statusName, obligations) => {
 
   const heading = document.createElement('h3')
   heading.className = 'govuk-heading-s'
-  const readableStatus = statusName.charAt(0).toUpperCase() + statusName.slice(1)
+  const readableStatus =
+    statusName.charAt(0).toUpperCase() + statusName.slice(1)
   heading.textContent = `${readableStatus} (${obligations.length})`
 
   container.appendChild(heading)
@@ -1082,8 +1096,14 @@ document.addEventListener('obligation-evaluation', (event) => {
 
     const landscapePanel = document.getElementById('landscape-panel')
     const tracePanel = document.getElementById('trace-panel')
-    renderErrorInPanel(landscapePanel, `Invalid evaluation result: ${validation.error}`)
-    renderErrorInPanel(tracePanel, `Invalid evaluation result: ${validation.error}`)
+    renderErrorInPanel(
+      landscapePanel,
+      `Invalid evaluation result: ${validation.error}`
+    )
+    renderErrorInPanel(
+      tracePanel,
+      `Invalid evaluation result: ${validation.error}`
+    )
     return
   }
 

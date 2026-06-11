@@ -50,9 +50,7 @@ describe('resolvePath', () => {
   const nestedArray = {
     partOne: {
       commodities: {
-        complementParameterSet: [
-          { identifiers: [{ data: 'UK123456' }] }
-        ]
+        complementParameterSet: [{ identifiers: [{ data: 'UK123456' }] }]
       }
     }
   }
@@ -122,42 +120,22 @@ describe('resolvePath', () => {
       'notification.type',
       'X'
     ],
-    [
-      'plain dot path without prefix resolves',
-      { a: { b: 1 } },
-      'a.b',
-      1
-    ],
+    ['plain dot path without prefix resolves', { a: { b: 1 } }, 'a.b', 1],
     [
       'simple dotted path with prefix resolves',
       cattle,
       'notification.partOne.cphNumber',
       '12/345/6789'
     ],
-    [
-      'missing intermediate returns undefined',
-      { a: {} },
-      'a.b.c',
-      undefined
-    ],
+    ['missing intermediate returns undefined', { a: {} }, 'a.b.c', undefined],
     [
       'missing top-level segment returns undefined',
       {},
       'notification.partOne.cphNumber',
       undefined
     ],
-    [
-      'null obj returns undefined',
-      null,
-      'a.b',
-      undefined
-    ],
-    [
-      'undefined obj returns undefined',
-      undefined,
-      'a.b',
-      undefined
-    ],
+    ['null obj returns undefined', null, 'a.b', undefined],
+    ['undefined obj returns undefined', undefined, 'a.b', undefined],
     [
       'primitive intermediate stops traversal and returns undefined',
       { a: 'str' },

@@ -45,7 +45,11 @@ const accompanyingDocs = [
 ]
 
 const nominatedContacts = [
-  { name: 'Jane Doe', email: 'jane.doe@example.com', telephone: '+44 1234 567890' }
+  {
+    name: 'Jane Doe',
+    email: 'jane.doe@example.com',
+    telephone: '+44 1234 567890'
+  }
 ]
 
 /**
@@ -127,7 +131,8 @@ const FRUIT_PASTE = buildCommodity({
 
 const PRESERVED_APRICOTS = buildCommodity({
   id: '08129025',
-  description: '0812 Fruit and nuts, provisionally preserved (apricots, oranges)',
+  description:
+    '0812 Fruit and nuts, provisionally preserved (apricots, oranges)',
   complementId: '239609'
 })
 

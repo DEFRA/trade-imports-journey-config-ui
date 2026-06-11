@@ -2,7 +2,7 @@
 
 > **Preflight analysis task — not a bug-fix, not an implementation.** The
 > correct behaviour is currently unknown; this task establishes it from
-> authoritative IPAFFS source and *recommends a course of action*. Any
+> authoritative IPAFFS source and _recommends a course of action_. Any
 > code/refdata change is downstream of (and decided by) this analysis.
 > Parallel to `chedpp-journey-investigation.md` /
 > `chedpp-runtime-data-exploration.md`.
@@ -22,7 +22,7 @@ Our implementation and our own analysis **disagree by ~92%**:
 - **Current implementation.** `build-chedpp-refdata.js` sets
   `has_gms = marketing_standard != null`; `resolvers.js#requiresGmsDeclaration`
   activates `gms-declaration` on `has_gms === true`. That is `true` for
-  **all ~5,321** marketing-bearing species (GMS *and* SMS; HMI *and*
+  **all ~5,321** marketing-bearing species (GMS _and_ SMS; HMI _and_
   JOINT). Yet the resolver's own reason string says "(HMI + GMS marketing
   standard)" — the code contradicts its own stated intent.
 - **Our exploration claim.** `chedpp-runtime-data-exploration.md` states
@@ -64,11 +64,11 @@ source-code visibility predicate.
 
 ## Where to look (source repos)
 
-| Repo | Role here | What to read |
-|---|---|---|
-| `/Users/benoit/projects/defra/imports/ipaffs-frontend-notification` | **Authority for the visibility predicate.** | GMS-declaration handler under `service/src/routes/handlers/importer/` (e.g. `gms*`/`goods_movement*`); its entry in `service/src/routes/next_page_routing_tables/routing_table_default.js`; the supplemental-data integration client. See the key-files table in `chedpp-journey-investigation.md`. |
-| `/Users/benoit/projects/defra/imports/ipaffs-fieldconfig-microservice` | **Supplemental-data source** — holds `dbo_inspection_responsibility` / `dbo_hmi_marketing`. | The `supplemental-data` endpoint: does it return *raw* `regulatoryAuthority` + `marketingStandard`, or a *precomputed* GMS flag? **Resolve the microservice ambiguity:** `build-chedpp-refdata.js` referenced a `commoditycode` microservice, but the CSVs live here — confirm which one actually serves the live `getCommoditySupplementalData`. |
-| `/Users/benoit/projects/defra/cdp-fieldconfig-analysis-frontend` | **Our assumptions only — not the authority.** | `build-chedpp-refdata.js` (our `has_gms = marketing_standard != null` derivation) and the two `chedpp-*` analysis docs. Use to gap-analyse, not to decide. |
+| Repo                                                                   | Role here                                                                                   | What to read                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/Users/benoit/projects/defra/imports/ipaffs-frontend-notification`    | **Authority for the visibility predicate.**                                                 | GMS-declaration handler under `service/src/routes/handlers/importer/` (e.g. `gms*`/`goods_movement*`); its entry in `service/src/routes/next_page_routing_tables/routing_table_default.js`; the supplemental-data integration client. See the key-files table in `chedpp-journey-investigation.md`.                                               |
+| `/Users/benoit/projects/defra/imports/ipaffs-fieldconfig-microservice` | **Supplemental-data source** — holds `dbo_inspection_responsibility` / `dbo_hmi_marketing`. | The `supplemental-data` endpoint: does it return _raw_ `regulatoryAuthority` + `marketingStandard`, or a _precomputed_ GMS flag? **Resolve the microservice ambiguity:** `build-chedpp-refdata.js` referenced a `commoditycode` microservice, but the CSVs live here — confirm which one actually serves the live `getCommoditySupplementalData`. |
+| `/Users/benoit/projects/defra/cdp-fieldconfig-analysis-frontend`       | **Our assumptions only — not the authority.**                                               | `build-chedpp-refdata.js` (our `has_gms = marketing_standard != null` derivation) and the two `chedpp-*` analysis docs. Use to gap-analyse, not to decide.                                                                                                                                                                                        |
 
 ## Investigation tasks
 
@@ -80,7 +80,7 @@ source-code visibility predicate.
    returns for `regulatoryAuthority` / `marketingStandard`, and how the
    frontend combines them into the visibility decision.
 3. **Aggregation semantics.** For multi-species / multi-commodity
-   notifications, does *any* qualifying species trigger the page, or is
+   notifications, does _any_ qualifying species trigger the page, or is
    it per-commodity? Map the recommendation onto our **known** single
    commodity-drives-routing simplification (`resolvers.js`
    `facts.commodity` uses `commodities[0]`) — respect/flag it; do **not**
@@ -107,9 +107,9 @@ source-code visibility predicate.
      derivable from authority+standard.
    - **(c) Accept current behaviour** as intended permissiveness (with the
      evidence that justifies it).
-   For whichever is chosen: the **scenario re-pin impact** (which of the
-   seven committed scenarios change `(satisfied, inactive)` and why), so
-   the downstream change is sized before it starts.
+     For whichever is chosen: the **scenario re-pin impact** (which of the
+     seven committed scenarios change `(satisfied, inactive)` and why), so
+     the downstream change is sized before it starts.
 
 ## Relationship to the other stories
 
@@ -129,14 +129,14 @@ source-code visibility predicate.
 ## Done when (acceptance)
 
 - [ ] The GMS-declaration predicate is documented **cited to specific
-  source files + lines** (or, if not code-traceable, the authoritative
-  source named and the limitation stated).
+      source files + lines** (or, if not code-traceable, the authoritative
+      source named and the limitation stated).
 - [ ] The gap vs current `has_gms` is quantified (who is wrongly
-  included/excluded, with counts).
+      included/excluded, with counts).
 - [ ] The 2–3 known-answer checks (task 4) are recorded with expected vs
-  predicted outcomes.
+      predicted outcomes.
 - [ ] A single recommended course of action (a/b/c) is stated, with the
-  **per-scenario re-pin impact** for the seven committed scenarios.
+      **per-scenario re-pin impact** for the seven committed scenarios.
 - [ ] Any shape feedback into Story 03's Phase A is explicitly flagged (or "none").
 - [ ] Findings recorded in the `## Findings` section below.
 
@@ -149,13 +149,27 @@ The page is gated by `requiresGmsConfirmation` in
 **lines 21–28**:
 
 ```javascript
-const requiresGmsConfirmation = commodities => {
-  const complementParameterSets = _.get(commodities, 'complementParameterSet', [])
-  return complementParameterSets.filter(complementParameterSet => _.get(complementParameterSet, 'keyDataPair', []).some(
-    keyDataPair => keyDataPair.key === REGULATORY_AUTHORITY && keyDataPair.data ===
-          regulatoryAuthorities.HMI) &&
-      complementParameterSet.keyDataPair.some(keyDataPair => keyDataPair.key === MARKETING_STANDARD && keyDataPair.data ===
-          marketingStandards.GMS)).length > 0
+const requiresGmsConfirmation = (commodities) => {
+  const complementParameterSets = _.get(
+    commodities,
+    'complementParameterSet',
+    []
+  )
+  return (
+    complementParameterSets.filter(
+      (complementParameterSet) =>
+        _.get(complementParameterSet, 'keyDataPair', []).some(
+          (keyDataPair) =>
+            keyDataPair.key === REGULATORY_AUTHORITY &&
+            keyDataPair.data === regulatoryAuthorities.HMI
+        ) &&
+        complementParameterSet.keyDataPair.some(
+          (keyDataPair) =>
+            keyDataPair.key === MARKETING_STANDARD &&
+            keyDataPair.data === marketingStandards.GMS
+        )
+    ).length > 0
+  )
 }
 ```
 
@@ -193,11 +207,11 @@ fields.**
 
 ### 3. Gap vs our current behaviour
 
-| Measure | current (`has_gms = marketing_standard != null`) | correct (`HMI && GMS`) |
-|---|---|---|
-| Activating species-pairs | **5,321** (all GMS + all SMS, all authorities) | **409** (HMI+GMS only) |
-| Wrongly-activating | — | 4,912 (all 4,874 JOINT + 38 HMI+SMS) |
-| % over-trigger | — | ~92.3% |
+| Measure                  | current (`has_gms = marketing_standard != null`) | correct (`HMI && GMS`)               |
+| ------------------------ | ------------------------------------------------ | ------------------------------------ |
+| Activating species-pairs | **5,321** (all GMS + all SMS, all authorities)   | **409** (HMI+GMS only)               |
+| Wrongly-activating       | —                                                | 4,912 (all 4,874 JOINT + 38 HMI+SMS) |
+| % over-trigger           | —                                                | ~92.3%                               |
 
 The current behaviour is broadly permissive — it activates for every
 marketing-bearing species. The correct behaviour fires only on HMI+GMS,
@@ -205,24 +219,24 @@ which is ~7.7% of current activations.
 
 ### 4. Known-answer results (vs current refdata)
 
-| Species | Refdata authority + standard | Currently fires? | Correct rule fires? | Notes |
-|---|---|---|---|---|
-| 0808108090 / MABSD (apples) | **JOINT + SMS** | yes | **no** | `scenarios.js` calls this an "HMI commodity" — the *comment is wrong* against the committed refdata. |
-| 07096010 / CPSAN (peppers) | **JOINT + SMS** | yes | **no** | The `importPeppers` scenario explicitly overrides notification keyDataPair to `JOINT`+`SMS` — consistent with the refdata. |
-| PHSI-only species (e.g. 06042090 / RSVSS) | n/a (fallback row) | no | no | Falls back to commodity-level fallback; no species row. |
-| (positive HMI+GMS anchor) | — | — | — | **No HMI+GMS species is exercised by any committed scenario.** Gap to close in the follow-up. |
+| Species                                   | Refdata authority + standard | Currently fires? | Correct rule fires? | Notes                                                                                                                      |
+| ----------------------------------------- | ---------------------------- | ---------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| 0808108090 / MABSD (apples)               | **JOINT + SMS**              | yes              | **no**              | `scenarios.js` calls this an "HMI commodity" — the _comment is wrong_ against the committed refdata.                       |
+| 07096010 / CPSAN (peppers)                | **JOINT + SMS**              | yes              | **no**              | The `importPeppers` scenario explicitly overrides notification keyDataPair to `JOINT`+`SMS` — consistent with the refdata. |
+| PHSI-only species (e.g. 06042090 / RSVSS) | n/a (fallback row)           | no               | no                  | Falls back to commodity-level fallback; no species row.                                                                    |
+| (positive HMI+GMS anchor)                 | —                            | —                | —                   | **No HMI+GMS species is exercised by any committed scenario.** Gap to close in the follow-up.                              |
 
 ### 5. Scenario re-pin impact (concrete)
 
-| Scenario | Commodity (refdata) | gms-declaration today | gms-declaration after fix | Pin change? |
-|---|---|---|---|---|
-| `import-phsi-ornamental` | 06042090 / RSVSS PHSI | inactive | inactive | no |
-| `import-apples` | 0808108090 / MABSD JOINT+SMS | **active** | **inactive** | **yes** |
-| `import-peppers` | 07096010 / CPSAN JOINT+SMS | **active** | **inactive** | **yes** |
-| `import-bulbs` | 06011010 / HYAOR PHSI | inactive | inactive | no |
-| `import-seeds` | 1209999910 / AKTOR PHSI | inactive | inactive | no |
-| `transit-plants` | PHSI_ORNAMENTAL PHSI | inactive | inactive | no |
-| `transhipment-plants` | PHSI_ORNAMENTAL PHSI | inactive | inactive | no |
+| Scenario                 | Commodity (refdata)          | gms-declaration today | gms-declaration after fix | Pin change? |
+| ------------------------ | ---------------------------- | --------------------- | ------------------------- | ----------- |
+| `import-phsi-ornamental` | 06042090 / RSVSS PHSI        | inactive              | inactive                  | no          |
+| `import-apples`          | 0808108090 / MABSD JOINT+SMS | **active**            | **inactive**              | **yes**     |
+| `import-peppers`         | 07096010 / CPSAN JOINT+SMS   | **active**            | **inactive**              | **yes**     |
+| `import-bulbs`           | 06011010 / HYAOR PHSI        | inactive              | inactive                  | no          |
+| `import-seeds`           | 1209999910 / AKTOR PHSI      | inactive              | inactive                  | no          |
+| `transit-plants`         | PHSI_ORNAMENTAL PHSI         | inactive              | inactive                  | no          |
+| `transhipment-plants`    | PHSI_ORNAMENTAL PHSI         | inactive              | inactive                  | no          |
 
 So the follow-up must re-pin **apples and peppers** (`gms-declaration`
 flips active → inactive: `satisfied -1`, `inactive +1` for each), and

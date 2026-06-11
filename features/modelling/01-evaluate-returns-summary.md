@@ -19,7 +19,7 @@ not a design choice.
 ### Why summary lives on both evaluator paths
 
 After this story, the canonical evaluator and the trace evaluator
-differ in *exactly two ways*:
+differ in _exactly two ways_:
 
 1. The trace evaluator adds a `trace` field per obligation
    (chronological steps showing how each status was derived).
@@ -27,7 +27,7 @@ differ in *exactly two ways*:
    (calls the canonical evaluator internally and throws if statuses
    diverge — a runtime safety net).
 
-Summary is *not* a third differentiator — it lives on both. The
+Summary is _not_ a third differentiator — it lives on both. The
 reason is twofold:
 
 - **Cost.** Summary is a single reduction (six counts plus a boolean)
@@ -40,7 +40,7 @@ reason is twofold:
   re-derive it — duplication the contract avoids.
 
 The "production vs diagnostic" distinction the trace evaluator was
-designed for is preserved by the *trace field*, not by the summary.
+designed for is preserved by the _trace field_, not by the summary.
 Trace generation is measurably more work (per-obligation step
 builders; the double pass — canonical first, then trace — for the
 equivalence assertion). That's the cost the trace evaluator exists
@@ -108,12 +108,12 @@ Table-driven where multiple status combinations need coverage.
 ## Acceptance Criteria
 
 - [ ] `evaluateObligations(...)` returns an object with both
-  `obligations` and `summary` keys.
+      `obligations` and `summary` keys.
 - [ ] Summary matches the shape declared in `protocol.md` §5.1.
 - [ ] Summary invariants hold for every test case (table-driven).
 - [ ] All existing tests pass (with their shape assertions extended).
 - [ ] All four explorer views render correctly for every committed
-  eu-live-animals scenario.
+      eu-live-animals scenario.
 
 ## Verification
 

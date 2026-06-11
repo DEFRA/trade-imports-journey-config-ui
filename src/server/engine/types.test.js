@@ -7,11 +7,7 @@
  * documentation; they are not tested.
  */
 import { describe, expect, it } from 'vitest'
-import {
-  OBLIGATION_STATUS,
-  SCREEN_STATUS,
-  SECTION_STATUS
-} from './types.js'
+import { OBLIGATION_STATUS, SCREEN_STATUS, SECTION_STATUS } from './types.js'
 
 describe('OBLIGATION_STATUS', () => {
   it.each([

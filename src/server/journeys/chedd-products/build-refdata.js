@@ -43,7 +43,10 @@ const projectRow = (row) => {
 
 export const buildRefdata = (staging) => {
   const content = Object.fromEntries(
-    Object.entries(staging.content).map(([code, row]) => [code, projectRow(row)])
+    Object.entries(staging.content).map(([code, row]) => [
+      code,
+      projectRow(row)
+    ])
   )
 
   const internalMarketSets = Object.fromEntries(
@@ -68,9 +71,8 @@ export const buildRefdata = (staging) => {
         anomalies_no_internal_market: rows.filter(
           (r) => !('internal_market' in r)
         ).length,
-        combo_overrides: rows.filter(
-          (r) => 'combo_type_options_override' in r
-        ).length
+        combo_overrides: rows.filter((r) => 'combo_type_options_override' in r)
+          .length
       }
     },
     routing: staging.routing,

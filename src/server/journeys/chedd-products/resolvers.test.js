@@ -31,9 +31,12 @@ describe('facts.commodity', () => {
     [{}, null],
     [{ commodities: [] }, null],
     [{ commodities: [{ description: 'no id' }] }, null]
-  ])('extracts the first commodity with an id, else null (%#)', (notification, expected) => {
-    expect(facts.commodity(notification)).toEqual(expected)
-  })
+  ])(
+    'extracts the first commodity with an id, else null (%#)',
+    (notification, expected) => {
+      expect(facts.commodity(notification)).toEqual(expected)
+    }
+  )
 })
 
 describe('tests.requiresInternalMarket', () => {
@@ -49,11 +52,16 @@ describe('tests.requiresInternalMarket', () => {
     ['230990', false],
     ['9999999', false]
   ])('commodity %s -> active: %s', (id, expectedActive) => {
-    expect(tests.requiresInternalMarket({ id }, refdata).active).toBe(expectedActive)
+    expect(tests.requiresInternalMarket({ id }, refdata).active).toBe(
+      expectedActive
+    )
   })
 
   it('does not throw and explains the cause when the routing row is absent', () => {
-    const result = tests.requiresInternalMarket({ id: 'absent' }, { routing: {} })
+    const result = tests.requiresInternalMarket(
+      { id: 'absent' },
+      { routing: {} }
+    )
     expect(result.active).toBe(false)
     expect(result.reason).toMatch(/refdata|routing/)
   })

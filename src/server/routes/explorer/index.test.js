@@ -134,9 +134,7 @@ describe('Explorer routes', () => {
       expect(restoreResponse.result).toEqual(
         expect.stringContaining('Journey Structure')
       )
-      expect(restoreResponse.result).toEqual(
-        expect.stringContaining('Yes')
-      )
+      expect(restoreResponse.result).toEqual(expect.stringContaining('Yes'))
     })
 
     test('no per-obligation toggle dropdowns on the page', async () => {
@@ -166,9 +164,7 @@ describe('Explorer routes', () => {
         url: '/explorer?scenario=import-cattle'
       })
 
-      const inlineScripts = (
-        result.match(/<script(?![^>]*\bsrc\b)[^>]*>/g) || []
-      )
+      const inlineScripts = result.match(/<script(?![^>]*\bsrc\b)[^>]*>/g) || []
       expect(inlineScripts).toHaveLength(1)
       expect(inlineScripts[0]).toBe('<script>')
     })
@@ -186,9 +182,7 @@ describe('Explorer routes', () => {
       })
 
       expect(statusCode).toBe(statusCodes.ok)
-      expect(result).toEqual(
-        expect.stringContaining('Check your notification')
-      )
+      expect(result).toEqual(expect.stringContaining('Check your notification'))
     })
 
     test('shows all obligations met after loading a scenario', async () => {
@@ -223,9 +217,7 @@ describe('Explorer routes', () => {
       })
 
       expect(statusCode).toBe(statusCodes.ok)
-      expect(result).toEqual(
-        expect.stringContaining('Evaluation Debugger')
-      )
+      expect(result).toEqual(expect.stringContaining('Evaluation Debugger'))
       expect(result).toEqual(
         expect.stringContaining('Obligation Fragment Explorer')
       )
@@ -260,9 +252,7 @@ describe('Explorer routes', () => {
         url: '/explorer/debug'
       })
 
-      const inlineScripts = (
-        result.match(/<script(?![^>]*\bsrc\b)[^>]*>/g) || []
-      )
+      const inlineScripts = result.match(/<script(?![^>]*\bsrc\b)[^>]*>/g) || []
       expect(inlineScripts).toHaveLength(1)
       expect(inlineScripts[0]).toBe('<script>')
     })
@@ -336,7 +326,9 @@ describe('Explorer routes', () => {
       expect(baseline.statusCode).toBe(statusCodes.ok)
       // 'Done' is the GOV.UK task-list tag text for `complete` screens.
       // With an empty notification, no screen is complete.
-      expect(baseline.result).not.toContain('govuk-tag--green">\n          Done')
+      expect(baseline.result).not.toContain(
+        'govuk-tag--green">\n          Done'
+      )
 
       // Set a satisfying notification via the scenario loader (the
       // same path the UI uses). This writes to yar.notification — the

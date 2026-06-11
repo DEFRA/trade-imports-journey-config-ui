@@ -49,17 +49,17 @@ of UI plumbing. No engine logic changes.
 
 ### 1. Files to modify
 
-| File | What changes |
-|---|---|
-| `src/server/journeys/eu-live-animals/obligations.json` | Rewrite every `schemaPaths` entry per the Path Translation Table below. Strip the `notification.` prefix. 23 obligations × 35 unique paths. |
-| `src/server/journeys/eu-live-animals/resolvers.js` | Rewrite both `facts.*` extractors (`purposeGroup` and `commodity`) to navigate the new shape. Update `submissionDatePath` from `'notification.partOne.submissionDate'` to `'submittedAt'`. Tests bodies (`tests.*`) are unchanged — they receive extracted values, not paths. Header docstring's mention of "notification.partOne.* shape" is updated. |
-| `src/server/journeys/eu-live-animals/scenarios.js` | Rebuild the `buildNotification` helper (lines ~213–245) and the 7 scenario constants (`importSemen`, `importOwls`, `importCattle`, `importCats`, `transhipmentSemen`, `transhipmentCattle`, `importMixedLivestock`) in the new shape. Shared building blocks (`address`, `veterinaryInfo`, `transporterBlock`, `commodity`, `parameterSet`) are rewritten to the new shape; their signatures stay the same so call sites are unchanged. |
-| `src/server/journeys/eu-live-animals/index.test.js` | Rewrite the 5 raw-path assertions (lines 62, 65, 71, 74, 75 — checked at story-write time) to use new paths. Test intent preserved. |
-| `src/server/journeys/eu-live-animals/resolvers.test.js` | Update fixture construction to match the new shape. Test intent preserved. |
-| `src/server/routes/explorer/config-utils.js` | Rewrite `buildMinimalNotification` (currently constructs `{ type, partOne: { purpose, commodities: { commodityComplement } } }`) to produce a minimal new-shape notification (`{ type, purpose: { group }, commodities: [{ id, species: { name } }], origin: { country } }`). |
-| `src/server/routes/explorer/config-utils.test.js` | Update the 7 assertions that read `result.partOne.*` (lines 52, 53, 56, 64, 70, 79, 88) to the new shape. |
-| `src/server/routes/explorer/scenarios.test.js` | Update the 4 mixed-livestock assertions (lines 137, 143, 149, 156) that index into `importMixedLivestock.partOne.commodities…` to the new shape. |
-| `src/server/routes/explorer/obligation-fragments.js` | **Audit only** — this file consumes whatever `schemaPaths` declare. The internal `getValueAtPath`/`setValueAtPath` are generic. Verify post-migration that the fragments panel still shows non-empty JSON for each obligation. If `obligation-fragments.test.js` references IPAFFS paths, update those too. |
+| File                                                    | What changes                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/server/journeys/eu-live-animals/obligations.json`  | Rewrite every `schemaPaths` entry per the Path Translation Table below. Strip the `notification.` prefix. 23 obligations × 35 unique paths.                                                                                                                                                                                                                                                                                             |
+| `src/server/journeys/eu-live-animals/resolvers.js`      | Rewrite both `facts.*` extractors (`purposeGroup` and `commodity`) to navigate the new shape. Update `submissionDatePath` from `'notification.partOne.submissionDate'` to `'submittedAt'`. Tests bodies (`tests.*`) are unchanged — they receive extracted values, not paths. Header docstring's mention of "notification.partOne.\* shape" is updated.                                                                                 |
+| `src/server/journeys/eu-live-animals/scenarios.js`      | Rebuild the `buildNotification` helper (lines ~213–245) and the 7 scenario constants (`importSemen`, `importOwls`, `importCattle`, `importCats`, `transhipmentSemen`, `transhipmentCattle`, `importMixedLivestock`) in the new shape. Shared building blocks (`address`, `veterinaryInfo`, `transporterBlock`, `commodity`, `parameterSet`) are rewritten to the new shape; their signatures stay the same so call sites are unchanged. |
+| `src/server/journeys/eu-live-animals/index.test.js`     | Rewrite the 5 raw-path assertions (lines 62, 65, 71, 74, 75 — checked at story-write time) to use new paths. Test intent preserved.                                                                                                                                                                                                                                                                                                     |
+| `src/server/journeys/eu-live-animals/resolvers.test.js` | Update fixture construction to match the new shape. Test intent preserved.                                                                                                                                                                                                                                                                                                                                                              |
+| `src/server/routes/explorer/config-utils.js`            | Rewrite `buildMinimalNotification` (currently constructs `{ type, partOne: { purpose, commodities: { commodityComplement } } }`) to produce a minimal new-shape notification (`{ type, purpose: { group }, commodities: [{ id, species: { name } }], origin: { country } }`).                                                                                                                                                           |
+| `src/server/routes/explorer/config-utils.test.js`       | Update the 7 assertions that read `result.partOne.*` (lines 52, 53, 56, 64, 70, 79, 88) to the new shape.                                                                                                                                                                                                                                                                                                                               |
+| `src/server/routes/explorer/scenarios.test.js`          | Update the 4 mixed-livestock assertions (lines 137, 143, 149, 156) that index into `importMixedLivestock.partOne.commodities…` to the new shape.                                                                                                                                                                                                                                                                                        |
+| `src/server/routes/explorer/obligation-fragments.js`    | **Audit only** — this file consumes whatever `schemaPaths` declare. The internal `getValueAtPath`/`setValueAtPath` are generic. Verify post-migration that the fragments panel still shows non-empty JSON for each obligation. If `obligation-fragments.test.js` references IPAFFS paths, update those too.                                                                                                                             |
 
 **No source code in `src/server/engine/` is touched.** The engine
 isolation test (`engine/_isolation.test.js`) continues to pass without
@@ -144,11 +144,14 @@ const notification = {
   partOne: {
     purpose: { purposeGroup },
     commodities: {
-      commodityComplement: [{ commodityID, speciesName: speciesName || undefined }]
+      commodityComplement: [
+        { commodityID, speciesName: speciesName || undefined }
+      ]
     }
   }
 }
-if (countryOfOrigin) notification.partOne.commodities.countryOfOrigin = countryOfOrigin
+if (countryOfOrigin)
+  notification.partOne.commodities.countryOfOrigin = countryOfOrigin
 
 // New:
 const notification = {
@@ -213,15 +216,15 @@ For each of the 7 committed eu-live-animals scenarios, the
 to the pre-migration values pinned in
 `routes/explorer/scenarios.test.js`:
 
-| Scenario | Pre-migration satisfied | Pre-migration inactive |
-|---|---|---|
-| `import-semen` | 17 | 6 |
-| `import-owls` | 18 | 5 |
-| `import-cattle` | 19 | 4 |
-| `import-cats` | 19 | 4 (cph inactive; permanent-address active) |
-| `transhipment-semen` | 18 | 5 |
-| `transhipment-cattle` | 20 | 3 |
-| `import-mixed-livestock` | 19 | 4 |
+| Scenario                 | Pre-migration satisfied | Pre-migration inactive                     |
+| ------------------------ | ----------------------- | ------------------------------------------ |
+| `import-semen`           | 17                      | 6                                          |
+| `import-owls`            | 18                      | 5                                          |
+| `import-cattle`          | 19                      | 4                                          |
+| `import-cats`            | 19                      | 4 (cph inactive; permanent-address active) |
+| `transhipment-semen`     | 18                      | 5                                          |
+| `transhipment-cattle`    | 20                      | 3                                          |
+| `import-mixed-livestock` | 19                      | 4                                          |
 
 All scenarios produce `summary.submittable === true`,
 `summary.unsatisfied === 0`, `summary.deferred === 0`.
@@ -270,27 +273,27 @@ For `import-cattle`:
 ## Acceptance Criteria
 
 - [ ] `obligations.json` uses the new shape. Every `schemaPath` matches
-  the Path Translation Table above; no `notification.partOne.*` prefix.
+      the Path Translation Table above; no `notification.partOne.*` prefix.
 - [ ] `resolvers.js` fact extractors navigate the new shape;
-  `submissionDatePath` is `'submittedAt'`; the `[0]`-only commodity
-  semantic is preserved.
+      `submissionDatePath` is `'submittedAt'`; the `[0]`-only commodity
+      semantic is preserved.
 - [ ] All 7 scenarios in `scenarios.js` use the new shape.
 - [ ] `index.test.js` and `resolvers.test.js` pass against the new
-  fixtures.
+      fixtures.
 - [ ] `config-utils.js#buildMinimalNotification` constructs new-shape
-  notifications. Its tests pass with new-shape assertions.
+      notifications. Its tests pass with new-shape assertions.
 - [ ] `routes/explorer/scenarios.test.js` mixed-livestock assertions
-  use the new shape and the scenario's existing
-  `satisfied/inactive/deferred` count assertions remain pinned and
-  pass.
+      use the new shape and the scenario's existing
+      `satisfied/inactive/deferred` count assertions remain pinned and
+      pass.
 - [ ] Full `npm test` is green: 300 passing + 1 pre-existing favicon
-  failure.
+      failure.
 - [ ] Engine contract tests, framework-isolation test, registration
-  test all pass **unmodified**.
+      test all pass **unmodified**.
 - [ ] `grep -rn "partOne" src/server/journeys/eu-live-animals/
-  src/server/routes/explorer/` returns **zero hits**.
+src/server/routes/explorer/` returns **zero hits**.
 - [ ] All four explorer views render unchanged content for the
-  `import-cattle` scenario.
+      `import-cattle` scenario.
 - [ ] `npm run dev` boots cleanly with both journeys loaded.
 
 ## Risks and pre-emptive mitigations
@@ -341,7 +344,7 @@ parity gate.
 
 The current `commodity` extractor returns `commodities?.[0]` only.
 A well-meaning rewrite could change this to `commodities` (return the
-array) — that would *fix* a real bug but breaks `mixed-livestock`
+array) — that would _fix_ a real bug but breaks `mixed-livestock`
 because the goat commodity's routing flags differ from cattle's.
 
 **Mitigation:** the resolver rewrite in this story preserves the

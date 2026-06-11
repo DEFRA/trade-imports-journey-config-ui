@@ -25,7 +25,7 @@ The engineering review covers:
 
 ## Step 2: QA review
 
-Invoke the `qa-story-review` skill against the same story files **and** the engineering review from Step 1. The QA skill's own process explicitly says: *"Read the stories and any principal engineer review."* It builds on the engineering output rather than re-deriving it.
+Invoke the `qa-story-review` skill against the same story files **and** the engineering review from Step 1. The QA skill's own process explicitly says: _"Read the stories and any principal engineer review."_ It builds on the engineering output rather than re-deriving it.
 
 The QA review covers:
 

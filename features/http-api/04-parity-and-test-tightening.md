@@ -37,10 +37,12 @@ Story 03 must be merged before this story begins. The parity test
 exercises endpoints that don't exist until then.
 
 Reference for scenario fixtures:
+
 - `src/server/journeys/eu-live-animals/scenarios.js` (7 scenarios)
 - `src/server/journeys/chedpp-plants/scenarios.js` (10 scenarios)
 
 Reference for the facade output:
+
 - `src/server/plugins/evaluation-engine/plugin.js#evaluate`
 
 ## Specification
@@ -129,7 +131,7 @@ are still accurate after the implementation. If any has been
 resolved during Stories 02-03, update.
 
 If new deferred decisions emerged during implementation, add them
-to `design.md` § *Deferred questions*. Do not let them rot in
+to `design.md` § _Deferred questions_. Do not let them rot in
 commit messages or PR discussion.
 
 ## Tests

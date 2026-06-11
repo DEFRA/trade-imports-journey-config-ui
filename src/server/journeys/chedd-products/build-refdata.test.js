@@ -59,7 +59,10 @@ const fixture = () => ({
       ]
     },
     combo_template: {
-      comboType: { options: [{ text: '', value: '{{complement}}' }], label: 'Type' }
+      comboType: {
+        options: [{ text: '', value: '{{complement}}' }],
+        label: 'Type'
+      }
     }
   },
   universal_data: { line_item_packages: ['notset', 'Bag', 'Box'] }
@@ -107,7 +110,9 @@ describe('buildRefdata — projection rules', () => {
     expect(defs.internal_market_sets.internalMarket_set_01).toEqual(
       s.definitions.internalMarket_set_01.values
     )
-    expect(Array.isArray(defs.internal_market_sets.internalMarket_set_02)).toBe(true)
+    expect(Array.isArray(defs.internal_market_sets.internalMarket_set_02)).toBe(
+      true
+    )
     expect('combo_template' in defs.internal_market_sets).toBe(false)
   })
 

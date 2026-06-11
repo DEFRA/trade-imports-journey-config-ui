@@ -57,6 +57,7 @@ Story 02 must be merged before this story begins. It provides
 endpoint.
 
 Relevant files:
+
 - `src/server/engine/{evaluate-with-trace,resolve-screens,roll-up-to-sections,evaluate}.js` — pure functions; unchanged.
 - `src/server/plugins/evaluation-engine/plugin.js` — facade; unchanged.
 - `src/server/routes/explorer/api-controller.js` — **deleted**.
@@ -71,11 +72,11 @@ Relevant files:
 Extend `src/server/plugins/http-api/engine-routes.js` (mirror Story
 02's `config-routes.js` structure) with three POSTs:
 
-| Method | Path | Body | Query | Returns |
-|---|---|---|---|---|
+| Method | Path                                  | Body                        | Query                        | Returns                                                                          |
+| ------ | ------------------------------------- | --------------------------- | ---------------------------- | -------------------------------------------------------------------------------- |
 | `POST` | `/api/engine/journeys/{key}/evaluate` | `<notification>` (raw JSON) | `?withTrace=true` (optional) | `EvaluationResult` (`{ obligations, summary }`, optional per-obligation `trace`) |
-| `POST` | `/api/engine/journeys/{key}/screens` | `<notification>` (raw JSON) | — | `{ screens: Screen[] }` |
-| `POST` | `/api/engine/journeys/{key}/sections` | `<notification>` (raw JSON) | — | `{ sections: Section[], summary }` |
+| `POST` | `/api/engine/journeys/{key}/screens`  | `<notification>` (raw JSON) | —                            | `{ screens: Screen[] }`                                                          |
+| `POST` | `/api/engine/journeys/{key}/sections` | `<notification>` (raw JSON) | —                            | `{ sections: Section[], summary }`                                               |
 
 Body shape: the body **is** the notification (D4). No
 `{ notification: ... }` envelope.
@@ -165,10 +166,10 @@ Extend `src/server/plugins/http-api/schemas.js`:
 `src/server/clients/journey-api-client.js` gains:
 
 ```js
-client.evaluate(key, notification, { withTrace = false } = {})
+client.evaluate(key, notification, ({ withTrace = false } = {}))
 client.getScreens(key, notification)
 client.getSections(key, notification)
-client.putSessionNotification(notification)   // PUT /ui/session/notification
+client.putSessionNotification(notification) // PUT /ui/session/notification
 ```
 
 Each sends the notification as the raw body (`JSON.stringify`),
@@ -250,10 +251,10 @@ const response = await fetch(
 read at the top of `initializeEditor` (line 443):
 
 ```js
-const journeyKey = document
-  .querySelector('[data-journey-key]')
-  ?.dataset.journeyKey
-if (!journeyKey) throw new Error('debug page missing data-journey-key attribute')
+const journeyKey =
+  document.querySelector('[data-journey-key]')?.dataset.journeyKey
+if (!journeyKey)
+  throw new Error('debug page missing data-journey-key attribute')
 ```
 
 Hold it in a module-scope `let` or close over it via the existing
@@ -296,7 +297,7 @@ try {
 ```
 
 **Why sequential, not `Promise.all`** (D11/Q1 alignment): PUT and
-POST are independent on the wire, but the *user-visible* contract
+POST are independent on the wire, but the _user-visible_ contract
 is "if Save & Evaluate succeeded, both happened; otherwise neither
 should appear to have happened". Parallel fires can produce
 "engine succeeded but session didn't" with a stale tasklist on the
@@ -329,7 +330,7 @@ appears in the HTML** — a static heading printed unconditionally by
 substring match that passes whether or not the cross-page bridge
 works.
 
-**This test asserts state-driven *behaviour change*, not substring
+**This test asserts state-driven _behaviour change_, not substring
 presence.** Concrete shape:
 
 1. Boot real server (shared from globalSetup).
@@ -366,6 +367,7 @@ help text regardless of session contents.
 returns what browser JS expects.
 
 Test outline:
+
 1. POST `/api/engine/journeys/eu-live-animals/evaluate?withTrace=true`
    with a real scenario notification.
 2. Assert the response has every key
@@ -382,6 +384,7 @@ Test outline:
 right journey after a switch.
 
 Test outline:
+
 1. POST `/explorer/journey` with `journey=chedpp-plants`.
 2. GET `/explorer/debug` — assert the rendered HTML carries
    `data-journey-key="chedpp-plants"` on the editor root.
@@ -394,6 +397,7 @@ Test outline:
 ### 11. Swagger documentation
 
 Each engine endpoint's Joi schema carries:
+
 - `description` field used by hapi-swagger.
 - `example` request body — a real scenario notification (one per
   journey, picked to exercise multiple obligation statuses).
@@ -409,6 +413,7 @@ response example.
 ### Route-level integration — extend `src/server/plugins/http-api/plugin.test.js`
 
 Table-driven over both journeys and multiple scenarios:
+
 - `POST .../evaluate` with empty body → 200, obligations
   `unsatisfied`/`deferred`.
 - `POST .../evaluate` with scenario notification → expected

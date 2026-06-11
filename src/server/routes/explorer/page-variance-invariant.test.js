@@ -56,9 +56,7 @@ describe('page-variance invariant: commodity-conditional screens are uniformly c
 
     for (const section of journey.journeyMap.sections) {
       for (const screen of section.screens) {
-        const refs = screen.fields
-          .map((f) => f.obligationRef)
-          .filter(Boolean)
+        const refs = screen.fields.map((f) => f.obligationRef).filter(Boolean)
         const hasCommodityFactConditional = refs.some((r) =>
           commodityFactConditionalIds.has(r)
         )

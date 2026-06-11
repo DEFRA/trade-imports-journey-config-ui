@@ -38,7 +38,10 @@ const refdata = {
 const view = refdataView(refdata)
 const dim = (id) => view.dimensions.find((d) => d.id === id)
 const detail = (id) => view.details.find((d) => d.id === id)
-const rowValues = (id, key) => detail(id).rowsFor(key).map((r) => r.value)
+const rowValues = (id, key) =>
+  detail(id)
+    .rowsFor(key)
+    .map((r) => r.value)
 
 describe('refdataView dimensions — keyed by `code|` (codeOf)', () => {
   it('internalMarket valuesFor resolves a `code|` key to the set options', () => {
@@ -55,11 +58,15 @@ describe('refdataView dimensions — keyed by `code|` (codeOf)', () => {
   })
 
   it('comboType returns the override list when present (outlier)', () => {
-    expect(dim('comboType').valuesFor('3003|')).toEqual([{ text: 'Frozen', value: 'F' }])
+    expect(dim('comboType').valuesFor('3003|')).toEqual([
+      { text: 'Frozen', value: 'F' }
+    ])
   })
 
   it('comboType returns a single templated option from combo_complement_id otherwise', () => {
-    expect(dim('comboType').valuesFor('1001|')).toEqual([{ text: '', value: 'CC1' }])
+    expect(dim('comboType').valuesFor('1001|')).toEqual([
+      { text: '', value: 'CC1' }
+    ])
   })
 })
 

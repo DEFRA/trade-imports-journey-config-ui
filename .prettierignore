@@ -2,3 +2,13 @@
 package-lock.json
 node_modules
 coverage
+
+# Generated journey refdata (owned by each journey's build script, not hand-edited)
+src/server/journeys/*/refdata.json
+
+# Generated CHED-D field-config pipeline artifacts
+features/chedd-config/chedd-products-staging.json
+features/chedd-config/chedd-products-staging-audit.md
+
+# Curated Postman collection (intentional inline-array formatting)
+docs/postman/journey-config-demo.postman_collection.json

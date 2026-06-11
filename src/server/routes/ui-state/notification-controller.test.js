@@ -64,9 +64,7 @@ describe('PUT /ui/session/notification', () => {
   test('route is registered and tagged "api" + "ui-state"', () => {
     const route = server
       .table()
-      .find(
-        (r) => r.path === '/ui/session/notification' && r.method === 'put'
-      )
+      .find((r) => r.path === '/ui/session/notification' && r.method === 'put')
     expect(route).toBeDefined()
     expect(route.settings.tags).toEqual(
       expect.arrayContaining(['api', 'ui-state'])

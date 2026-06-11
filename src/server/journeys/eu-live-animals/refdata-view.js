@@ -25,8 +25,7 @@ export const refdataView = (refdata) => {
       {
         id: 'purpose',
         name: 'Purpose',
-        valuesFor: (k) =>
-          definitions.purpose_sets[content[k]?.purpose] ?? [],
+        valuesFor: (k) => definitions.purpose_sets[content[k]?.purpose] ?? [],
         sourceFor: (k) => content[k]?.purpose ?? null
       },
       {

@@ -12,7 +12,7 @@ machine-enforced.
 
 Stories 04-06 used the shim pattern (introduce new module beside old;
 old becomes a re-export) so each module could land in `engine/`
-without breaking callers. This story is the *consume the shim*
+without breaking callers. This story is the _consume the shim_
 step of branch-by-abstraction: every caller flips to the new import
 path, then the shims are removed.
 
@@ -46,15 +46,15 @@ For each consumer:
   `trace-evaluate-obligations.js` symbols with imports from
   `engine/evaluate.js` / `engine/evaluate-with-trace.js`. Callers
   that used the old positional `evaluateObligations(notification,
-  obligations, refdata, resolvers)` now call `evaluate(notification,
-  adapter)` with an adapter record.
+obligations, refdata, resolvers)` now call `evaluate(notification,
+adapter)` with an adapter record.
 - Replace imports of `routes/explorer/map-to-screens.js` symbols
   with imports from `engine/resolve-screens.js` /
   `engine/roll-up-to-sections.js`. `mapToScreens` is renamed
   `resolveScreens` at every call site.
 
 The plugin's `evaluate(journeyKey, notification)` facade
-*does not change* in this story. Internally it calls the new
+_does not change_ in this story. Internally it calls the new
 `evaluateWithTrace` from `engine/`; externally route handlers
 continue to call `server.app.evaluationEngine.evaluate('eu-live-animals', ...)`
 exactly as before.
@@ -96,7 +96,9 @@ import { resolve } from 'node:path'
 const ENGINE_DIR = resolve(import.meta.dirname)
 
 test('engine module graph contains no @hapi/* dependency', async () => {
-  const files = readdirSync(ENGINE_DIR).filter(f => f.endsWith('.js') && !f.endsWith('.test.js'))
+  const files = readdirSync(ENGINE_DIR).filter(
+    (f) => f.endsWith('.js') && !f.endsWith('.test.js')
+  )
   for (const file of files) {
     const mod = await import(resolve(ENGINE_DIR, file))
     // mod is loaded; if any transitive import was @hapi/*, the
@@ -133,13 +135,13 @@ are owned by Stories 04-06's test files.
 ## Acceptance Criteria
 
 - [ ] Every route handler and every test imports engine symbols from
-  `engine/*` directly. No imports remain that target the three shim
-  files.
+      `engine/*` directly. No imports remain that target the three shim
+      files.
 - [ ] The three shim files are deleted from the codebase.
 - [ ] Their legacy test files are either deleted (where Stories 04-06
-  cover the surface) or moved to alongside the new modules.
+      cover the surface) or moved to alongside the new modules.
 - [ ] `src/server/engine/_isolation.test.js` (or equivalent) exists
-  and passes: no `@hapi/*` in the engine module graph.
+      and passes: no `@hapi/*` in the engine module graph.
 - [ ] `npm test` is green.
 - [ ] All four explorer views render correctly.
 

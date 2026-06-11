@@ -49,13 +49,13 @@ inherits the precedent.
 
 ### 1. Files to modify (and delete)
 
-| File | What changes |
-|---|---|
-| `src/server/journeys/chedpp-plants/obligations.json` | Rewrite every `schemaPaths` entry per the Path Translation Table below. Strip the `notification.` prefix. 28 obligations × 38 unique paths. |
-| `src/server/journeys/chedpp-plants/resolvers.js` | Rewrite both `facts.*` extractors (`purposeGroup` and `commodity`) to navigate the new shape. Update `submissionDatePath` from `'notification.partOne.submissionDate'` to `'submittedAt'`. `tests.*` bodies (purpose predicates + refdata-driven flags) are unchanged. Kernel `or` import (from Story 10) stays. |
-| `src/server/journeys/chedpp-plants/scenarios.js` | Rebuild the scenario builder and the 7 plant scenarios (`importPhsiOrnamental`, `importApples`, `importPeppers`, `importBulbs`, `importSeeds`, `transitPlants`, `transhipmentPlants`) in the new shape. Shared building blocks are rewritten; signatures preserved. |
-| `src/server/journeys/chedpp-plants/scenarios.test.js` | **NEW.** A scenario sweep test parallel to `routes/explorer/scenarios.test.js`. For each scenario in `scenarioMap`, call `evaluate(notification, adapter)` and assert `summary.submittable === true`, `summary.unsatisfied === 0`, `summary.deferred === 0`. Per-scenario `satisfied/inactive` counts pinned to current values (captured pre-migration). |
-| `src/server/journeys/chedpp-plants/chedpp-notification-schema.json` | **DELETE.** Unreferenced by any code; IPAFFS-derived; no longer matches the live shape. |
+| File                                                                | What changes                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/server/journeys/chedpp-plants/obligations.json`                | Rewrite every `schemaPaths` entry per the Path Translation Table below. Strip the `notification.` prefix. 28 obligations × 38 unique paths.                                                                                                                                                                                                              |
+| `src/server/journeys/chedpp-plants/resolvers.js`                    | Rewrite both `facts.*` extractors (`purposeGroup` and `commodity`) to navigate the new shape. Update `submissionDatePath` from `'notification.partOne.submissionDate'` to `'submittedAt'`. `tests.*` bodies (purpose predicates + refdata-driven flags) are unchanged. Kernel `or` import (from Story 10) stays.                                         |
+| `src/server/journeys/chedpp-plants/scenarios.js`                    | Rebuild the scenario builder and the 7 plant scenarios (`importPhsiOrnamental`, `importApples`, `importPeppers`, `importBulbs`, `importSeeds`, `transitPlants`, `transhipmentPlants`) in the new shape. Shared building blocks are rewritten; signatures preserved.                                                                                      |
+| `src/server/journeys/chedpp-plants/scenarios.test.js`               | **NEW.** A scenario sweep test parallel to `routes/explorer/scenarios.test.js`. For each scenario in `scenarioMap`, call `evaluate(notification, adapter)` and assert `summary.submittable === true`, `summary.unsatisfied === 0`, `summary.deferred === 0`. Per-scenario `satisfied/inactive` counts pinned to current values (captured pre-migration). |
+| `src/server/journeys/chedpp-plants/chedpp-notification-schema.json` | **DELETE.** Unreferenced by any code; IPAFFS-derived; no longer matches the live shape.                                                                                                                                                                                                                                                                  |
 
 **No source code in `src/server/engine/` is touched.** The engine
 isolation test continues to pass without modification.
@@ -194,15 +194,15 @@ For each of the 7 committed chedpp-plants scenarios, the
 to the pre-migration values (captured pre-migration; populate the
 table at implementation time):
 
-| Scenario | Pre-migration satisfied | Pre-migration inactive |
-|---|---|---|
-| `import-phsi-ornamental` | (capture) | (capture) |
-| `import-apples` | (capture) | (capture) |
-| `import-peppers` | (capture) | (capture) |
-| `import-bulbs` | (capture) | (capture) |
-| `import-seeds` | (capture) | (capture) |
-| `transit-plants` | (capture) | (capture) |
-| `transhipment-plants` | (capture) | (capture) |
+| Scenario                 | Pre-migration satisfied | Pre-migration inactive |
+| ------------------------ | ----------------------- | ---------------------- |
+| `import-phsi-ornamental` | (capture)               | (capture)              |
+| `import-apples`          | (capture)               | (capture)              |
+| `import-peppers`         | (capture)               | (capture)              |
+| `import-bulbs`           | (capture)               | (capture)              |
+| `import-seeds`           | (capture)               | (capture)              |
+| `transit-plants`         | (capture)               | (capture)              |
+| `transhipment-plants`    | (capture)               | (capture)              |
 
 All scenarios produce `summary.submittable === true`,
 `summary.unsatisfied === 0`, `summary.deferred === 0`.
@@ -235,25 +235,25 @@ are hardcoded to `'eu-live-animals'`. UI parity is Story 02's concern.
 ## Acceptance Criteria
 
 - [ ] `obligations.json` uses the new shape. Every `schemaPath` matches
-  the Path Translation Table above; no `notification.partOne.*`
-  prefix.
+      the Path Translation Table above; no `notification.partOne.*`
+      prefix.
 - [ ] `resolvers.js` fact extractors navigate the new shape;
-  `submissionDatePath` is `'submittedAt'`; the `[0]`-only commodity
-  semantic is preserved; kernel `or` import is intact.
+      `submissionDatePath` is `'submittedAt'`; the `[0]`-only commodity
+      semantic is preserved; kernel `or` import is intact.
 - [ ] All 7 scenarios in `scenarios.js` use the new shape.
 - [ ] New `scenarios.test.js` exists with submittable + per-status
-  count assertions for all 7 scenarios plus the empty-notification
-  inverse check.
+      count assertions for all 7 scenarios plus the empty-notification
+      inverse check.
 - [ ] `chedpp-notification-schema.json` is deleted from the working
-  tree and git.
+      tree and git.
 - [ ] Registration test continues to pass **unmodified**.
 - [ ] All engine contract tests pass **unmodified**.
 - [ ] Framework-isolation test passes **unmodified**.
 - [ ] Full `npm test` is green.
 - [ ] `grep -rn "partOne" src/server/journeys/chedpp-plants/` returns
-  **zero hits**.
+      **zero hits**.
 - [ ] `npm run dev` boots cleanly with both journeys loaded; the
-  startup log line confirms `2 journey(s), 51 total obligations`.
+      startup log line confirms `2 journey(s), 51 total obligations`.
 
 ## Risks and pre-emptive mitigations
 

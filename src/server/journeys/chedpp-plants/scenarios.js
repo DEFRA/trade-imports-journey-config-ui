@@ -535,11 +535,13 @@ export const scenarioMap = {
   },
   'import-apples': {
     notification: importApples,
-    label: 'Import – Apples (JOINT+SMS + varieties + billing, exact species key)'
+    label:
+      'Import – Apples (JOINT+SMS + varieties + billing, exact species key)'
   },
   'import-peppers': {
     notification: importPeppers,
-    label: 'Import – Peppers (JOINT+SMS, no varieties, billing, exact species key)'
+    label:
+      'Import – Peppers (JOINT+SMS, no varieties, billing, exact species key)'
   },
   'import-bulbs': {
     notification: importBulbs,

@@ -238,7 +238,9 @@ describe('#http-api plugin — POST /api/engine/journeys/{key}/sections', () => 
       payload: {},
       headers: { 'content-type': 'application/json' }
     })
-    const sections = await inject('/api/engine/journeys/eu-live-animals/sections')
+    const sections = await inject(
+      '/api/engine/journeys/eu-live-animals/sections'
+    )
     expect(sections.result.summary).toEqual(evaluate.result.summary)
   })
 
