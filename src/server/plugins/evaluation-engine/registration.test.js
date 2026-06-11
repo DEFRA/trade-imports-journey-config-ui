@@ -14,6 +14,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createServer } from '../../server.js'
 import { scenarioMap as chedppScenarios } from '../../journeys/chedpp-plants/scenarios.js'
+import { scenarioMap as cheddScenarios } from '../../journeys/chedd-products/scenarios.js'
 
 describe('evaluation-engine plugin registration', () => {
   let server
@@ -27,9 +28,13 @@ describe('evaluation-engine plugin registration', () => {
     await server.stop({ timeout: 0 })
   })
 
-  it('listJourneys() returns both registered keys (order-independent)', () => {
+  it('listJourneys() returns all three registered keys (order-independent)', () => {
     const keys = server.app.evaluationEngine.listJourneys()
-    expect(keys.sort()).toEqual(['chedpp-plants', 'eu-live-animals'])
+    expect(keys.sort()).toEqual([
+      'chedd-products',
+      'chedpp-plants',
+      'eu-live-animals'
+    ])
   })
 
   it('evaluate("chedpp-plants", {}) returns an EvaluationResult without throwing', () => {
@@ -53,6 +58,26 @@ describe('evaluation-engine plugin registration', () => {
     const { notification } = chedppScenarios['import-apples']
     const result = server.app.evaluationEngine.evaluate(
       'chedpp-plants',
+      notification
+    )
+    expect(result.summary.submittable).toBe(true)
+    expect(result.summary.unsatisfied).toBe(0)
+    expect(result.summary.deferred).toBe(0)
+  })
+
+  it('evaluate("chedd-products", {}) returns an EvaluationResult without throwing', () => {
+    const result = server.app.evaluationEngine.evaluate('chedd-products', {})
+
+    expect(result).toMatchObject({
+      obligations: expect.any(Array),
+      summary: expect.objectContaining({ submittable: expect.any(Boolean) })
+    })
+  })
+
+  it('evaluate("chedd-products", <committed scenario>) yields summary.submittable === true', () => {
+    const { notification } = cheddScenarios['import-wheat']
+    const result = server.app.evaluationEngine.evaluate(
+      'chedd-products',
       notification
     )
     expect(result.summary.submittable).toBe(true)

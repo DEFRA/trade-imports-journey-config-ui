@@ -25,7 +25,7 @@ describe('#http-api plugin — GET /api/config/journeys', () => {
     // the handler's payload this assertion turns into a 500.
   })
 
-  test('lists both registered journeys with keys eu-live-animals and chedpp-plants', async () => {
+  test('lists all three registered journeys', async () => {
     const { result } = await server.inject({
       method: 'GET',
       url: '/api/config/journeys'
@@ -33,14 +33,19 @@ describe('#http-api plugin — GET /api/config/journeys', () => {
 
     const keys = result.journeys.map((j) => j.key)
     expect(keys).toEqual(
-      expect.arrayContaining(['eu-live-animals', 'chedpp-plants'])
+      expect.arrayContaining([
+        'eu-live-animals',
+        'chedpp-plants',
+        'chedd-products'
+      ])
     )
-    expect(keys).toHaveLength(2)
+    expect(keys).toHaveLength(3)
   })
 
   test.each([
     ['eu-live-animals', 23, 6],
-    ['chedpp-plants', 28, 8]
+    ['chedpp-plants', 28, 8],
+    ['chedd-products', 18, 6]
   ])(
     'reports correct obligationCount and sectionCount for %s (expected %i obligations, %i sections)',
     async (key, obligationCount, sectionCount) => {
@@ -110,7 +115,8 @@ describe('#http-api plugin — GET /api/config/journeys/{key}', () => {
 
   test.each([
     ['eu-live-animals', 23],
-    ['chedpp-plants', 28]
+    ['chedpp-plants', 28],
+    ['chedd-products', 18]
   ])('returns 200 with full journey body (refdata stripped) for %s', async (key, obligationCount) => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
@@ -301,7 +307,8 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities', () =
 
   test.each([
     ['eu-live-animals', 67],
-    ['chedpp-plants', 5690]
+    ['chedpp-plants', 5690],
+    ['chedd-products', 2176]
   ])('returns { commodities: [...] } for %s', async (key, minLength) => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
@@ -462,7 +469,8 @@ describe('#http-api plugin — GET /api/config/journeys/{key}/commodities/{code}
 
   test.each([
     ['eu-live-animals', '102'],
-    ['chedpp-plants', '0805108010']
+    ['chedpp-plants', '0805108010'],
+    ['chedd-products', '1001']
   ])(
     'returns 200 with { pageVariance: [...] } envelope and well-formed entries for %s/%s',
     async (key, code) => {

@@ -2,6 +2,7 @@ import { describe, test, expect } from 'vitest'
 
 import { scenarios as animalScenarios } from '#server/journeys/eu-live-animals/index.js'
 import { scenarios as plantScenarios } from '#server/journeys/chedpp-plants/index.js'
+import { scenarios as cheddScenarios } from '#server/journeys/chedd-products/index.js'
 import { createJourneyApiClient } from '#server/clients/journey-api-client.js'
 import { stripTrace } from './engine-routes.js'
 
@@ -61,6 +62,11 @@ const journeys = [
     key: 'chedpp-plants',
     scenarios: plantScenarios,
     adapter: await import('#server/journeys/chedpp-plants/index.js')
+  },
+  {
+    key: 'chedd-products',
+    scenarios: cheddScenarios,
+    adapter: await import('#server/journeys/chedd-products/index.js')
   }
 ]
 

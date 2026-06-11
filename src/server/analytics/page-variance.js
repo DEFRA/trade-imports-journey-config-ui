@@ -45,6 +45,11 @@ export const buildCommodityValue = (journeyKey, commodityKey) => {
   if (journeyKey === 'chedpp-plants') {
     return { id: commodityID, species: { eppoCode: speciesName } }
   }
+  if (journeyKey === 'chedd-products') {
+    // Single-grain: the resolver test reads refdata.routing[id]; there
+    // is no species axis (parseCommodityKey yields an empty species).
+    return { id: commodityID }
+  }
   throw new Error(
     `buildCommodityValue: unknown journey '${journeyKey}'`
   )

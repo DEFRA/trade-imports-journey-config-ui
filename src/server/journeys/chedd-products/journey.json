@@ -1,0 +1,323 @@
+{
+  "journey": "Proposed - CHED-D - Food and Feed of Non-Animal Origin",
+  "version": "2.0",
+  "description": "Presentation layer only. Defines screens, fields, field types, labels, and visibility. Schema paths and commodity conditions live on obligations. Screen visibility is emergent: if all of a screen's fields' obligations are inactive, the runtime skips the screen.",
+  "sections": [
+    {
+      "id": "01",
+      "name": "About",
+      "screens": [
+        {
+          "id": "01-01",
+          "screenName": "What are you importing",
+          "fields": [
+            {
+              "fieldName": "cert-type",
+              "fieldType": "radio",
+              "label": "What are you importing?",
+              "obligationRef": "notification-type"
+            }
+          ]
+        },
+        {
+          "id": "01-02",
+          "screenName": "Origin of the import",
+          "fields": [
+            {
+              "fieldName": "origin-country",
+              "fieldType": "select",
+              "label": "Country of origin",
+              "obligationRef": "consignment-origin"
+            },
+            {
+              "fieldName": "origin-region",
+              "fieldType": "select",
+              "label": "Region of origin",
+              "obligationRef": "consignment-origin"
+            },
+            {
+              "fieldName": "local-reference-number",
+              "fieldType": "text",
+              "label": "Local reference number (optional)",
+              "obligationRef": "reference-number"
+            }
+          ]
+        },
+        {
+          "id": "01-03",
+          "screenName": "Reason for importing",
+          "fields": [
+            {
+              "fieldName": "purpose",
+              "fieldType": "radio",
+              "label": "What is the reason for importing the goods?",
+              "obligationRef": "import-purpose"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "name": "Description of the goods",
+      "screens": [
+        {
+          "id": "02-01",
+          "screenName": "Search commodities",
+          "fields": [
+            {
+              "fieldName": "selected-commodity",
+              "fieldType": "search",
+              "label": "Search commodities by code or keywords",
+              "obligationRef": "commodity-selection"
+            }
+          ]
+        },
+        {
+          "id": "02-02",
+          "screenName": "Commodity details",
+          "repeats": "per commodity",
+          "fields": [
+            {
+              "fieldName": "product-description-{index}",
+              "fieldType": "text",
+              "label": "Product description",
+              "obligationRef": "commodity-description"
+            },
+            {
+              "fieldName": "complement-{index}",
+              "fieldType": "select",
+              "label": "Commodity complement",
+              "obligationRef": "commodity-complement"
+            },
+            {
+              "fieldName": "intended-for-{index}",
+              "fieldType": "radio",
+              "label": "What is the commodity intended for?",
+              "obligationRef": "intended-use"
+            },
+            {
+              "fieldName": "net-weight-{index}",
+              "fieldType": "number",
+              "label": "Net weight (kg)",
+              "obligationRef": "packages-and-weights"
+            },
+            {
+              "fieldName": "number-packages-{index}",
+              "fieldType": "number",
+              "label": "Number of packages",
+              "obligationRef": "packages-and-weights"
+            }
+          ]
+        },
+        {
+          "id": "02-03",
+          "screenName": "Consignment totals",
+          "fields": [
+            {
+              "fieldName": "total-gross-weight",
+              "fieldType": "number",
+              "label": "Total gross weight (kg)",
+              "obligationRef": "packages-and-weights"
+            },
+            {
+              "fieldName": "total-net-weight",
+              "fieldType": "number",
+              "label": "Total net weight (kg)",
+              "obligationRef": "packages-and-weights"
+            },
+            {
+              "fieldName": "total-packages",
+              "fieldType": "number",
+              "label": "Total number of packages",
+              "obligationRef": "packages-and-weights"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "name": "Documents",
+      "screens": [
+        {
+          "id": "03-01",
+          "screenName": "Accompanying documents",
+          "repeats": "per document",
+          "fields": [
+            {
+              "fieldName": "document-type-{index}",
+              "fieldType": "select",
+              "label": "Document type",
+              "obligationRef": "accompanying-documents"
+            },
+            {
+              "fieldName": "document-reference-{index}",
+              "fieldType": "text",
+              "label": "Document reference number",
+              "obligationRef": "accompanying-documents"
+            },
+            {
+              "fieldName": "document-date-{index}",
+              "fieldType": "date",
+              "label": "Date of issue",
+              "obligationRef": "accompanying-documents"
+            },
+            {
+              "fieldName": "document-attachment-{index}",
+              "fieldType": "file",
+              "label": "Upload document",
+              "obligationRef": "accompanying-documents"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "name": "Addresses",
+      "screens": [
+        {
+          "id": "04-01",
+          "screenName": "Addresses",
+          "fields": [
+            {
+              "fieldName": "consignor",
+              "fieldType": "address_group",
+              "label": "Consignor or exporter",
+              "obligationRef": "consignor-identification",
+              "subFields": [
+                { "fieldName": "trader-name", "fieldType": "text", "label": "Name" },
+                { "fieldName": "trader-company-name", "fieldType": "text", "label": "Company name" },
+                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
+                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
+                { "fieldName": "city", "fieldType": "text", "label": "Town or city" },
+                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" },
+                { "fieldName": "country", "fieldType": "select", "label": "Country" },
+                { "fieldName": "email", "fieldType": "email", "label": "Email address" },
+                { "fieldName": "phone", "fieldType": "tel", "label": "Telephone number" }
+              ]
+            },
+            {
+              "fieldName": "consignee",
+              "fieldType": "address_group",
+              "label": "Consignee",
+              "obligationRef": "consignee-identification",
+              "subFields": [
+                { "fieldName": "trader-name", "fieldType": "text", "label": "Name" },
+                { "fieldName": "trader-company-name", "fieldType": "text", "label": "Company name" },
+                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
+                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
+                { "fieldName": "city", "fieldType": "text", "label": "Town or city" },
+                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" },
+                { "fieldName": "country", "fieldType": "select", "label": "Country" },
+                { "fieldName": "email", "fieldType": "email", "label": "Email address" },
+                { "fieldName": "phone", "fieldType": "tel", "label": "Telephone number" }
+              ]
+            },
+            {
+              "fieldName": "importer",
+              "fieldType": "address_group",
+              "label": "Importer",
+              "obligationRef": "importer-identification",
+              "subFields": [
+                { "fieldName": "trader-name", "fieldType": "text", "label": "Name" },
+                { "fieldName": "trader-company-name", "fieldType": "text", "label": "Company name" },
+                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
+                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
+                { "fieldName": "city", "fieldType": "text", "label": "Town or city" },
+                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" },
+                { "fieldName": "country", "fieldType": "select", "label": "Country" },
+                { "fieldName": "email", "fieldType": "email", "label": "Email address" },
+                { "fieldName": "phone", "fieldType": "tel", "label": "Telephone number" }
+              ]
+            },
+            {
+              "fieldName": "place-of-destination",
+              "fieldType": "address_group",
+              "label": "Place of destination",
+              "obligationRef": "destination-identification",
+              "subFields": [
+                { "fieldName": "trader-name", "fieldType": "text", "label": "Name" },
+                { "fieldName": "trader-company-name", "fieldType": "text", "label": "Company name" },
+                { "fieldName": "address-line-1", "fieldType": "text", "label": "Address line 1" },
+                { "fieldName": "address-line-2", "fieldType": "text", "label": "Address line 2" },
+                { "fieldName": "city", "fieldType": "text", "label": "Town or city" },
+                { "fieldName": "postal-code", "fieldType": "text", "label": "Postal code" },
+                { "fieldName": "country", "fieldType": "select", "label": "Country" },
+                { "fieldName": "email", "fieldType": "email", "label": "Email address" },
+                { "fieldName": "phone", "fieldType": "tel", "label": "Telephone number" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "name": "Transport",
+      "screens": [
+        {
+          "id": "05-01",
+          "screenName": "Entry point and arrival",
+          "fields": [
+            {
+              "fieldName": "point-of-entry",
+              "fieldType": "select",
+              "label": "What is the point of entry into Great Britain?",
+              "obligationRef": "entry-and-arrival"
+            },
+            {
+              "fieldName": "arrival-date",
+              "fieldType": "date",
+              "label": "Estimated arrival date",
+              "obligationRef": "entry-and-arrival"
+            },
+            {
+              "fieldName": "arrival-time",
+              "fieldType": "time",
+              "label": "Estimated arrival time",
+              "obligationRef": "entry-and-arrival"
+            },
+            {
+              "fieldName": "means-of-transport",
+              "fieldType": "select",
+              "label": "Means of transport to the port of entry",
+              "obligationRef": "transport-to-port"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "name": "Complete notification",
+      "screens": [
+        {
+          "id": "06-01",
+          "screenName": "Contact address",
+          "fields": [
+            {
+              "fieldName": "selected-contact-address",
+              "fieldType": "radio",
+              "label": "Select a contact address",
+              "obligationRef": "contact-designation"
+            }
+          ]
+        },
+        {
+          "id": "06-02",
+          "screenName": "Declaration",
+          "fields": [
+            {
+              "fieldName": "declaration-confirmed",
+              "fieldType": "checkbox",
+              "label": "I confirm that the information provided is correct and complete",
+              "obligationRef": "legal-declaration"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -18,6 +18,6 @@ describe('vitest globalSetup', () => {
     expect(response.status).toBe(200)
     const body = await response.json()
     expect(body).toMatchObject({ journeys: expect.any(Array) })
-    expect(body.journeys).toHaveLength(2)
+    expect(body.journeys).toHaveLength(3)
   })
 })
