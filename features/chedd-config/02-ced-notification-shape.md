@@ -1,3 +1,4 @@
+
 # Story 02: Derive the CHED-D notification shape from IPAFFS
 
 ## Goal
