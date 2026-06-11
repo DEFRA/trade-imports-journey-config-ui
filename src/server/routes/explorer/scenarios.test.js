@@ -188,7 +188,7 @@ describe('Scenario fixtures', () => {
     })
 
     test('every entry should have notification and label', () => {
-      for (const [_key, entry] of Object.entries(scenarioMap)) {
+      for (const entry of Object.values(scenarioMap)) {
         expect(entry.notification).toBeDefined()
         expect(entry.notification.type).toBeDefined()
         expect(typeof entry.label).toBe('string')
