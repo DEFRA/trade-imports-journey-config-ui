@@ -2,7 +2,7 @@
   "info": {
     "name": "trade-imports-journey-config-ui - demo",
     "description": {
-      "content": "# IPAFFS journey configuration and evaluation - demo collection\n\nThis collection walks two journeys end-to-end through their HTTP surface:\n\n- **Plants (CHEDPP)** - the GMS-declaration predicate and its AND-arms.\n- **Animals (CHED-A)** - the four routing-flag patterns and the purpose-conditional dimension.\n\nEach folder is one chapter of the demo. Run requests in order; each folder description sets up the chapter and each request description explains what makes that example interesting.\n\n## Setup\n\n1. Start the dev server: `npm run dev` from the project root.\n2. The collection variable `baseUrl` defaults to `http://localhost:3000`. Override it under collection settings if you run the server elsewhere.\n3. Pick a folder. The folders are ordered as a demo arc - start at folder 1 if you're new to the project.\n\n## Variables\n\n- `baseUrl` (default `http://localhost:3000`) - where the dev server listens.\n- `journey` (default `chedpp-plants`) - flips the **shape-agnostic** requests in *folder 2* between `chedpp-plants` and `eu-live-animals`. Folders 3 and 5 are journey-specific narratives and ignore this variable; folder 1 carries one request per journey on purpose so you can compare side-by-side.\n\n## Where to read deeper\n\n- `SOLUTION.md` - the architecture and concepts behind every endpoint here.\n- `README.md` - operational entry point: quick start, Swagger UI, full endpoint surface.\n- `features/http-api/design.md` - HTTP design rationale.\n- Swagger UI at <http://localhost:3000/documentation> - every endpoint with worked examples.",
+      "content": "# IPAFFS journey configuration and evaluation - demo collection\n\nThis collection walks three journeys end-to-end through their HTTP surface:\n\n- **Plants (CHEDPP)** - the GMS-declaration predicate and its AND-arms.\n- **Animals (CHED-A)** - the four routing-flag patterns and the purpose-conditional dimension.\n- **Food/feed (CHED-D)** - the internal-market conditional, anomaly commodities, and a combo-override outlier.\n\nEach folder is one chapter of the demo. Run requests in order; each folder description sets up the chapter and each request description explains what makes that example interesting.\n\n## Setup\n\n1. Start the dev server: `npm run dev` from the project root.\n2. The collection variable `baseUrl` defaults to `http://localhost:3000`. Override it under collection settings if you run the server elsewhere.\n3. Pick a folder. The folders are ordered as a demo arc - start at folder 1 if you're new to the project.\n\n## Variables\n\n- `baseUrl` (default `http://localhost:3000`) - where the dev server listens.\n- `journey` (default `chedpp-plants`) - flips the **shape-agnostic** requests in *folder 2* between `chedpp-plants`, `eu-live-animals`, and `chedd-products`. Folders 3, 5 and 6 are journey-specific narratives and ignore this variable; folder 1 carries one request per journey on purpose so you can compare side-by-side.\n\n## Where to read deeper\n\n- `SOLUTION.md` - the architecture and concepts behind every endpoint here.\n- `README.md` - operational entry point: quick start, Swagger UI, full endpoint surface.\n- `features/http-api/design.md` - HTTP design rationale.\n- Swagger UI at <http://localhost:3000/documentation> - every endpoint with worked examples.",
       "type": "text/markdown"
     },
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -38,7 +38,7 @@
               "path": ["api", "config", "journeys"]
             },
             "description": {
-              "content": "Two journeys ship with this spike: `eu-live-animals` and `chedpp-plants`. The response carries an obligation count and section count for each, so a client can render a picker without fetching the full configuration.",
+              "content": "Three journeys ship with this spike: `eu-live-animals`, `chedpp-plants`, and `chedd-products`. The response carries an obligation count and section count for each, so a client can render a picker without fetching the full configuration.",
               "type": "text/markdown"
             }
           }
@@ -71,6 +71,22 @@
             },
             "description": {
               "content": "The full configuration tree for animals: 23 obligations, 6 sections. Different vocabulary from plants - routing flags instead of regulatory authorities, purpose groups instead of marketing standards - but the same shape.",
+              "type": "text/markdown"
+            }
+          }
+        },
+        {
+          "name": "CHED-D journey configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/config/journeys/chedd-products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "config", "journeys", "chedd-products"]
+            },
+            "description": {
+              "content": "The full configuration tree for CHED-D (food and feed of non-animal origin): 18 obligations, 6 sections. No species taxonomy and no routing flags - the one conditional is `intended-use`, driven by whether the commodity is intended for the internal market.",
               "type": "text/markdown"
             }
           }
@@ -780,7 +796,164 @@
       ]
     },
     {
-      "name": "6. UI session",
+      "name": "6. CHED-D narrative",
+      "description": {
+        "content": "Three commodity examples that walk CHED-D's distinctive variance, plus a submittable evaluation.\n\n| Step | Commodity | What it shows |\n|---|---|---|\n| 6.1 | `1001` wheat | Internal-market active (the conditional fires) |\n| 6.2 | `84181020` refrigerator | Anomaly: no internal market (inactive) |\n| 6.3 | `200710` fruit paste | Combo-override outlier |\n| 6.4 | wheat notification | A submittable evaluation (engine) |\n\nCHED-D is single-grain: commodity codes carry no species axis. The one conditional obligation is `intended-use`, driven by the commodity's `has_internal_market` flag.",
+        "type": "text/markdown"
+      },
+      "item": [
+        {
+          "name": "6.1 Wheat 1001 - internal-market active",
+          "description": {
+            "content": "The internal-market path.\n\n`1001` (wheat and meslin) has `has_internal_market: true`, so the `intended-use` obligation fires - the notification must declare what the commodity is intended for (human consumption, feedingstuff, further process, other).\n\n**The point.** One commodity flag, expressed as data, activates one conditional obligation - the CHED-D equivalent of the plants GMS trigger.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Commodity driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedd-products/commodities/1001",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedd-products", "commodities", "1001"]
+                },
+                "description": {
+                  "content": "`routingFlags.hasInternalMarket: true`, and `internalMarketSet` resolves to the option set the commodity may be intended for. Single-grain: looked up by bare code, no species segment.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedd-products/commodities/1001/page-variance",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedd-products", "commodities", "1001", "page-variance"]
+                },
+                "description": {
+                  "content": "The intended-use screen activates (`activates: true`); the driver reason cites that the commodity is intended for the internal market. Compare with 6.2 where it does not fire.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.2 Refrigerator 84181020 - anomaly (no internal market)",
+          "description": {
+            "content": "An anomaly commodity.\n\n`84181020` (refrigerators) is one of the 31 CHED-D commodities with `has_internal_market: false` - a non-consumable routed through a CHED-D. The `intended-use` obligation is inactive; no internal-market declaration is asked for.\n\n**The point.** The absence of the flag drives the absence of the screen - same config, the conditional simply doesn't activate.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Commodity driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedd-products/commodities/84181020",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedd-products", "commodities", "84181020"]
+                },
+                "description": {
+                  "content": "`routingFlags.hasInternalMarket: false`, `internalMarketSet: null`. The anomaly shape - a present commodity with no internal-market option set.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedd-products/commodities/84181020/page-variance",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedd-products", "commodities", "84181020", "page-variance"]
+                },
+                "description": {
+                  "content": "The intended-use screen has `activates: false`. Mirror image of 6.1.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.3 Fruit paste 200710 - combo-override outlier",
+          "description": {
+            "content": "A combo-override outlier.\n\n`200710` (homogenised fruit preparations) is one of only 9 CHED-D commodities carrying an explicit `combo_type_options_override` - a bespoke list of combo-type options instead of the single templated default every other commodity gets.\n\n**The point.** The combo reconstruction the staging build deferred to read time surfaces here: `comboType` returns the multi-option override, not the templated default.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Commodity driver",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedd-products/commodities/200710",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedd-products", "commodities", "200710"]
+                },
+                "description": {
+                  "content": "`comboType` carries the multi-option override. `hasInternalMarket: true` too, so this commodity exercises both the internal-market conditional and the combo override.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Page-variance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/config/journeys/chedd-products/commodities/200710/page-variance",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "config", "journeys", "chedd-products", "commodities", "200710", "page-variance"]
+                },
+                "description": {
+                  "content": "intended-use activates (200710 has internal market). The combo override itself is visible in the commodity driver above, not in page-variance.",
+                  "type": "text/markdown"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "6.4 Evaluate wheat notification (submittable)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "content-type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"type\":\"CED\",\"submittedAt\":\"2026-04-11T10:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"FR-21\"},\"importerLocalRef\":\"REF-CED-001\",\"purpose\":{\"group\":\"For Import\"},\"commodities\":[{\"id\":\"1001\",\"description\":\"1001 Wheat and meslin\",\"complementId\":\"151100\",\"complementName\":\"1001 Wheat and meslin\",\"parameters\":{\"keyDataPair\":[{\"key\":\"net_weight\",\"data\":\"12000\"}]}}],\"consignment\":{\"numberOfPackages\":240,\"totalGrossWeight\":12500,\"totalNetWeight\":12000,\"intendedFor\":\"human\"},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}}},\"destination\":{\"name\":\"Test Mill\",\"address\":{\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2026-04-15\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road\"},\"documents\":{\"accompanying\":[{\"type\":\"Commercial Invoice\",\"reference\":\"INV-2026-001\",\"issueDate\":\"2026-04-10\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"Jane Doe\",\"email\":\"jane.doe@example.com\",\"telephone\":\"+44 1234 567890\"}]}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/engine/journeys/chedd-products/evaluate?withTrace=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "engine", "journeys", "chedd-products", "evaluate"],
+              "query": [
+                { "key": "withTrace", "value": "true" }
+              ]
+            },
+            "description": {
+              "content": "A complete CHED-D notification (wheat, intended for human consumption). All 18 obligations are satisfied, including the conditional `intended-use`, so the response summary has `submittable: true`. Remove `consignment.intendedFor` and re-send to watch intended-use flip to `unsatisfied` (it stays active because 1001 has internal market).",
+              "type": "text/markdown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. UI session",
       "description": {
         "content": "The \"in-memory database\" of the SDUI demo.\n\nThe debug page lets a user edit notification JSON in a textarea, then click \"Save & Evaluate\". The browser fires this PUT before the engine call, so other pages (task list, journey explorer) can render against the same notification on a subsequent request. Without explicit session persistence, the bridge between pages would be a side effect of the evaluate route. Exposing it as a PUT keeps the wiring visible.\n\nIn Postman, sending this request directly requires a session cookie. Enable Postman's cookie jar for `localhost` (Settings > Cookies). The browser-side flow handles cookies automatically.",
         "type": "text/markdown"
