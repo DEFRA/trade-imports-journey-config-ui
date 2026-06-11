@@ -6,9 +6,25 @@
  * passes the evaluator with `submittable: true`, `unsatisfied: 0`,
  * `deferred: 0`.
  *
- * These two are the representative pair story 03 ships to prove the
- * journey is live; story 04 keeps them verbatim and appends the
- * exhaustive set (anomaly families, combo-outlier, multi-commodity).
+ * The 6 scenarios cover the obligation graph and the commodity variance
+ * that matters for CHED-D:
+ *
+ *   import-wheat              — internal-market active (1001); all 18
+ *                               obligations active.
+ *   import-feed-prep          — anomaly 230990 (animal feed prep); no
+ *                               internal market, intended-use inactive.
+ *   import-refrigerator       — anomaly 84181020 (non-food); intended-use
+ *                               inactive.
+ *   import-fruit-paste        — combo-override outlier 200710 (3 explicit
+ *                               combo-type options) + internal market.
+ *   import-preserved-apricots — anomaly 08129025 (food-adjacent); a
+ *                               second anomaly family.
+ *   import-mixed              — multi-commodity (wheat + fruit paste);
+ *                               routing driven by the first commodity.
+ *
+ * Anomaly scenarios OMIT `consignment.intendedFor` so the conditional
+ * `intended-use` obligation resolves inactive — the notification stays
+ * submittable (an inactive obligation is not unsatisfied or deferred).
  */
 
 // ---------------------------------------------------------------------------
@@ -35,8 +51,11 @@ const nominatedContacts = [
 /**
  * Build a commodity line item in the CED notification shape. The
  * `complementId` mirrors the commodity's refdata `combo_complement_id`.
+ *
+ * Named `buildCommodity` (not `commodity`) to keep the noun `commodity`
+ * reserved for the runtime fact extracted by `resolvers.facts.commodity`.
  */
-const commodity = ({ id, description, complementId }) => ({
+const buildCommodity = ({ id, description, complementId }) => ({
   id,
   description,
   complementId,
@@ -47,8 +66,7 @@ const commodity = ({ id, description, complementId }) => ({
 /**
  * Assemble a complete CED notification. `intendedFor` is only set when
  * provided (omitted for anomaly commodities, where `intended-use` is
- * inactive) — the R2 wrapper-object trap is avoided by spreading it
- * conditionally.
+ * inactive) — conditional-spread avoids the empty-wrapper trap.
  */
 const buildNotification = ({ commodities, intendedFor = null }) => ({
   type: 'CED',
@@ -80,40 +98,103 @@ const buildNotification = ({ commodities, intendedFor = null }) => ({
 })
 
 // ---------------------------------------------------------------------------
+// Shared commodity definitions
+// ---------------------------------------------------------------------------
+
+const WHEAT = buildCommodity({
+  id: '1001',
+  description: '1001 Wheat and meslin',
+  complementId: '151100'
+})
+
+const FEED_PREP = buildCommodity({
+  id: '230990',
+  description: '2309 Preparations of a kind used in animal feeding',
+  complementId: '214300'
+})
+
+const REFRIGERATOR = buildCommodity({
+  id: '84181020',
+  description: '8418 Refrigerators, freezers and other refrigerating equipment',
+  complementId: '233701'
+})
+
+const FRUIT_PASTE = buildCommodity({
+  id: '200710',
+  description: '2007 Homogenised fruit preparations (jams, pastes)',
+  complementId: '149352'
+})
+
+const PRESERVED_APRICOTS = buildCommodity({
+  id: '08129025',
+  description: '0812 Fruit and nuts, provisionally preserved (apricots, oranges)',
+  complementId: '239609'
+})
+
+// ---------------------------------------------------------------------------
 // Scenario 1: Import – Wheat and meslin (internal-market active)
-// Commodity 1001 has has_internal_market = true, so `intended-use`
-// fires and consignment.intendedFor must be present. All 18 active.
+// 1001 has has_internal_market = true; all 18 obligations active.
 // ---------------------------------------------------------------------------
 
 export const importWheat = buildNotification({
-  commodities: [
-    commodity({
-      id: '1001',
-      description: '1001 Wheat and meslin',
-      complementId: '151100'
-    })
-  ],
+  commodities: [WHEAT],
   intendedFor: 'human'
 })
 
 // ---------------------------------------------------------------------------
-// Scenario 2: Import – Refrigerator (anomaly, no internal market)
-// Commodity 84181020 has has_internal_market = false, so `intended-use`
-// is inactive and consignment.intendedFor is omitted. 17 active.
+// Scenario 2: Import – Animal feed preparation (anomaly 230990)
+// No internal market; intended-use inactive. 17 active.
 // ---------------------------------------------------------------------------
 
-export const importRefrigerator = buildNotification({
-  commodities: [
-    commodity({
-      id: '84181020',
-      description: '8418 Refrigerators',
-      complementId: '233701'
-    })
-  ]
+export const importFeedPrep = buildNotification({
+  commodities: [FEED_PREP]
 })
 
 // ---------------------------------------------------------------------------
-// Lookup map keyed by URL-safe scenario name
+// Scenario 3: Import – Refrigerator (anomaly 84181020, non-food)
+// No internal market; intended-use inactive. 17 active.
+// ---------------------------------------------------------------------------
+
+export const importRefrigerator = buildNotification({
+  commodities: [REFRIGERATOR]
+})
+
+// ---------------------------------------------------------------------------
+// Scenario 4: Import – Homogenised fruit paste (combo outlier 200710)
+// Internal market active AND carries an explicit combo-type override.
+// ---------------------------------------------------------------------------
+
+export const importFruitPaste = buildNotification({
+  commodities: [FRUIT_PASTE],
+  intendedFor: 'further'
+})
+
+// ---------------------------------------------------------------------------
+// Scenario 5: Import – Preserved apricots (anomaly 08129025)
+// A second anomaly family (food-adjacent). intended-use inactive.
+// ---------------------------------------------------------------------------
+
+export const importPreservedApricots = buildNotification({
+  commodities: [PRESERVED_APRICOTS]
+})
+
+// ---------------------------------------------------------------------------
+// Scenario 6: Import – Mixed (wheat + fruit paste)
+// Multi-commodity; routing driven by the first commodity (wheat, which
+// has internal market) so intended-use is active.
+// ---------------------------------------------------------------------------
+
+export const importMixed = buildNotification({
+  commodities: [WHEAT, FRUIT_PASTE],
+  intendedFor: 'human'
+})
+
+// ---------------------------------------------------------------------------
+// Lookup map keyed by URL-safe scenario name.
+//
+// `import-wheat` is intentionally first: the debug page uses the first
+// scenario as its representative example, and import-wheat exercises the
+// richest path (all 18 obligations active).
 // ---------------------------------------------------------------------------
 
 export const scenarioMap = {
@@ -121,8 +202,24 @@ export const scenarioMap = {
     notification: importWheat,
     label: 'Import – Wheat and meslin (internal-market active)'
   },
+  'import-feed-prep': {
+    notification: importFeedPrep,
+    label: 'Import – Animal feed preparation (anomaly, no internal market)'
+  },
   'import-refrigerator': {
     notification: importRefrigerator,
     label: 'Import – Refrigerator (anomaly, no internal market)'
+  },
+  'import-fruit-paste': {
+    notification: importFruitPaste,
+    label: 'Import – Homogenised fruit paste (combo-override outlier)'
+  },
+  'import-preserved-apricots': {
+    notification: importPreservedApricots,
+    label: 'Import – Preserved apricots (anomaly, no internal market)'
+  },
+  'import-mixed': {
+    notification: importMixed,
+    label: 'Import – Mixed (wheat + fruit paste, multi-commodity)'
   }
 }
