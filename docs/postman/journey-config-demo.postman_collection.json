@@ -426,83 +426,395 @@
       ]
     },
     {
-      "name": "4. Plants engine",
+      "name": "4. Engine",
       "description": {
-        "content": "Configuration explains *which screens would fire*. The engine answers *for this specific notification, do they fire?* These three requests evaluate notifications and expose the obligation statuses, the screen list, and the rolled-up section tree.\n\nThe POST body is the notification JSON directly - no envelope. Paste a notification from the explorer debug page; Postman accepts it as-is.",
+        "content": "The configuration endpoints (folders 1-3, 5, 6) describe *what a journey can ask*. The **engine** endpoints answer *for this specific notification, what does it ask, and is it submittable?* Three POST endpoints, all taking the notification JSON as the raw body (no envelope):\n\n| Endpoint | Returns |\n|---|---|\n| `POST .../evaluate` | Every obligation with a status (`satisfied` / `unsatisfied` / `deferred` / `inactive`) plus a `summary` carrying `submittable`. `?withTrace=true` adds per-obligation diagnostic steps. |\n| `POST .../screens` | The obligations resolved onto the journey screens, each with a UI status. |\n| `POST .../sections` | The screens rolled up into the task-list section tree. |\n\nEach sub-folder runs the same five requests against one journey: an evaluate in three states - **partially complete** (some obligations `unsatisfied`), **fully complete** (`submittable: true`), and **a commodity that drives a page into or out of scope** - then `screens` and `sections` for the complete notification.\n\nThat third evaluate is the heart of configuration-as-data: the *same* journey, the *same* engine, but the commodity code alone changes which screens apply. Plants moves the `gms-declaration` page; animals moves the routing pages (CPH / transporter); CHED-D moves the `intended-use` page.\n\nThe POST body is the notification JSON directly. Paste any notification from the explorer debug page; the engine accepts it as-is.",
         "type": "text/markdown"
       },
       "item": [
         {
-          "name": "Evaluate empty notification",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "content-type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}"
+          "name": "4.1 Plants engine (CHEDPP)",
+          "description": {
+            "content": "Plants. The commodity-driven conditional is **`gms-declaration`** - it fires only for HMI+GMS species. The baseline is `06042090` (rose, PHSI-only); the variance commodity is `0805108010|CIDAU` (bitter orange, HMI+GMS).",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Evaluate - partially complete",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CHEDPP\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"NL\",\"consignedCountry\":\"NL\"},\"purpose\":{\"group\":\"For Import\",\"forImportOrAdmission\":\"Definitive import\"},\"commodities\":[{\"id\":\"06042090\",\"species\":{\"name\":\"Rosa (Rose)\",\"nomination\":\"Rosa sp.\",\"eppoCode\":\"RSVSS\",\"id\":\"RSVSS\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"netweight\",\"data\":\"1000\"},{\"key\":\"number_package\",\"data\":\"10\"},{\"key\":\"type_package\",\"data\":\"Box\"},{\"key\":\"quantity\",\"data\":\"500\"},{\"key\":\"type_quantity\",\"data\":\"Stems\"},{\"key\":\"commodity_group\",\"data\":\"Fruits\"}]}}],\"consignment\":{\"totalNetWeight\":1000,\"totalGrossWeight\":1200,\"numberOfPackages\":10},\"destination\":{\"name\":\"Test Destination Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"documents\":{\"accompanying\":[{\"type\":\"phytosanitaryCertificate\",\"reference\":\"PHYTO-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567891\"}],\"contactDetails\":{\"name\":\"Jane Smith\",\"telephone\":\"+44 1234 567890\",\"email\":\"jane.smith@example.com\"},\"sealsContainers\":[{\"sealNumber\":\"SEAL-001\",\"containerNumber\":\"CNTR-001\",\"officialSeal\":false}],\"ctcMrn\":\"NO\",\"importerLocalRef\":\"IMP-REF-2024-001\"}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedpp-plants", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "The PHSI notification with `parties` and `entry` removed. `submittable: false` - six obligations come back `unsatisfied` (the four party/packer identifications, `transport-to-bcp`, `goods-movement-services`). `withTrace=true` shows the missing path for each.",
+                  "type": "text/markdown"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/evaluate?withTrace=true",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "engine", "journeys", "chedpp-plants", "evaluate"],
-              "query": [
-                { "key": "withTrace", "value": "true" }
-              ]
+            {
+              "name": "Evaluate - fully complete (submittable)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CHEDPP\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"NL\",\"consignedCountry\":\"NL\"},\"purpose\":{\"group\":\"For Import\",\"forImportOrAdmission\":\"Definitive import\"},\"commodities\":[{\"id\":\"06042090\",\"species\":{\"name\":\"Rosa (Rose)\",\"nomination\":\"Rosa sp.\",\"eppoCode\":\"RSVSS\",\"id\":\"RSVSS\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"netweight\",\"data\":\"1000\"},{\"key\":\"number_package\",\"data\":\"10\"},{\"key\":\"type_package\",\"data\":\"Box\"},{\"key\":\"quantity\",\"data\":\"500\"},{\"key\":\"type_quantity\",\"data\":\"Stems\"},{\"key\":\"commodity_group\",\"data\":\"Fruits\"}]}}],\"consignment\":{\"totalNetWeight\":1000,\"totalGrossWeight\":1200,\"numberOfPackages\":10},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"NL\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"packer\":{\"name\":\"Test Packer Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"NL\"}}},\"destination\":{\"name\":\"Test Destination Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBFXT1\",\"bcpControlPoint\":\"GBFXT1-CP1\",\"arrivalDate\":\"2024-12-31\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road Vehicle\",\"isGVMS\":false},\"documents\":{\"accompanying\":[{\"type\":\"phytosanitaryCertificate\",\"reference\":\"PHYTO-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567891\"}],\"contactDetails\":{\"name\":\"Jane Smith\",\"telephone\":\"+44 1234 567890\",\"email\":\"jane.smith@example.com\"},\"sealsContainers\":[{\"sealNumber\":\"SEAL-001\",\"containerNumber\":\"CNTR-001\",\"officialSeal\":false}],\"ctcMrn\":\"NO\",\"importerLocalRef\":\"IMP-REF-2024-001\"}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedpp-plants", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "The complete PHSI notification (`06042090` rose). `summary.submittable: true` - 20 satisfied, 8 inactive. `gms-declaration` is **inactive**: a PHSI commodity never carries the HMI+GMS marketing standard, so that page is out of scope.",
+                  "type": "text/markdown"
+                }
+              }
             },
-            "description": {
-              "content": "The minimum possible notification: `{}`. Every obligation comes back `unsatisfied` or `deferred` because no data is present.\n\n`withTrace=true` adds per-obligation diagnostic steps to the response. Drop the query param to see the production shape.",
-              "type": "text/markdown"
+            {
+              "name": "Evaluate - commodity requires the GMS page",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CHEDPP\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"NL\",\"consignedCountry\":\"NL\"},\"purpose\":{\"group\":\"For Import\",\"forImportOrAdmission\":\"Definitive import\"},\"commodities\":[{\"id\":\"0805108010\",\"species\":{\"name\":\"Citrus aurantium\",\"nomination\":\"Bitter orange\",\"eppoCode\":\"CIDAU\",\"id\":\"CIDAU\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"netweight\",\"data\":\"1000\"},{\"key\":\"number_package\",\"data\":\"10\"},{\"key\":\"type_package\",\"data\":\"Box\"},{\"key\":\"quantity\",\"data\":\"500\"},{\"key\":\"type_quantity\",\"data\":\"Stems\"},{\"key\":\"commodity_group\",\"data\":\"Fruits\"},{\"key\":\"regulatory_authority\",\"data\":\"HMI\"},{\"key\":\"marketing_standard\",\"data\":\"GMS\"},{\"key\":\"validity_period\",\"data\":\"2\"}]}}],\"consignment\":{\"totalNetWeight\":1000,\"totalGrossWeight\":1200,\"numberOfPackages\":10},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"NL\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"packer\":{\"name\":\"Test Packer Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"NL\"}}},\"destination\":{\"name\":\"Test Destination Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBFXT1\",\"bcpControlPoint\":\"GBFXT1-CP1\",\"arrivalDate\":\"2024-12-31\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road Vehicle\",\"isGVMS\":false},\"documents\":{\"accompanying\":[{\"type\":\"phytosanitaryCertificate\",\"reference\":\"PHYTO-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567891\"}],\"contactDetails\":{\"name\":\"Jane Smith\",\"telephone\":\"+44 1234 567890\",\"email\":\"jane.smith@example.com\"},\"sealsContainers\":[{\"sealNumber\":\"SEAL-001\",\"containerNumber\":\"CNTR-001\",\"officialSeal\":false}],\"ctcMrn\":\"NO\",\"importerLocalRef\":\"IMP-REF-2024-001\",\"declarations\":{\"gmsAccepted\":true},\"billing\":{\"isConfirmed\":true,\"emailAddress\":\"billing@example.com\",\"phoneNumber\":\"+44 1234 567892\",\"contactName\":\"Billing Contact\",\"postalAddress\":{\"line1\":\"1 Billing Street\",\"city\":\"London\",\"postalCode\":\"EC1 1AA\"}}}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedpp-plants", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "Same notification shape, commodity `0805108010|CIDAU` (bitter orange, HMI+GMS). `gms-declaration` flips to **active** - and `satisfied` here because the body carries `declarations.gmsAccepted`. The commodity code alone moves the GMS-declaration page into scope. Contrast with the PHSI example above where it is inactive.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Resolve screens",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CHEDPP\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"NL\",\"consignedCountry\":\"NL\"},\"purpose\":{\"group\":\"For Import\",\"forImportOrAdmission\":\"Definitive import\"},\"commodities\":[{\"id\":\"06042090\",\"species\":{\"name\":\"Rosa (Rose)\",\"nomination\":\"Rosa sp.\",\"eppoCode\":\"RSVSS\",\"id\":\"RSVSS\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"netweight\",\"data\":\"1000\"},{\"key\":\"number_package\",\"data\":\"10\"},{\"key\":\"type_package\",\"data\":\"Box\"},{\"key\":\"quantity\",\"data\":\"500\"},{\"key\":\"type_quantity\",\"data\":\"Stems\"},{\"key\":\"commodity_group\",\"data\":\"Fruits\"}]}}],\"consignment\":{\"totalNetWeight\":1000,\"totalGrossWeight\":1200,\"numberOfPackages\":10},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"NL\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"packer\":{\"name\":\"Test Packer Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"NL\"}}},\"destination\":{\"name\":\"Test Destination Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBFXT1\",\"bcpControlPoint\":\"GBFXT1-CP1\",\"arrivalDate\":\"2024-12-31\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road Vehicle\",\"isGVMS\":false},\"documents\":{\"accompanying\":[{\"type\":\"phytosanitaryCertificate\",\"reference\":\"PHYTO-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567891\"}],\"contactDetails\":{\"name\":\"Jane Smith\",\"telephone\":\"+44 1234 567890\",\"email\":\"jane.smith@example.com\"},\"sealsContainers\":[{\"sealNumber\":\"SEAL-001\",\"containerNumber\":\"CNTR-001\",\"officialSeal\":false}],\"ctcMrn\":\"NO\",\"importerLocalRef\":\"IMP-REF-2024-001\"}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/screens",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedpp-plants", "screens"]
+                },
+                "description": {
+                  "content": "`POST .../screens` - the obligations from the complete PHSI notification resolved onto the journey screens, each with a UI status (`incomplete` / `complete` / `notApplicable` / `cannotStartYet`). Screens whose obligations are inactive (e.g. the GMS-declaration screen) come back `notApplicable`.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Roll up to sections",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CHEDPP\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"NL\",\"consignedCountry\":\"NL\"},\"purpose\":{\"group\":\"For Import\",\"forImportOrAdmission\":\"Definitive import\"},\"commodities\":[{\"id\":\"06042090\",\"species\":{\"name\":\"Rosa (Rose)\",\"nomination\":\"Rosa sp.\",\"eppoCode\":\"RSVSS\",\"id\":\"RSVSS\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"netweight\",\"data\":\"1000\"},{\"key\":\"number_package\",\"data\":\"10\"},{\"key\":\"type_package\",\"data\":\"Box\"},{\"key\":\"quantity\",\"data\":\"500\"},{\"key\":\"type_quantity\",\"data\":\"Stems\"},{\"key\":\"commodity_group\",\"data\":\"Fruits\"}]}}],\"consignment\":{\"totalNetWeight\":1000,\"totalGrossWeight\":1200,\"numberOfPackages\":10},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"NL\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"packer\":{\"name\":\"Test Packer Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"NL\"}}},\"destination\":{\"name\":\"Test Destination Ltd\",\"address\":{\"line1\":\"1 Test Street\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBFXT1\",\"bcpControlPoint\":\"GBFXT1-CP1\",\"arrivalDate\":\"2024-12-31\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road Vehicle\",\"isGVMS\":false},\"documents\":{\"accompanying\":[{\"type\":\"phytosanitaryCertificate\",\"reference\":\"PHYTO-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567891\"}],\"contactDetails\":{\"name\":\"Jane Smith\",\"telephone\":\"+44 1234 567890\",\"email\":\"jane.smith@example.com\"},\"sealsContainers\":[{\"sealNumber\":\"SEAL-001\",\"containerNumber\":\"CNTR-001\",\"officialSeal\":false}],\"ctcMrn\":\"NO\",\"importerLocalRef\":\"IMP-REF-2024-001\"}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/sections",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedpp-plants", "sections"]
+                },
+                "description": {
+                  "content": "`POST .../sections` - the same evaluation rolled into the task-list section tree. Sections whose every screen is `notApplicable` are dropped. This is exactly what `/explorer/tasklist` renders.",
+                  "type": "text/markdown"
+                }
+              }
             }
-          }
+          ]
         },
         {
-          "name": "Evaluate sweet-oranges notification (fires GMS)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "content-type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"commodities\": [\n    {\n      \"id\": \"0805108010\",\n      \"species\": { \"code\": \"0805108010\", \"eppoCode\": \"CIDAU\" }\n    }\n  ]\n}"
+          "name": "4.2 Animals engine (CHED-A)",
+          "description": {
+            "content": "Animals. The routing pages (CPH / `livestock-holding`, `transporter-identification`, `permanent-address`) are driven by the **commodity** refdata flags, not the notification data. Cattle (`102`) carries the CPH and transporter flags; bovine semen (`5119985`) carries neither.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Evaluate - partially complete",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CVEDA\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"Normandy\"},\"purpose\":{\"group\":\"For Import\",\"subPurpose\":\"Breeding\"},\"commodities\":[{\"id\":\"102\",\"species\":{\"name\":\"Bos taurus\",\"nomination\":\"Domestic cattle\",\"typeName\":\"Bovine\",\"type\":\"Cattle\",\"class\":\"Mammals\",\"family\":\"Bovidae\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"number_of_animals\",\"data\":\"10\"}]},\"identifiers\":[{\"data\":\"UK123456789012\"}]}],\"destination\":{\"name\":\"Test Farm\",\"address\":{\"line1\":\"123 Test Lane\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"documents\":{\"veterinary\":{\"reference\":\"VET-DOC-12345\",\"issueDate\":\"2024-12-20\",\"establishments\":[{\"approvalNumber\":\"FR-01-123\",\"name\":\"Origin Farm\",\"country\":\"FR\"}]},\"accompanying\":[{\"type\":\"Health Certificate\",\"reference\":\"HC-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567890\"}],\"consignment\":{\"cph\":\"12/345/6789\"}}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/eu-live-animals/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "eu-live-animals", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "The cattle notification with `parties` and `entry` removed. `submittable: false` - five `unsatisfied` (the three party identifications, `entry-and-arrival`, and `transporter-identification`, whose data lives under `parties.transporter`).",
+                  "type": "text/markdown"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/evaluate?withTrace=true",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "engine", "journeys", "chedpp-plants", "evaluate"],
-              "query": [
-                { "key": "withTrace", "value": "true" }
-              ]
+            {
+              "name": "Evaluate - fully complete (submittable)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CVEDA\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"Normandy\"},\"purpose\":{\"group\":\"For Import\",\"subPurpose\":\"Breeding\"},\"commodities\":[{\"id\":\"102\",\"species\":{\"name\":\"Bos taurus\",\"nomination\":\"Domestic cattle\",\"typeName\":\"Bovine\",\"type\":\"Cattle\",\"class\":\"Mammals\",\"family\":\"Bovidae\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"number_of_animals\",\"data\":\"10\"}]},\"identifiers\":[{\"data\":\"UK123456789012\"}]}],\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}},\"transporter\":{\"name\":\"Test Transport Ltd\",\"address\":{\"country\":\"FR\"},\"approvalNumber\":\"FR-TRANS-001\"}},\"destination\":{\"name\":\"Test Farm\",\"address\":{\"line1\":\"123 Test Lane\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2024-12-31T10:00:00Z\"},\"documents\":{\"veterinary\":{\"reference\":\"VET-DOC-12345\",\"issueDate\":\"2024-12-20\",\"establishments\":[{\"approvalNumber\":\"FR-01-123\",\"name\":\"Origin Farm\",\"country\":\"FR\"}]},\"accompanying\":[{\"type\":\"Health Certificate\",\"reference\":\"HC-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567890\"}],\"consignment\":{\"cph\":\"12/345/6789\"}}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/eu-live-animals/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "eu-live-animals", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "The complete cattle notification (`102|Bos taurus`). `submittable: true` - 19 satisfied. `livestock-holding` and `transporter-identification` are **active** because commodity `102` carries the CPH and transporter routing flags.",
+                  "type": "text/markdown"
+                }
+              }
             },
-            "description": {
-              "content": "The same `0805108010|CIDAU` species from 3.5, now as the commodity on a notification. The `gms-declaration` obligation in the response is no longer `inactive` - it activates because the predicate satisfies. Trace shows the rule fired.\n\nDelete the species block from the body and re-send to see the obligation flip to `deferred` (the fact returned null).",
-              "type": "text/markdown"
+            {
+              "name": "Evaluate - commodity descopes the routing pages",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CVEDA\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"Normandy\"},\"purpose\":{\"group\":\"For Import\",\"subPurpose\":\"Breeding\"},\"commodities\":[{\"id\":\"5119985\",\"species\":{\"name\":\"Bos taurus\",\"nomination\":\"Domestic cattle semen\",\"typeName\":\"Bovine\",\"type\":\"Cattle\",\"class\":\"Mammals\",\"family\":\"Bovidae\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"number_of_animals\",\"data\":\"100\"}]},\"identifiers\":[{\"data\":\"SEMEN-BATCH-001\"}]}],\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}}},\"destination\":{\"name\":\"Test Farm\",\"address\":{\"line1\":\"123 Test Lane\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2024-12-31T10:00:00Z\"},\"documents\":{\"veterinary\":{\"reference\":\"VET-DOC-12345\",\"issueDate\":\"2024-12-20\",\"establishments\":[{\"approvalNumber\":\"FR-01-123\",\"name\":\"Origin Farm\",\"country\":\"FR\"}]},\"accompanying\":[{\"type\":\"Health Certificate\",\"reference\":\"HC-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567890\"}]}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/eu-live-animals/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "eu-live-animals", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "Same shape, commodity `5119985` (bovine semen). `livestock-holding` and `transporter-identification` flip to **inactive** - semen carries no CPH or transporter routing flag, so those pages drop out of scope and the notification is still `submittable: true`. The commodity code, not the notification data, decides this.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Resolve screens",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CVEDA\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"Normandy\"},\"purpose\":{\"group\":\"For Import\",\"subPurpose\":\"Breeding\"},\"commodities\":[{\"id\":\"102\",\"species\":{\"name\":\"Bos taurus\",\"nomination\":\"Domestic cattle\",\"typeName\":\"Bovine\",\"type\":\"Cattle\",\"class\":\"Mammals\",\"family\":\"Bovidae\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"number_of_animals\",\"data\":\"10\"}]},\"identifiers\":[{\"data\":\"UK123456789012\"}]}],\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}},\"transporter\":{\"name\":\"Test Transport Ltd\",\"address\":{\"country\":\"FR\"},\"approvalNumber\":\"FR-TRANS-001\"}},\"destination\":{\"name\":\"Test Farm\",\"address\":{\"line1\":\"123 Test Lane\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2024-12-31T10:00:00Z\"},\"documents\":{\"veterinary\":{\"reference\":\"VET-DOC-12345\",\"issueDate\":\"2024-12-20\",\"establishments\":[{\"approvalNumber\":\"FR-01-123\",\"name\":\"Origin Farm\",\"country\":\"FR\"}]},\"accompanying\":[{\"type\":\"Health Certificate\",\"reference\":\"HC-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567890\"}],\"consignment\":{\"cph\":\"12/345/6789\"}}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/eu-live-animals/screens",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "eu-live-animals", "screens"]
+                },
+                "description": {
+                  "content": "`POST .../screens` for the complete cattle notification. The CPH-holding and transporter screens are in scope here; for semen (above) they would be `notApplicable`.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Roll up to sections",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CVEDA\",\"submittedAt\":\"2024-12-30T12:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"Normandy\"},\"purpose\":{\"group\":\"For Import\",\"subPurpose\":\"Breeding\"},\"commodities\":[{\"id\":\"102\",\"species\":{\"name\":\"Bos taurus\",\"nomination\":\"Domestic cattle\",\"typeName\":\"Bovine\",\"type\":\"Cattle\",\"class\":\"Mammals\",\"family\":\"Bovidae\"},\"parameters\":{\"keyDataPair\":[{\"key\":\"number_of_animals\",\"data\":\"10\"}]},\"identifiers\":[{\"data\":\"UK123456789012\"}]}],\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}},\"transporter\":{\"name\":\"Test Transport Ltd\",\"address\":{\"country\":\"FR\"},\"approvalNumber\":\"FR-TRANS-001\"}},\"destination\":{\"name\":\"Test Farm\",\"address\":{\"line1\":\"123 Test Lane\",\"city\":\"Test City\",\"postalCode\":\"TE1 1ST\",\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2024-12-31T10:00:00Z\"},\"documents\":{\"veterinary\":{\"reference\":\"VET-DOC-12345\",\"issueDate\":\"2024-12-20\",\"establishments\":[{\"approvalNumber\":\"FR-01-123\",\"name\":\"Origin Farm\",\"country\":\"FR\"}]},\"accompanying\":[{\"type\":\"Health Certificate\",\"reference\":\"HC-2024-001\",\"issueDate\":\"2024-12-20\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"John Smith\",\"email\":\"john.smith@example.com\",\"telephone\":\"+44 1234 567890\"}],\"consignment\":{\"cph\":\"12/345/6789\"}}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/eu-live-animals/sections",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "eu-live-animals", "sections"]
+                },
+                "description": {
+                  "content": "`POST .../sections` for the cattle notification - the rolled-up task list the animals journey would present.",
+                  "type": "text/markdown"
+                }
+              }
             }
-          }
+          ]
         },
         {
-          "name": "Sections for sweet-oranges notification",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "content-type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"commodities\": [\n    {\n      \"id\": \"0805108010\",\n      \"species\": { \"code\": \"0805108010\", \"eppoCode\": \"CIDAU\" }\n    }\n  ]\n}"
+          "name": "4.3 CHED-D engine (CED)",
+          "description": {
+            "content": "CHED-D. The one commodity-driven conditional is **`intended-use`** - it fires only when the commodity has an internal market. Wheat (`1001`) has one; the refrigerator anomaly (`84181020`, one of the 31 with no internal market) does not.",
+            "type": "text/markdown"
+          },
+          "item": [
+            {
+              "name": "Evaluate - partially complete",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CED\",\"submittedAt\":\"2026-04-11T10:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"FR-21\"},\"importerLocalRef\":\"REF-CED-001\",\"purpose\":{\"group\":\"For Import\"},\"commodities\":[{\"id\":\"1001\",\"description\":\"1001 Wheat and meslin\",\"complementId\":\"151100\",\"complementName\":\"1001 Wheat and meslin\",\"parameters\":{\"keyDataPair\":[{\"key\":\"net_weight\",\"data\":\"12000\"}]}}],\"consignment\":{\"numberOfPackages\":240,\"totalGrossWeight\":12500,\"totalNetWeight\":12000,\"intendedFor\":\"human\"},\"destination\":{\"name\":\"Test Mill\",\"address\":{\"country\":\"GB\"}},\"documents\":{\"accompanying\":[{\"type\":\"Commercial Invoice\",\"reference\":\"INV-2026-001\",\"issueDate\":\"2026-04-10\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"Jane Doe\",\"email\":\"jane.doe@example.com\",\"telephone\":\"+44 1234 567890\"}]}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedd-products/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedd-products", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "The wheat notification with `parties` and `entry` removed. `submittable: false` - five `unsatisfied` (`entry-and-arrival`, `transport-to-port`, and the three party identifications).",
+                  "type": "text/markdown"
+                }
+              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/engine/journeys/chedpp-plants/sections",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "engine", "journeys", "chedpp-plants", "sections"]
+            {
+              "name": "Evaluate - fully complete (submittable)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CED\",\"submittedAt\":\"2026-04-11T10:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"FR-21\"},\"importerLocalRef\":\"REF-CED-001\",\"purpose\":{\"group\":\"For Import\"},\"commodities\":[{\"id\":\"1001\",\"description\":\"1001 Wheat and meslin\",\"complementId\":\"151100\",\"complementName\":\"1001 Wheat and meslin\",\"parameters\":{\"keyDataPair\":[{\"key\":\"net_weight\",\"data\":\"12000\"}]}}],\"consignment\":{\"numberOfPackages\":240,\"totalGrossWeight\":12500,\"totalNetWeight\":12000,\"intendedFor\":\"human\"},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}}},\"destination\":{\"name\":\"Test Mill\",\"address\":{\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2026-04-15\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road\"},\"documents\":{\"accompanying\":[{\"type\":\"Commercial Invoice\",\"reference\":\"INV-2026-001\",\"issueDate\":\"2026-04-10\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"Jane Doe\",\"email\":\"jane.doe@example.com\",\"telephone\":\"+44 1234 567890\"}]}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedd-products/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedd-products", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "The complete wheat notification (`1001`, intended for human consumption). `submittable: true` - all 18 obligations satisfied, including the conditional `intended-use`. Remove `consignment.intendedFor` and re-send: `intended-use` flips to `unsatisfied` (it stays active because `1001` has an internal market).",
+                  "type": "text/markdown"
+                }
+              }
             },
-            "description": {
-              "content": "Same notification, rolled up into the task-list SDUI shape. Sections whose every screen is `notApplicable` are omitted. Screen statuses follow the first-match rule (incomplete -> cannotStartYet -> notApplicable -> complete). This is what the `/explorer/tasklist` UI consumes directly.",
-              "type": "text/markdown"
+            {
+              "name": "Evaluate - commodity descopes the intended-use page",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CED\",\"submittedAt\":\"2026-04-11T10:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"FR-21\"},\"importerLocalRef\":\"REF-CED-001\",\"purpose\":{\"group\":\"For Import\"},\"commodities\":[{\"id\":\"84181020\",\"description\":\"8418 Refrigerators, freezers and other refrigerating equipment\",\"complementId\":\"233701\",\"complementName\":\"8418 Refrigerators, freezers and other refrigerating equipment\",\"parameters\":{\"keyDataPair\":[{\"key\":\"net_weight\",\"data\":\"12000\"}]}}],\"consignment\":{\"numberOfPackages\":240,\"totalGrossWeight\":12500,\"totalNetWeight\":12000},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}}},\"destination\":{\"name\":\"Test Mill\",\"address\":{\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2026-04-15\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road\"},\"documents\":{\"accompanying\":[{\"type\":\"Commercial Invoice\",\"reference\":\"INV-2026-001\",\"issueDate\":\"2026-04-10\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"Jane Doe\",\"email\":\"jane.doe@example.com\",\"telephone\":\"+44 1234 567890\"}]}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedd-products/evaluate?withTrace=true",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedd-products", "evaluate"],
+                  "query": [
+                    { "key": "withTrace", "value": "true" }
+                  ]
+                },
+                "description": {
+                  "content": "Same shape, commodity `84181020` (refrigerator) - one of the 31 anomaly commodities with no internal market. `intended-use` flips to **inactive**, so the notification is `submittable: true` even though it carries no `consignment.intendedFor`. The commodity code descopes the page.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Resolve screens",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CED\",\"submittedAt\":\"2026-04-11T10:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"FR-21\"},\"importerLocalRef\":\"REF-CED-001\",\"purpose\":{\"group\":\"For Import\"},\"commodities\":[{\"id\":\"1001\",\"description\":\"1001 Wheat and meslin\",\"complementId\":\"151100\",\"complementName\":\"1001 Wheat and meslin\",\"parameters\":{\"keyDataPair\":[{\"key\":\"net_weight\",\"data\":\"12000\"}]}}],\"consignment\":{\"numberOfPackages\":240,\"totalGrossWeight\":12500,\"totalNetWeight\":12000,\"intendedFor\":\"human\"},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}}},\"destination\":{\"name\":\"Test Mill\",\"address\":{\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2026-04-15\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road\"},\"documents\":{\"accompanying\":[{\"type\":\"Commercial Invoice\",\"reference\":\"INV-2026-001\",\"issueDate\":\"2026-04-10\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"Jane Doe\",\"email\":\"jane.doe@example.com\",\"telephone\":\"+44 1234 567890\"}]}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedd-products/screens",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedd-products", "screens"]
+                },
+                "description": {
+                  "content": "`POST .../screens` for the complete wheat notification. The intended-use screen is in scope here; for the refrigerator anomaly (above) it would be `notApplicable`.",
+                  "type": "text/markdown"
+                }
+              }
+            },
+            {
+              "name": "Roll up to sections",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "content-type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"type\":\"CED\",\"submittedAt\":\"2026-04-11T10:00:00Z\",\"origin\":{\"country\":\"FR\",\"region\":\"FR-21\"},\"importerLocalRef\":\"REF-CED-001\",\"purpose\":{\"group\":\"For Import\"},\"commodities\":[{\"id\":\"1001\",\"description\":\"1001 Wheat and meslin\",\"complementId\":\"151100\",\"complementName\":\"1001 Wheat and meslin\",\"parameters\":{\"keyDataPair\":[{\"key\":\"net_weight\",\"data\":\"12000\"}]}}],\"consignment\":{\"numberOfPackages\":240,\"totalGrossWeight\":12500,\"totalNetWeight\":12000,\"intendedFor\":\"human\"},\"parties\":{\"consignor\":{\"name\":\"Test Consignor Ltd\",\"address\":{\"country\":\"FR\"}},\"consignee\":{\"name\":\"Test Consignee Ltd\",\"address\":{\"country\":\"GB\"}},\"importer\":{\"name\":\"Test Importer Ltd\",\"address\":{\"country\":\"GB\"}}},\"destination\":{\"name\":\"Test Mill\",\"address\":{\"country\":\"GB\"}},\"entry\":{\"bcp\":\"GBLHR1\",\"arrivalDate\":\"2026-04-15\",\"arrivalTime\":\"10:00\",\"transportType\":\"Road\"},\"documents\":{\"accompanying\":[{\"type\":\"Commercial Invoice\",\"reference\":\"INV-2026-001\",\"issueDate\":\"2026-04-10\",\"attachmentId\":\"attach-001\"}]},\"contacts\":[{\"name\":\"Jane Doe\",\"email\":\"jane.doe@example.com\",\"telephone\":\"+44 1234 567890\"}]}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/engine/journeys/chedd-products/sections",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "engine", "journeys", "chedd-products", "sections"]
+                },
+                "description": {
+                  "content": "`POST .../sections` for the wheat notification - the CHED-D task list.",
+                  "type": "text/markdown"
+                }
+              }
             }
-          }
+          ]
         }
       ]
     },
