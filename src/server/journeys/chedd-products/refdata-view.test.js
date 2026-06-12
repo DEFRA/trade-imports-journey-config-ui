@@ -49,8 +49,11 @@ const rowValues = (id, key) =>
     .map((r) => r.value)
 
 describe('refdataView dimensions — keyed by `code|` (codeOf)', () => {
-  it('internalMarket valuesFor resolves a `code|` key to the set option labels', () => {
-    expect(dim('internalMarket').valuesFor('1001|')).toEqual(['EU', 'NI'])
+  it('internalMarket valuesFor resolves a `code|` key to "label (enum)" pairs', () => {
+    expect(dim('internalMarket').valuesFor('1001|')).toEqual([
+      'EU (eu)',
+      'NI (ni)'
+    ])
   })
 
   it('internalMarket sourceFor resolves a `code|` key to the set name', () => {

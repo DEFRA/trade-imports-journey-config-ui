@@ -40,15 +40,18 @@ export const refdataView = (refdata) => {
       {
         id: 'internalMarket',
         name: 'Internal market',
-        // The dimension-block template renders each value as a string, so
-        // surface the option label. The `value` enum stays available on the
-        // JSON API via commodityDetail.internalMarketSet.
+        // The dimension-block template renders each value as a string.
+        // Surface "label (value)" so the notification mapping is legible:
+        // the label is the human-facing option, the value is the
+        // CommodityIntention enum written to consignment.intendedFor. The
+        // structured {label,value} also stays on the JSON API via
+        // commodityDetail.internalMarketSet.
         valuesFor: (k) =>
           (
             definitions.internal_market_sets[
               content[codeOf(k)]?.internal_market
             ] ?? []
-          ).map((o) => o.label),
+          ).map((o) => `${o.label} (${o.value})`),
         sourceFor: (k) => content[codeOf(k)]?.internal_market ?? null
       },
       {
