@@ -49,10 +49,18 @@ export const buildRefdata = (staging) => {
     ])
   )
 
+  // Project each internal-market option to its two domain-meaningful
+  // fields. The staging options carry field-config form-state
+  // (editable/id/name/selected/visible) that has no place in refdata —
+  // keep only `label` (display) and `value` (the CommodityIntention enum,
+  // i.e. the consignment.intendedFor value).
   const internalMarketSets = Object.fromEntries(
     Object.entries(staging.definitions)
       .filter(([name]) => name.startsWith(SET_PREFIX))
-      .map(([name, wrapper]) => [name, wrapper.values])
+      .map(([name, wrapper]) => [
+        name,
+        wrapper.values.map(({ label, value }) => ({ label, value }))
+      ])
   )
 
   const rows = Object.values(content)

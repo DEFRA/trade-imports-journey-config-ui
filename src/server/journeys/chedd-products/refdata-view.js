@@ -40,16 +40,25 @@ export const refdataView = (refdata) => {
       {
         id: 'internalMarket',
         name: 'Internal market',
+        // The dimension-block template renders each value as a string, so
+        // surface the option label. The `value` enum stays available on the
+        // JSON API via commodityDetail.internalMarketSet.
         valuesFor: (k) =>
-          definitions.internal_market_sets[
-            content[codeOf(k)]?.internal_market
-          ] ?? [],
+          (
+            definitions.internal_market_sets[
+              content[codeOf(k)]?.internal_market
+            ] ?? []
+          ).map((o) => o.label),
         sourceFor: (k) => content[codeOf(k)]?.internal_market ?? null
       },
       {
         id: 'comboType',
         name: 'Combo type',
-        valuesFor: (k) => resolveComboType(content[codeOf(k)])
+        // One display string per option: the 9 outlier overrides carry a
+        // meaningful `text` label; the single-template option has an empty
+        // `text`, so fall back to the complement id (`value`).
+        valuesFor: (k) =>
+          resolveComboType(content[codeOf(k)]).map((o) => o.text || o.value)
       }
     ],
     details: [

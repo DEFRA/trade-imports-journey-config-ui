@@ -19676,129 +19676,64 @@
     "internal_market_sets": {
       "internalMarket_set_01": [
         {
-          "editable": true,
-          "id": "internalMarketfeedingstuff",
           "label": "Feedingstuff",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "feedingstuff",
-          "visible": true
+          "value": "feedingstuff"
         },
         {
-          "editable": true,
-          "id": "internalMarketfurther",
           "label": "Further process",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "further",
-          "visible": true
+          "value": "further"
         },
         {
-          "editable": true,
-          "id": "internalMarkethuman",
           "label": "Human consumption",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "human",
-          "visible": true
+          "value": "human"
         },
         {
-          "editable": true,
-          "id": "internalMarketother",
           "label": "Other",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "other",
-          "visible": true
+          "value": "other"
         }
       ],
       "internalMarket_set_02": [
         {
-          "editable": true,
-          "id": "internalMarkethuman",
           "label": "Human consumption",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "human",
-          "visible": true
+          "value": "human"
         }
       ],
       "internalMarket_set_03": [
         {
-          "editable": true,
-          "id": "internalMarketfeedingstuff",
           "label": "Feedingstuff",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "feedingstuff",
-          "visible": true
+          "value": "feedingstuff"
         },
         {
-          "editable": true,
-          "id": "internalMarketother",
           "label": "Other",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "other",
-          "visible": true
+          "value": "other"
         }
       ],
       "internalMarket_set_04": [
         {
-          "editable": true,
-          "id": "internalMarketfeedingstuff",
           "label": "Feedingstuff",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "feedingstuff",
-          "visible": true
+          "value": "feedingstuff"
         },
         {
-          "editable": true,
-          "id": "internalMarkethuman",
           "label": "Human consumption",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "human",
-          "visible": true
+          "value": "human"
         },
         {
-          "editable": true,
-          "id": "internalMarketother",
           "label": "Other",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "other",
-          "visible": true
+          "value": "other"
         }
       ],
       "internalMarket_set_05": [
         {
-          "editable": true,
-          "id": "internalMarketfurther",
           "label": "Further process",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "further",
-          "visible": true
+          "value": "further"
         },
         {
-          "editable": true,
-          "id": "internalMarkethuman",
           "label": "Human consumption",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "human",
-          "visible": true
+          "value": "human"
         },
         {
-          "editable": true,
-          "id": "internalMarketother",
           "label": "Other",
-          "name": "internalMarket",
-          "selected": false,
-          "value": "other",
-          "visible": true
+          "value": "other"
         }
       ]
     },

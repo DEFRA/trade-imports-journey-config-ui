@@ -104,15 +104,16 @@ describe('buildRefdata — projection rules', () => {
     expect('combo_type_options_override' in out.content['1001']).toBe(false)
   })
 
-  it('unwraps internal_market sets to bare arrays; combo_template not carried', () => {
+  it('projects internal_market options to {label, value}, dropping form-state cruft; combo_template not carried', () => {
     const s = fixture()
     const defs = buildRefdata(s).definitions
-    expect(defs.internal_market_sets.internalMarket_set_01).toEqual(
-      s.definitions.internalMarket_set_01.values
-    )
-    expect(Array.isArray(defs.internal_market_sets.internalMarket_set_02)).toBe(
-      true
-    )
+    expect(defs.internal_market_sets.internalMarket_set_01).toEqual([
+      { label: 'Feedingstuff', value: 'feedingstuff' }
+    ])
+    // The field-config form-state fields (id / name / ...) are dropped.
+    const opt = defs.internal_market_sets.internalMarket_set_01[0]
+    expect('id' in opt).toBe(false)
+    expect('name' in opt).toBe(false)
     expect('combo_template' in defs.internal_market_sets).toBe(false)
   })
 
