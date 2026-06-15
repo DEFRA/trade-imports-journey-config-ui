@@ -1,0 +1,18 @@
+{# Dimension block — plain value list for a selected commodity.
+   Inputs:
+     d  — { id, name, source?, values[] }
+#}
+<div class="app-explorer-section">
+  <h2 class="govuk-heading-l">{{ d.name }}</h2>
+  {%- if d.source %}<p class="govuk-body">{{ d.source }}</p>{% endif %}
+
+  {% if d.values and d.values.length > 0 %}
+    <ul class="govuk-list">
+      {% for value in d.values %}
+        <li>{{ value }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="govuk-body-s app-absent-item">Not provided</p>
+  {% endif %}
+</div>

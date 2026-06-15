@@ -1,0 +1,238 @@
+{
+  "version": "2.0",
+  "description": "CHEDPP (plants) obligations. Each obligation declares what schema data must exist, under what conditions, and why. Obligations own schema paths and conditions (via the condition contract). The journey map owns presentation. The runtime evaluates obligation state by checking these paths against the notification object.",
+  "obligations": [
+    {
+      "id": "notification-type",
+      "name": "Notification Type",
+      "rationale": "Regulatory requirement to classify the import as CHEDPP for routing to the plant health inspection regime.",
+      "schemaPaths": ["type"]
+    },
+    {
+      "id": "consignment-origin",
+      "name": "Consignment Origin",
+      "rationale": "Traceability: country of origin and consigning country determine applicable phytosanitary rules and risk profile.",
+      "schemaPaths": ["origin.country", "origin.consignedCountry"]
+    },
+    {
+      "id": "import-purpose",
+      "name": "Import Purpose",
+      "rationale": "Determines regulatory pathway: different purposes (import, transit, transhipment, non-conforming) carry different inspection requirements.",
+      "schemaPaths": ["purpose.group", "purpose.forImportOrAdmission"]
+    },
+    {
+      "id": "transit-routing",
+      "name": "Transit Routing",
+      "rationale": "Transit consignments must declare exit BIP, destination third country, and transit countries.",
+      "condition": {
+        "fact": "purposeGroup",
+        "test": "isTransit",
+        "description": "Active when purposeGroup is 'For Transit to 3rd Country'."
+      },
+      "schemaPaths": [
+        "purpose.exitBIP",
+        "purpose.thirdCountry",
+        "purpose.transitThirdCountries"
+      ]
+    },
+    {
+      "id": "transhipment-routing",
+      "name": "Transhipment Routing",
+      "rationale": "Transhipment consignments must declare final BIP and transhipment country.",
+      "condition": {
+        "fact": "purposeGroup",
+        "test": "isTranshipment",
+        "description": "Active when purposeGroup is 'For Transhipment to'."
+      },
+      "schemaPaths": ["purpose.finalBIP", "purpose.thirdCountryTranshipment"]
+    },
+    {
+      "id": "commodity-selection",
+      "name": "Commodity Selection",
+      "rationale": "Identifies the commodity being imported. The commodity code is the key fact that drives all downstream variance via refdata lookup.",
+      "schemaPaths": ["commodities[].id"]
+    },
+    {
+      "id": "species-identification",
+      "name": "Species Identification",
+      "rationale": "Regulatory requirement to identify the exact species. EPPO code is the primary plant identifier, driving supplemental data lookup.",
+      "schemaPaths": [
+        "commodities[].species.eppoCode",
+        "commodities[].species.name",
+        "commodities[].species.id",
+        "commodities[].species.nomination"
+      ]
+    },
+    {
+      "id": "commodity-complement-detail",
+      "name": "Commodity Complement Detail",
+      "rationale": "Per-line-item data: net weight, package count and type, quantity, commodity group. Populated via keyDataPair entries.",
+      "schemaPaths": ["commodities[].parameters.keyDataPair"]
+    },
+    {
+      "id": "consignment-totals",
+      "name": "Consignment Totals",
+      "rationale": "Aggregated consignment weights and package count for customs and inspection scheduling.",
+      "schemaPaths": [
+        "consignment.totalNetWeight",
+        "consignment.totalGrossWeight",
+        "consignment.numberOfPackages"
+      ]
+    },
+    {
+      "id": "transport-to-bcp",
+      "name": "Transport to BCP",
+      "rationale": "Operational: point of entry determines BCP for phytosanitary inspection. Arrival date and time trigger scheduling. Transport details for consignment tracking.",
+      "schemaPaths": [
+        "entry.bcp",
+        "entry.bcpControlPoint",
+        "entry.arrivalDate",
+        "entry.arrivalTime",
+        "entry.transportType"
+      ]
+    },
+    {
+      "id": "seal-containers",
+      "name": "Seal and Container Numbers",
+      "rationale": "Tamper evidence: seal and container numbers prove consignment integrity between loading and inspection.",
+      "schemaPaths": ["sealsContainers[]"]
+    },
+    {
+      "id": "goods-movement-services",
+      "name": "Goods Movement Services",
+      "rationale": "GVMS route and CTC MRN provision determine customs movement handling at the border.",
+      "schemaPaths": ["ctcMrn", "entry.isGVMS"]
+    },
+    {
+      "id": "contact-details",
+      "name": "Contact Details",
+      "rationale": "Operational: person to be contacted if there is an issue with the consignment.",
+      "schemaPaths": ["contactDetails"]
+    },
+    {
+      "id": "nominated-contacts",
+      "name": "Nominated Contacts",
+      "rationale": "Operational: nominated contacts receive text and email notifications about consignment status.",
+      "schemaPaths": ["contacts[]"]
+    },
+    {
+      "id": "accompanying-documents",
+      "name": "Accompanying Documents",
+      "rationale": "Phytosanitary certificates and commercial documents that must accompany the consignment.",
+      "schemaPaths": ["documents.accompanying[]"]
+    },
+    {
+      "id": "consignor-identification",
+      "name": "Consignor Identification",
+      "rationale": "Supply chain traceability: identifies who is exporting the goods.",
+      "schemaPaths": ["parties.consignor"]
+    },
+    {
+      "id": "consignee-identification",
+      "name": "Consignee Identification",
+      "rationale": "Supply chain traceability: identifies who is receiving the consignment. Auto-populated from importer selection.",
+      "schemaPaths": ["parties.consignee"]
+    },
+    {
+      "id": "importer-identification",
+      "name": "Importer Identification",
+      "rationale": "Legal liability: identifies the legal importer responsible for compliance.",
+      "schemaPaths": ["parties.importer"]
+    },
+    {
+      "id": "destination-identification",
+      "name": "Destination Identification",
+      "rationale": "Inspection logistics: delivery address where goods will be received.",
+      "schemaPaths": ["destination"]
+    },
+    {
+      "id": "packer-identification",
+      "name": "Packer Identification",
+      "rationale": "CHEDPP-specific: identifies the packer of the consignment for traceability.",
+      "schemaPaths": ["parties.packer"]
+    },
+    {
+      "id": "reference-number",
+      "name": "Importer Reference Number",
+      "rationale": "Operational: importer's own reference for cross-referencing with their systems.",
+      "schemaPaths": ["importerLocalRef"]
+    },
+    {
+      "id": "gms-declaration",
+      "name": "GMS Declaration",
+      "rationale": "General Marketing Standards: declaration required for HMI-inspected commodities with a GMS marketing standard.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresGmsDeclaration",
+        "description": "Active when the commodity's species is HMI-inspected with a GMS marketing standard."
+      },
+      "schemaPaths": ["declarations.gmsAccepted"]
+    },
+    {
+      "id": "variety-class",
+      "name": "Variety and Class",
+      "rationale": "Marketing standards: variety and class selection required for species that have registered varieties in supplemental data.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresVarietyClass",
+        "description": "Active when the commodity's species has varieties defined in refdata."
+      },
+      "schemaPaths": ["commodities[].parameters.keyDataPair"],
+      "note": "Satisfied when keyDataPair contains entries with keys 'variety' and 'class'. The evaluator checks keyDataPair presence; the resolver gates activation on the species' varieties list (derived at read time in resolvers.js#lookupRouting from species.varieties)."
+    },
+    {
+      "id": "finished-or-propagated",
+      "name": "Finished or Propagated",
+      "rationale": "Plant health classification: whether plants are finished products or for propagation, determines inspection scope.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresFinishedOrPropagated",
+        "description": "Active when the commodity requires finished-or-propagated classification (commodity-level flag in refdata)."
+      },
+      "schemaPaths": ["commodities[].parameters.keyDataPair"],
+      "note": "Satisfied when keyDataPair contains an entry with key 'finished_or_propagated'. Uses commodity-level fallback key in refdata lookup."
+    },
+    {
+      "id": "test-and-trial",
+      "name": "Test and Trial",
+      "rationale": "Regulatory exemption: goods imported for test and trial purposes may have different inspection requirements.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresTestAndTrial",
+        "description": "Active when the commodity requires test-and-trial data (commodity-level flag in refdata)."
+      },
+      "schemaPaths": ["commodities[].parameters.keyDataPair"],
+      "note": "Satisfied when keyDataPair contains an entry with key 'for_test_and_trial'. Uses commodity-level fallback key in refdata lookup."
+    },
+    {
+      "id": "intended-use",
+      "name": "Intended Use",
+      "rationale": "Plants-for-planting: propagation type (bulb, plant, seed, tissue) determines applicable phytosanitary requirements.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresIntendedUse",
+        "description": "Active when the commodity has a propagation attribute (bulb, plant, seed, tissue) in refdata."
+      },
+      "schemaPaths": ["commodities[].parameters.keyDataPair"],
+      "note": "Satisfied when keyDataPair contains an entry with key 'propagation'. Uses commodity-level fallback key in refdata lookup."
+    },
+    {
+      "id": "billing-information",
+      "name": "Billing Information",
+      "rationale": "Inspection cost recovery: billing contact and address for invoicing inspection fees.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresBilling",
+        "description": "Active when the commodity requires billing information. May be feature-flag-gated."
+      },
+      "schemaPaths": ["billing"]
+    },
+    {
+      "id": "legal-declaration",
+      "name": "Legal Declaration",
+      "rationale": "Legal requirement: importer assumes responsibility for accuracy and compliance with phytosanitary regulations.",
+      "schemaPaths": [],
+      "action": "Sets submittedAt and changes notification.status to SUBMITTED."
+    }
+  ]
+}

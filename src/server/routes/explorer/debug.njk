@@ -1,0 +1,80 @@
+{% extends 'layouts/page.njk' %}
+
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+
+{% block content %}
+  {{ appHeading({
+    text: heading,
+    caption: "Obligation Evaluation Engine"
+  }) }}
+
+  {% include "partials/explorer-nav.njk" %}
+
+  {# Full-width collapsible JSON editor #}
+  <div class="govuk-grid-row" data-journey-key="{{ journeyKey }}" {% if initialNotification %}data-initial-notification="{{ initialNotification | escape }}"{% endif %} data-fragments="{{ fragmentsJson | escape }}">
+    <div class="govuk-grid-column-full" id="editor-panel">
+      {# JSON textarea rendered here by JS inside a <details> #}
+    </div>
+  </div>
+
+  {# Obligation Fragment Explorer #}
+  <div class="govuk-grid-row govuk-!-margin-bottom-6">
+    <div class="govuk-grid-column-full">
+      <details class="govuk-details">
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">
+            Obligation Fragment Explorer
+          </span>
+        </summary>
+        <div class="govuk-details__text">
+          <p class="govuk-body-s">
+            Select an obligation to see the minimal notification fragment that satisfies it.
+            These fragments are extracted from the scenario fixtures.
+          </p>
+
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-one-third">
+              {{ govukSelect({
+                id: "fragment-selector",
+                name: "fragment-selector",
+                label: {
+                  text: "Obligation"
+                },
+                items: fragmentSelectItems
+              }) }}
+            </div>
+          </div>
+
+          <div id="fragment-display" class="govuk-!-margin-top-4" style="display: none;">
+            <label class="govuk-label govuk-label--s" for="fragment-textarea">
+              Fragment JSON
+            </label>
+            <p class="govuk-body-s govuk-!-margin-bottom-2" id="fragment-note"></p>
+            <textarea
+              id="fragment-textarea"
+              class="govuk-textarea govuk-!-font-size-14"
+              rows="15"
+              readonly
+              spellcheck="false"
+            ></textarea>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  {# Two-column obligations and trace #}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-half" id="landscape-panel">
+      {# Obligation statuses rendered here by JS #}
+    </div>
+    <div class="govuk-grid-column-one-half" id="trace-panel">
+      {# Evaluation trace rendered here by JS #}
+    </div>
+  </div>
+{% endblock %}
+
+{% block bodyEnd %}
+  {{ super() }}
+  <script type="module" src="{{ getAssetPath('src/client/javascripts/explorer.js') }}"></script>
+{% endblock %}

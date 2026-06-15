@@ -1,0 +1,202 @@
+{
+  "version": "2.0",
+  "description": "EU Live Animals obligations. Each obligation declares what schema data must exist, under what conditions, and why. Obligations own schema paths and conditions (via the condition contract). The journey map owns presentation. The runtime evaluates obligation state by checking these paths against the notification object.",
+  "obligations": [
+    {
+      "id": "notification-type",
+      "name": "Notification Type",
+      "rationale": "Regulatory requirement to classify the import for routing to the correct inspection regime.",
+      "schemaPaths": ["type"]
+    },
+    {
+      "id": "consignment-origin",
+      "name": "Consignment Origin",
+      "rationale": "Traceability: country and region of origin determine applicable health rules and risk profile.",
+      "schemaPaths": ["origin.country", "origin.region"]
+    },
+    {
+      "id": "import-purpose",
+      "name": "Import Purpose",
+      "rationale": "Determines regulatory pathway: different purposes (slaughter, breeding, transit) carry different inspection requirements.",
+      "schemaPaths": ["purpose.group", "purpose.subPurpose"],
+      "note": "subPurpose has field-level visibility (dependsOn purpose) but the obligation itself is unconditional."
+    },
+    {
+      "id": "transit-routing",
+      "name": "Transit Routing",
+      "rationale": "Transit and transhipment consignments must declare their exit point from GB. Only relevant when animals are passing through, not staying.",
+      "condition": {
+        "fact": "purposeGroup",
+        "test": "isTransit",
+        "description": "Active when purposeGroup is 'For Transhipment to' or 'For Transit to 3rd Country'."
+      },
+      "schemaPaths": ["purpose.exitBIP", "entry.portOfExit"],
+      "note": "Purpose-conditional obligation (fact: purposeGroup, test: isTransit). The journey map should have visibility conditions on both exit-bcp and port-of-exit fields (exit-bcp already has dependsOn:purpose, port-of-exit is missing it)."
+    },
+    {
+      "id": "commodity-selection",
+      "name": "Commodity Selection",
+      "rationale": "Identifies the commodity being imported. The commodity code is the key fact that drives all downstream variance.",
+      "schemaPaths": ["commodities[].id"],
+      "note": "Key fact: the commodity code selected here drives all commodity-conditional obligation activation via refdata."
+    },
+    {
+      "id": "species-identification",
+      "name": "Species Identification",
+      "rationale": "Regulatory requirement to identify the exact species. Taxonomy and species options are intrinsic to the commodity code.",
+      "schemaPaths": [
+        "commodities[].species.typeName",
+        "commodities[].species.type",
+        "commodities[].species.class",
+        "commodities[].species.family",
+        "commodities[].species.nomination",
+        "commodities[].species.name"
+      ]
+    },
+    {
+      "id": "commodity-complement-detail",
+      "name": "Commodity Complement Detail",
+      "rationale": "Per-commodity quantity data. Quantity type resolved per commodity from refdata.",
+      "schemaPaths": [
+        "commodities[].species.name",
+        "commodities[].parameters.keyDataPair"
+      ]
+    },
+    {
+      "id": "animal-identification",
+      "name": "Animal Identification",
+      "rationale": "Individual animal traceability for disease tracing. Identifier types vary by commodity.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresIdentification",
+        "description": "Active when the commodity's identifier set is not NONE."
+      },
+      "schemaPaths": ["commodities[].identifiers[].data"]
+    },
+    {
+      "id": "animal-certification",
+      "name": "Animal Certification",
+      "rationale": "Certification purpose (breeding, slaughter, etc.) determines handling and documentary requirements for certain species.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresCertification",
+        "description": "Active for commodity codes where animalsCertifiedAs applies. Requires refdata extension."
+      },
+      "schemaPaths": ["consignment.animalsCertifiedAs"]
+    },
+    {
+      "id": "animal-weaning-status",
+      "name": "Animal Weaning Status",
+      "rationale": "Unweaned animals require additional welfare provisions during transport and at destination.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresWeaningStatus",
+        "description": "Active for commodity codes where includeNonAblactedAnimals applies. Requires refdata extension."
+      },
+      "schemaPaths": ["consignment.includeNonAblactedAnimals"]
+    },
+    {
+      "id": "health-certification",
+      "name": "Health Certification",
+      "rationale": "Legal requirement: veterinary certificate proving animals meet GB import health standards.",
+      "schemaPaths": [
+        "documents.veterinary.reference",
+        "documents.veterinary.issueDate",
+        "documents.accompanying[].attachmentId"
+      ]
+    },
+    {
+      "id": "establishments-of-origin",
+      "name": "Establishments of Origin",
+      "rationale": "Traceability: approved establishments where animals originated, for disease outbreak investigation.",
+      "schemaPaths": ["documents.veterinary.establishments[].approvalNumber"]
+    },
+    {
+      "id": "accompanying-documents",
+      "name": "Accompanying Documents",
+      "rationale": "Commercial and regulatory documents that must accompany the consignment.",
+      "schemaPaths": [
+        "documents.accompanying[].type",
+        "documents.accompanying[].reference",
+        "documents.accompanying[].issueDate",
+        "documents.accompanying[].attachmentId"
+      ]
+    },
+    {
+      "id": "consignor-identification",
+      "name": "Consignor Identification",
+      "rationale": "Supply chain traceability: identifies who is exporting the animals.",
+      "schemaPaths": ["parties.consignor"]
+    },
+    {
+      "id": "consignee-identification",
+      "name": "Consignee Identification",
+      "rationale": "Supply chain traceability: identifies who is receiving the consignment.",
+      "schemaPaths": ["parties.consignee"]
+    },
+    {
+      "id": "importer-identification",
+      "name": "Importer Identification",
+      "rationale": "Legal liability: identifies the legal importer responsible for compliance.",
+      "schemaPaths": ["parties.importer"]
+    },
+    {
+      "id": "destination-identification",
+      "name": "Destination Identification",
+      "rationale": "Inspection and welfare: where animals will be unloaded and held for at least 48 hours.",
+      "schemaPaths": ["destination"]
+    },
+    {
+      "id": "permanent-address",
+      "name": "Permanent Address",
+      "rationale": "Animal welfare: permanent residence for pet species after import.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresPermanentAddress",
+        "description": "Active when the commodity requires a permanent address."
+      },
+      "schemaPaths": ["commodities[].identifiers[].permanentAddress"]
+    },
+    {
+      "id": "livestock-holding",
+      "name": "Livestock Holding Registration",
+      "rationale": "UK-specific: CPH number links consignment to registered livestock premises for disease control.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresCphNumber",
+        "description": "Active when the commodity requires a CPH number."
+      },
+      "schemaPaths": ["consignment.cph"]
+    },
+    {
+      "id": "entry-and-arrival",
+      "name": "Entry Point and Arrival",
+      "rationale": "Operational: port of entry determines BCP for inspection. Arrival date triggers scheduling.",
+      "schemaPaths": ["entry.bcp", "entry.arrivalDate"]
+    },
+    {
+      "id": "transporter-identification",
+      "name": "Transporter Identification",
+      "rationale": "Animal welfare regulation: transporter must be authorised. Approval number links to EU register.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresTransporter",
+        "description": "Active when the commodity requires transporter identification."
+      },
+      "schemaPaths": ["parties.transporter"]
+    },
+    {
+      "id": "contact-designation",
+      "name": "Contact Designation",
+      "rationale": "Operational: nominated contact for competent authority regarding this consignment.",
+      "schemaPaths": ["contacts[]"]
+    },
+    {
+      "id": "legal-declaration",
+      "name": "Legal Declaration",
+      "rationale": "Legal requirement: importer assumes responsibility for accuracy and compliance.",
+      "schemaPaths": [],
+      "action": "Sets submittedAt and changes notification.status to SUBMITTED."
+    }
+  ]
+}

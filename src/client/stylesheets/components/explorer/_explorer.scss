@@ -1,0 +1,51 @@
+// Explorer page styles
+
+.app-explorer-nav {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.app-explorer-dimmed {
+  opacity: 0.5;
+}
+
+.app-explorer-section {
+  border-top: 3px solid #b1b4b6; // govuk mid-grey
+  padding-top: 15px;
+  margin-top: 30px;
+}
+
+// Commodity config value annotations
+.app-value-item {
+  padding: 4px 0;
+}
+
+.app-value-item--specific {
+  border-left: 4px solid #1d70b8; // govuk-link blue
+  padding-left: 8px;
+  background-color: #f3f2f1; // govuk-colour("light-grey")
+}
+
+.app-value-tag {
+  margin-left: 8px;
+  // Keep "Commodity-specific" on one line. The hyphen would otherwise
+  // become a wrap point when the parent narrows; pushing the
+  // frequency text to the right reads better than splitting the tag.
+  white-space: nowrap;
+}
+
+.app-value-frequency {
+  color: #505a5f; // govuk-colour("dark-grey")
+}
+
+.app-absent-list {
+  color: #505a5f;
+}
+
+.app-absent-item {
+  text-decoration: line-through;
+  padding: 2px 0;
+}

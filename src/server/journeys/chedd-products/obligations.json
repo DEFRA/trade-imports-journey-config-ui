@@ -1,0 +1,134 @@
+{
+  "version": "2.0",
+  "description": "CHED-D (chedd-products) obligations. Each obligation declares what notification data must exist, under what conditions, and why. Schema paths are derived in features/notification-shape/04-migrate-chedd-products.md. Obligations own schema paths and conditions; the journey map owns presentation. CHED-D is food and feed of non-animal origin, so there is no veterinary, species-taxonomy, transporter, or CPH obligation.",
+  "obligations": [
+    {
+      "id": "notification-type",
+      "name": "Notification Type",
+      "rationale": "Regulatory requirement to classify the import for routing to the correct inspection regime.",
+      "schemaPaths": ["type"]
+    },
+    {
+      "id": "consignment-origin",
+      "name": "Consignment Origin",
+      "rationale": "Traceability: country and region of origin determine the applicable rules and risk profile.",
+      "schemaPaths": ["origin.country", "origin.region"]
+    },
+    {
+      "id": "import-purpose",
+      "name": "Import Purpose",
+      "rationale": "Determines the regulatory pathway for the consignment.",
+      "schemaPaths": ["purpose.group"]
+    },
+    {
+      "id": "commodity-selection",
+      "name": "Commodity Selection",
+      "rationale": "Identifies the commodity being imported. The commodity code is the key fact that drives downstream variance.",
+      "schemaPaths": ["commodities[].id"],
+      "note": "Key fact: the commodity code drives commodity-conditional obligation activation via refdata."
+    },
+    {
+      "id": "commodity-description",
+      "name": "Commodity Description",
+      "rationale": "CED requires a free-text product description for each commodity line item.",
+      "schemaPaths": ["commodities[].description"]
+    },
+    {
+      "id": "commodity-complement",
+      "name": "Commodity Complement",
+      "rationale": "Identifies the precise product complement (the combo selection) for each commodity.",
+      "schemaPaths": [
+        "commodities[].complementId",
+        "commodities[].complementName"
+      ]
+    },
+    {
+      "id": "intended-use",
+      "name": "Intended Use",
+      "rationale": "Food and feed of non-animal origin must declare its intended use (human consumption, feedingstuff, further process, other) when the commodity is intended for the internal market.",
+      "condition": {
+        "fact": "commodity",
+        "test": "requiresInternalMarket",
+        "description": "Active when the commodity's refdata has has_internal_market = true (absent on the 31 anomaly commodities)."
+      },
+      "schemaPaths": ["consignment.intendedFor"]
+    },
+    {
+      "id": "packages-and-weights",
+      "name": "Packages and Weights",
+      "rationale": "Customs and inspection need the declared package count and gross/net weights, with per-line-item detail.",
+      "schemaPaths": [
+        "consignment.numberOfPackages",
+        "consignment.totalGrossWeight",
+        "consignment.totalNetWeight",
+        "commodities[].parameters.keyDataPair"
+      ]
+    },
+    {
+      "id": "entry-and-arrival",
+      "name": "Entry Point and Arrival",
+      "rationale": "Operational: the port of entry determines the BCP; arrival date and time trigger scheduling.",
+      "schemaPaths": ["entry.bcp", "entry.arrivalDate", "entry.arrivalTime"]
+    },
+    {
+      "id": "transport-to-port",
+      "name": "Transport to Port of Entry",
+      "rationale": "Means of transport carrying the consignment to the port of entry.",
+      "schemaPaths": ["entry.transportType"]
+    },
+    {
+      "id": "accompanying-documents",
+      "name": "Accompanying Documents",
+      "rationale": "Commercial and regulatory documents that must accompany the consignment.",
+      "schemaPaths": [
+        "documents.accompanying[].type",
+        "documents.accompanying[].reference",
+        "documents.accompanying[].issueDate",
+        "documents.accompanying[].attachmentId"
+      ]
+    },
+    {
+      "id": "consignor-identification",
+      "name": "Consignor Identification",
+      "rationale": "Supply chain traceability: identifies who is exporting the goods.",
+      "schemaPaths": ["parties.consignor"]
+    },
+    {
+      "id": "consignee-identification",
+      "name": "Consignee Identification",
+      "rationale": "Supply chain traceability: identifies who is receiving the consignment.",
+      "schemaPaths": ["parties.consignee"]
+    },
+    {
+      "id": "importer-identification",
+      "name": "Importer Identification",
+      "rationale": "Legal liability: identifies the legal importer responsible for compliance.",
+      "schemaPaths": ["parties.importer"]
+    },
+    {
+      "id": "destination-identification",
+      "name": "Destination Identification",
+      "rationale": "Where the consignment is delivered after clearing the border.",
+      "schemaPaths": ["destination"]
+    },
+    {
+      "id": "reference-number",
+      "name": "Importer Reference Number",
+      "rationale": "The importer's own local reference for the consignment.",
+      "schemaPaths": ["importerLocalRef"]
+    },
+    {
+      "id": "contact-designation",
+      "name": "Contact Designation",
+      "rationale": "Operational: nominated contact for the competent authority regarding this consignment.",
+      "schemaPaths": ["contacts[]"]
+    },
+    {
+      "id": "legal-declaration",
+      "name": "Legal Declaration",
+      "rationale": "Legal requirement: the importer assumes responsibility for accuracy and compliance.",
+      "schemaPaths": [],
+      "action": "Sets submittedAt and changes notification.status to SUBMITTED."
+    }
+  ]
+}
